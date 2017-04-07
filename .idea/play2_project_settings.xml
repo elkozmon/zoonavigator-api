@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Play2ExcludedModulesSettings">
+    <option name="INFO">
+      <map>
+        <entry key="play">
+          <value>
+            <ProjectSettingsEntry>
+              <option name="sourceDir" value="$PROJECT_DIR$/play/app" />
+              <option name="confDir" value="$PROJECT_DIR$/play/app" />
+              <option name="templateImports">
+                <list>
+                  <option value="models._" />
+                  <option value="controllers._" />
+                  <option value="play.api.i18n._" />
+                  <option value="views.xml._" />
+                  <option value="play.api.templates.PlayMagic._" />
+                  <option value="play.api.mvc._" />
+                  <option value="play.api.data._" />
+                </list>
+              </option>
+              <option name="routesImports">
+                <list>
+                  <option value="controllers.Assets.Asset" />
+                </list>
+              </option>
+              <option name="uri" value="$PROJECT_DIR$/play" />
+            </ProjectSettingsEntry>
+          </value>
+        </entry>
+        <entry key="zooie">
+          <value>
+            <ProjectSettingsEntry>
+              <option name="playDistrPath" value="$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/jars/play_2.11-2.5.12.jar" />
+            </ProjectSettingsEntry>
+          </value>
+        </entry>
+        <entry key="zookie-server">
+          <value>
+            <ProjectSettingsEntry>
+              <option name="playDistrPath" value="$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/jars/play_2.11-2.5.12.jar" />
+            </ProjectSettingsEntry>
+          </value>
+        </entry>
+        <entry key="zoonavigator-api">
+          <value>
+            <ProjectSettingsEntry>
+              <option name="playDistrPath" value="$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/jars/play_2.11-2.5.12.jar" />
+            </ProjectSettingsEntry>
+          </value>
+        </entry>
+        <entry key="zoonavigator-server">
+          <value>
+            <ProjectSettingsEntry>
+              <option name="playDistrPath" value="$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/jars/play_2.11-2.5.12.jar" />
+            </ProjectSettingsEntry>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
