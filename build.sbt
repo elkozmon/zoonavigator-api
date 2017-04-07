@@ -41,8 +41,9 @@ val core = (project in file("core"))
       "org.slf4j" % "slf4j-api" % "1.7.24",
       "joda-time" % "joda-time" % "2.9.7",
       "org.apache.curator" % "curator-framework" % "2.11.1",
+      "org.apache.curator" % "curator-test" % "2.11.1" % Test,
       "com.chuusai" %% "shapeless" % "2.3.2",
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.1" % Test
     )
   )
   .enablePlugins(AutomateHeaderPlugin)
@@ -56,7 +57,7 @@ val play = (project in file("play"))
       "org.typelevel" %% "cats" % "0.9.0",
       "ch.qos.logback" % "logback-classic" % "1.2.1",
       "com.google.guava" % "guava" % "16.0.1",
-      "com.softwaremill.macwire" %% "macros" % "2.3.0" % "provided",
+      "com.softwaremill.macwire" %% "macros" % "2.3.0" % Provided,
       "com.softwaremill.macwire" %% "util" % "2.3.0"
     )
   )

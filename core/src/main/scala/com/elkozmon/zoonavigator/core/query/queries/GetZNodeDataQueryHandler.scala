@@ -38,7 +38,7 @@ class GetZNodeDataQueryHandler(
     val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
       event =>
         val meta = ZNodeMeta.fromStat(event.getStat)
-        val data = ZNodeData(event.getData)
+        val data = ZNodeData(Option(event.getData).getOrElse(Array.empty))
 
         ZNodeMetaWith(data, meta)
     }
