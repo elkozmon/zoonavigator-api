@@ -54,6 +54,9 @@ class JsonApiResponseFactory extends ApiResponseFactory {
   override def notFound(message: Option[String]): Result =
     NotFound(failureResponse(message))
 
+  override def unauthorized(message: Option[String]): Result =
+    Unauthorized(failureResponse(message)).withHeaders(("WWW-Authenticate", "Digest"))
+
   override def forbidden(message: Option[String]): Result =
     Forbidden(failureResponse(message))
 

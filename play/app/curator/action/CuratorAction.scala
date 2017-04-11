@@ -39,7 +39,7 @@ class CuratorAction(
     val futureOrFuture: Either[Future[Result], Future[CuratorRequest[A]]] =
       zookeeperSessionHelper
         .getConnectionParams(request.sessionToken, request.sessionManager)
-        .toRight(Future.successful(apiResponseFactory.forbidden(Some("Session was lost."))))
+        .toRight(Future.successful(apiResponseFactory.unauthorized(Some("Session was lost."))))
         .right
         .map {
           case ConnectionParams(connectionString, authInfoList) =>

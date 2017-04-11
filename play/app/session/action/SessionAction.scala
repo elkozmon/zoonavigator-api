@@ -34,7 +34,7 @@ class SessionAction(
     Future.successful[Either[Result, SessionRequest[A]]](
       sessionManager
         .getSession(request)
-        .toRight(apiResponseFactory.forbidden(Some("Session has expired.")))
+        .toRight(apiResponseFactory.unauthorized(Some("Session has expired.")))
         .right
         .map(new SessionRequest(_, sessionManager, request))
     )

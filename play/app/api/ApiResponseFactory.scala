@@ -28,6 +28,8 @@ trait ApiResponseFactory {
 
   def notFound(message: Option[String]): Result
 
+  def unauthorized(message: Option[String]): Result
+
   def forbidden(message: Option[String]): Result
 
   def badRequest(message: Option[String]): Result
