@@ -171,18 +171,14 @@ class CacheCuratorFrameworkProvider(
         .schedule(
           new Runnable {
             override def run(): Unit = {
-              logger.debug(
-                "Unable to establish connection with ZooKeeper. " +
-                  s"(connection string: ${connectionString.string})"
-              )
-
               val throwable = new Exception(
-                "Unable to establish connection with ZooKeeper."
+                s"Unable to establish connection with ZooKeeper (${connectionString.string})."
               )
 
               if (promiseCurator.tryFailure(throwable)) {
                 // Curator didn't make it to the cache,
                 // stop it from retrying indefinitely
+                logger.debug("Stopping Curator Framework", throwable)
                 curatorFramework.close()
               }
             }
