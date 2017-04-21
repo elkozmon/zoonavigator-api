@@ -70,8 +70,6 @@ class JsonApiResponseFactory extends ApiResponseFactory {
     val jsonApiResponse = failureResponse(Some(throwable.getMessage))
 
     throwable match {
-      case _: InvalidACLException =>
-        Unauthorized(jsonApiResponse)
       case _: NoAuthException =>
         Forbidden(jsonApiResponse)
       case _ =>
