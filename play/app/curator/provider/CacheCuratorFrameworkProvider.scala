@@ -121,6 +121,7 @@ class CacheCuratorFrameworkProvider(
         .authorization(frameworkAuthInfoList.asJava)
         .connectString(connectionString.string)
         .retryPolicy(new ExponentialBackoffRetry(100, 3))
+        .defaultData(Array.emptyByteArray)
         .build()
 
       // Listen for successful connection
