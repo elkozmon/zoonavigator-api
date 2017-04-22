@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/elkozmon/zoonavigator-api.svg?branch=master)](https://travis-ci.org/elkozmon/zoonavigator-api)
+
 ZooNavigator API
 ================
 
