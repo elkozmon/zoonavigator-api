@@ -4,7 +4,7 @@ import de.heikoseeberger.sbtheader.license.AGPLv3
 
 val commonSettings = Seq(
   organization := "com.elkozmon",
-  version := "0.0.1-SNAPSHOT",
+  version := "0.1.0",
   headers := Map(
     "scala" -> AGPLv3("2017", "Ľuboš Kozmon")
   ),
