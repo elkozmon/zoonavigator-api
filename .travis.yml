@@ -1,10 +1,22 @@
+sudo: required
+
 language: scala
+
+services:
+  - docker
 
 scala:
   - 2.11.8
 
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION clean test play/stage
+
+deploy:
+  provider: script
+  script: docker/deploy.sh $TRAVIS_TAG
+  skip_cleanup: true
+  on:
+    tags: true
