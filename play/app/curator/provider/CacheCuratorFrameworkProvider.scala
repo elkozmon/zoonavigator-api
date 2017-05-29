@@ -20,7 +20,6 @@ package curator.provider
 import java.util.concurrent.{Executor, Executors, TimeUnit}
 
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Scheme
 import com.google.common.cache.{CacheBuilder, RemovalListener, RemovalNotification}
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import logging.AppLogger
@@ -112,7 +111,7 @@ class CacheCuratorFrameworkProvider(
       val frameworkAuthInfoList = authInfoList.map {
         authInfo =>
           new framework.AuthInfo(
-            Scheme.toZookeeperScheme(authInfo.scheme),
+            authInfo.scheme,
             authInfo.auth
           )
       }

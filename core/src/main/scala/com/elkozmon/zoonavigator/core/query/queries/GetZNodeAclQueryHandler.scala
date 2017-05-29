@@ -22,7 +22,7 @@ import java.util.concurrent.Executor
 import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
 import com.elkozmon.zoonavigator.core.query.QueryHandler
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.zookeeper.acl.{Acl, AclId, Permission, Scheme}
+import com.elkozmon.zoonavigator.core.zookeeper.acl.{Acl, AclId, Permission}
 import com.elkozmon.zoonavigator.core.zookeeper.znode.{ZNodeAcl, ZNodeMeta, ZNodeMetaWith}
 import org.apache.curator.framework.CuratorFramework
 
@@ -48,7 +48,7 @@ class GetZNodeAclQueryHandler(
               acl =>
                 Acl(
                   AclId(
-                    Scheme.fromZookeeperScheme(acl.getId.getScheme),
+                    acl.getId.getScheme,
                     acl.getId.getId
                   ),
                   Permission.fromZookeeperMask(acl.getPerms)

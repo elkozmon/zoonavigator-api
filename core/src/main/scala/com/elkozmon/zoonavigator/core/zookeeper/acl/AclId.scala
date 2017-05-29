@@ -18,6 +18,6 @@
 package com.elkozmon.zoonavigator.core.zookeeper.acl
 
 final case class AclId(
-  scheme: Scheme,
+  scheme: String,
   id: String
 )

@@ -32,7 +32,7 @@ object JsonAcl {
   implicit object AclFormat extends Format[JsonAcl] {
 
     private implicit val aclIdReads: Reads[AclId] = (
-      (JsPath \ SchemeKey).read[JsonScheme].map(_.underlying) and
+      (JsPath \ SchemeKey).read[String] and
         (JsPath \ IdKey).read[String]
       ) (AclId.apply _)
 
@@ -50,11 +50,9 @@ object JsonAcl {
         .toList
         .map(perm => JsonPermission(perm))
 
-      val jsonScheme = JsonScheme(o.underlying.aclId.scheme)
-
       Json.obj(
         IdKey -> o.underlying.aclId.id.mkString,
-        SchemeKey -> Json.toJson(jsonScheme),
+        SchemeKey -> o.underlying.aclId.scheme,
         PermissionsKey -> Json.toJson(jsonPermissions)
       )
     }

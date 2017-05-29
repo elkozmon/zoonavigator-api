@@ -19,7 +19,6 @@ package json.zookeeper
 
 import java.nio.charset.StandardCharsets
 
-import json.zookeeper.acl.JsonScheme
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads}
 import zookeeper.AuthInfo
@@ -29,7 +28,7 @@ final case class JsonAuthInfo(underlying: AuthInfo)
 object JsonAuthInfo {
 
   implicit val authInfoReads: Reads[JsonAuthInfo] = (
-    (JsPath \ "scheme").read[JsonScheme].map(_.underlying) and
+    (JsPath \ "scheme").read[String] and
       (JsPath \ "id").read[String].map(_.getBytes(StandardCharsets.UTF_8))
     ) (AuthInfo.apply _) map (JsonAuthInfo(_))
 }

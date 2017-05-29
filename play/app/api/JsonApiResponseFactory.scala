@@ -18,7 +18,7 @@
 package api
 
 import json.api.JsonApiResponse
-import org.apache.zookeeper.KeeperException.{InvalidACLException, NoAuthException}
+import org.apache.zookeeper.KeeperException.NoAuthException
 import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.Result
 import play.api.mvc.Results._

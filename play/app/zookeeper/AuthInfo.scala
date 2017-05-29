@@ -17,9 +17,7 @@
 
 package zookeeper
 
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Scheme
-
 final case class AuthInfo(
-  scheme: Scheme,
+  scheme: String,
   auth: Array[Byte]
 )

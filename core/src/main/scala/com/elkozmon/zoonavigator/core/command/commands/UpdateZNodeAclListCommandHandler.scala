@@ -22,7 +22,7 @@ import java.util.concurrent.Executor
 import com.elkozmon.zoonavigator.core.command.CommandHandler
 import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.zookeeper.acl.{Permission, Scheme}
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.data.{ACL, Id}
@@ -58,7 +58,7 @@ class UpdateZNodeAclListCommandHandler(
                 new ACL(
                   Permission.toZookeeperMask(rawAcl.permissions),
                   new Id(
-                    Scheme.toZookeeperScheme(rawAcl.aclId.scheme),
+                    rawAcl.aclId.scheme,
                     rawAcl.aclId.id
                   )
                 )
