@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.elkozmon.zoonavigator.core.command.commands
+package com.elkozmon.zoonavigator.core.query.queries
 
 import com.elkozmon.zoonavigator.core.curator.TestingCuratorFrameworkProvider
 import com.elkozmon.zoonavigator.core.curator.background.DefaultBackgroundPromiseFactory
-import com.elkozmon.zoonavigator.core.query.queries.{GetZNodeDataQuery, GetZNodeDataQueryHandler}
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import org.scalatest.FlatSpec
