@@ -20,28 +20,29 @@
       <excludeFolder url="file://$MODULE_DIR$/../../core/target" />
       <excludeFolder url="file://$MODULE_DIR$/../../core/target/resolution-cache" />
       <excludeFolder url="file://$MODULE_DIR$/../../core/target/streams" />
+      <excludeFolder url="file://$MODULE_DIR$/../../core/target/test-reports" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.11.8:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.javassist:javassist:3.18.1-GA:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.apache.curator:curator-test:2.11.1:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.apache.commons:commons-math:2.2:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.slf4j:slf4j-api:1.7.24:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.apache.zookeeper:zookeeper:3.4.8:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.apache.curator:curator-framework:2.11.1:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.apache.curator:curator-client:2.11.1:jar" level="project" />
-    <orderEntry type="library" name="SBT: log4j:log4j:1.2.16:jar" level="project" />
-    <orderEntry type="library" name="SBT: jline:jline:0.9.94:jar" level="project" />
-    <orderEntry type="library" name="SBT: io.netty:netty:3.7.0.Final:jar" level="project" />
-    <orderEntry type="library" name="SBT: com.google.guava:guava:16.0.1:jar" level="project" />
-    <orderEntry type="library" name="SBT: joda-time:joda-time:2.9.7:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scalatest:scalatest_2.11:3.0.1:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scalactic:scalactic_2.11:3.0.1:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang.modules:scala-xml_2.11:1.0.5:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang.modules:scala-parser-combinators_2.11:1.0.4:jar" level="project" />
-    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang:scala-reflect:2.11.8:jar" level="project" />
-    <orderEntry type="library" name="SBT: com.chuusai:shapeless_2.11:2.3.2:jar" level="project" />
     <orderEntry type="library" name="SBT: org.typelevel:macro-compat_2.11:1.1.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.chuusai:shapeless_2.11:2.3.2:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang:scala-reflect:2.11.8:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang.modules:scala-parser-combinators_2.11:1.0.4:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang.modules:scala-xml_2.11:1.0.5:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.scalactic:scalactic_2.11:3.0.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.scalatest:scalatest_2.11:3.0.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: joda-time:joda-time:2.9.7:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.guava:guava:16.0.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.netty:netty:3.7.0.Final:jar" level="project" />
+    <orderEntry type="library" name="SBT: jline:jline:0.9.94:jar" level="project" />
+    <orderEntry type="library" name="SBT: log4j:log4j:1.2.16:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.curator:curator-client:2.11.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.curator:curator-framework:2.11.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.zookeeper:zookeeper:3.4.8:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.slf4j:slf4j-api:1.7.24:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.apache.commons:commons-math:2.2:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.apache.curator:curator-test:2.11.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.javassist:javassist:3.18.1-GA:jar" level="project" />
   </component>
 </module>
