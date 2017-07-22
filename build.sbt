@@ -4,7 +4,7 @@ import de.heikoseeberger.sbtheader.license.AGPLv3
 
 val commonSettings = Seq(
   organization := "com.elkozmon",
-  version := "0.1.0",
+  version := "0.2.1",
   headers := Map(
     "scala" -> AGPLv3("2017", "Ľuboš Kozmon")
   ),
@@ -17,7 +17,7 @@ val commonSettings = Seq(
       url = new URL("http://www.elkozmon.com")
     )
   ),
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.2",
   scalacOptions ++= Seq(
     "-target:jvm-1.8",
     "-encoding", "UTF-8",

@@ -18,15 +18,20 @@
 package session.action
 
 import api.ApiResponseFactory
+import play.api.mvc.BodyParser
 import session.manager.SessionManager
+
+import scala.concurrent.ExecutionContextExecutor
 
 class SessionActionBuilder(
   apiResponseFactory: ApiResponseFactory,
-  sessionManager: SessionManager
+  sessionManager: SessionManager,
+  executionContextExecutor: ExecutionContextExecutor
 ) {
 
-  def apply(): SessionAction = new SessionAction(
+  def apply[B](bodyParser: BodyParser[B]): SessionAction[B] = new SessionAction(
     apiResponseFactory,
-    sessionManager
-  )
+    sessionManager,
+    bodyParser
+  )(executionContextExecutor)
 }

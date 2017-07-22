@@ -25,14 +25,13 @@ import session.action.SessionRequest
 import zookeeper.ConnectionParams
 import zookeeper.session.ZookeeperSessionHelper
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 class CuratorAction(
   apiResponseFactory: ApiResponseFactory,
   zookeeperSessionHelper: ZookeeperSessionHelper,
-  curatorFrameworkProvider: CuratorFrameworkProvider,
-  implicit val executionContextExecutor: ExecutionContextExecutor
-)
+  curatorFrameworkProvider: CuratorFrameworkProvider
+)(implicit val executionContext: ExecutionContext)
   extends ActionRefiner[SessionRequest, CuratorRequest] {
 
   override protected def refine[A](request: SessionRequest[A]): Future[Either[Result, CuratorRequest[A]]] = {

@@ -27,16 +27,16 @@ import session.SessionToken
 import session.manager.SessionManager
 import zookeeper.session.{SessionInfo, ZookeeperSessionHelper}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class ZSessionController(
   apiResponseFactory: ApiResponseFactory,
   zookeeperSessionHelper: ZookeeperSessionHelper,
   curatorFrameworkProvider: CuratorFrameworkProvider,
+  val controllerComponents: ControllerComponents,
+  implicit val executionContext: ExecutionContext,
   implicit val sessionManager: SessionManager
-) extends Controller {
-
-  import play.api.libs.concurrent.Execution.Implicits.defaultContext
+) extends BaseController {
 
   def create(): Action[AnyContent] = Action.async {
     request =>

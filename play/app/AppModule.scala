@@ -22,6 +22,7 @@ import controllers._
 import curator.action.CuratorActionBuilder
 import curator.provider.CuratorFrameworkProvider
 import filters.FiltersModule
+import play.api.BuiltInComponentsFromContext
 import query.QueryModule
 import session.action.SessionActionBuilder
 import session.manager.SessionManager
@@ -29,6 +30,7 @@ import zookeeper.session.ZookeeperSessionHelper
 
 //noinspection ScalaUnusedSymbol
 trait AppModule extends CommandModule with QueryModule with FiltersModule {
+  self: BuiltInComponentsFromContext =>
 
   private val commandModule: CommandModule = this
 

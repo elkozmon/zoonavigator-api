@@ -18,9 +18,12 @@
 package controllers
 
 import api.ApiResponseFactory
-import play.api.mvc.Action
+import play.api.mvc.{BaseController, ControllerComponents}
 
-class HomeController(apiResponseFactory: ApiResponseFactory) {
+class HomeController(
+  apiResponseFactory: ApiResponseFactory,
+  val controllerComponents: ControllerComponents
+) extends BaseController {
 
   def getHealthCheck = Action(apiResponseFactory.okEmpty)
 }

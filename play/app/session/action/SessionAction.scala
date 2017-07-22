@@ -18,16 +18,17 @@
 package session.action
 
 import api.ApiResponseFactory
-import play.api.mvc.{ActionBuilder, ActionRefiner, Request, Result}
+import play.api.mvc._
 import session.manager.SessionManager
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class SessionAction(
+class SessionAction[B](
   apiResponseFactory: ApiResponseFactory,
-  sessionManager: SessionManager
-)
-  extends ActionBuilder[SessionRequest]
+  sessionManager: SessionManager,
+  val parser: BodyParser[B]
+)(implicit val executionContext: ExecutionContext)
+  extends ActionBuilder[SessionRequest, B]
     with ActionRefiner[Request, SessionRequest] {
 
   override protected def refine[A](request: Request[A]): Future[Either[Result, SessionRequest[A]]] =

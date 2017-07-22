@@ -10,6 +10,12 @@
               <option name="confDir" value="$PROJECT_DIR$/play/app" />
               <option name="templateImports">
                 <list>
+                  <option value="_root_.play.twirl.api.TwirlFeatureImports._" />
+                  <option value="_root_.play.twirl.api.TwirlHelperImports._" />
+                  <option value="_root_.play.twirl.api.Html" />
+                  <option value="_root_.play.twirl.api.JavaScript" />
+                  <option value="_root_.play.twirl.api.Txt" />
+                  <option value="_root_.play.twirl.api.Xml" />
                   <option value="models._" />
                   <option value="controllers._" />
                   <option value="play.api.i18n._" />
@@ -45,7 +51,7 @@
         <entry key="zoonavigator-api">
           <value>
             <ProjectSettingsEntry>
-              <option name="playDistrPath" value="$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.11/jars/play_2.11-2.5.12.jar" />
+              <option name="playDistrPath" value="$USER_HOME$/.ivy2/cache/com.typesafe.play/play_2.12/jars/play_2.12-2.6.2.jar" />
             </ProjectSettingsEntry>
           </value>
         </entry>

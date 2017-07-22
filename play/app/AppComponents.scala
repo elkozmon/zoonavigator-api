@@ -24,9 +24,8 @@ import com.elkozmon.zoonavigator.core.curator.background.{BackgroundPromiseFacto
 import com.elkozmon.zoonavigator.core.query.QueryHandler
 import com.elkozmon.zoonavigator.core.query.queries._
 import com.softwaremill.macwire._
-import controllers.Assets
 import curator.action.CuratorActionBuilder
-import curator.provider.{CacheCuratorFrameworkProvider, CuratorCacheMaxAge, CuratorConnectTimeout, CuratorFrameworkProvider}
+import curator.provider._
 import org.apache.curator.framework.CuratorFramework
 import play.api.ApplicationLoader.Context
 import play.api._
@@ -40,8 +39,8 @@ import session.action.SessionActionBuilder
 import session.manager.{ExpiringSessionManager, SessionManager}
 import zookeeper.session.{DefaultZookeeperSessionHelper, ZookeeperSessionHelper}
 
+import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 class AppComponents(context: Context)
   extends BuiltInComponentsFromContext(context)
@@ -50,10 +49,8 @@ class AppComponents(context: Context)
   LoggerConfigurator(context.environment.classLoader)
     .foreach(_.configure(context.environment))
 
-  lazy val assets: Assets = wire[Assets]
-
   private lazy val httpContext: String = configuration
-    .getString("play.http.context")
+    .getOptional[String]("play.http.context")
     .getOrElse("/")
 
   override lazy val httpErrorHandler: HttpErrorHandler = {
@@ -82,14 +79,14 @@ class AppComponents(context: Context)
     SessionInactivityTimeout(
       new FiniteDuration(
         context.initialConfiguration
-          .getLong("play.http.session.maxAge")
+          .getOptional[Long]("play.http.session.maxAge")
           .getOrElse(5 * 60 * 1000),
         TimeUnit.MILLISECONDS
       )
     )
 
   lazy val executionContextExecutor: ExecutionContextExecutor =
-    ExecutionContext.global
+    actorSystem.dispatcher
 
   lazy val backgroundPromiseFactory: BackgroundPromiseFactory =
     wire[DefaultBackgroundPromiseFactory]
@@ -99,7 +96,7 @@ class AppComponents(context: Context)
       FiniteDuration(
         context
           .initialConfiguration
-          .getMilliseconds("zookeeper.client.maxAge")
+          .getOptional[Long]("zookeeper.client.maxAge")
           .getOrElse(5000L),
         TimeUnit.MILLISECONDS
       )
@@ -110,7 +107,7 @@ class AppComponents(context: Context)
       FiniteDuration(
         context
           .initialConfiguration
-          .getMilliseconds("zookeeper.client.connectTimeout")
+          .getOptional[Long]("zookeeper.client.connectTimeout")
           .getOrElse(5000L),
         TimeUnit.MILLISECONDS
       )

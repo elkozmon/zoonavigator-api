@@ -33,7 +33,6 @@ class CuratorActionBuilder(
   def apply(): CuratorAction = new CuratorAction(
     apiResponseFactory,
     zookeeperSessionHelper,
-    curatorFrameworkProvider,
-    executionContextExecutor
-  )
+    curatorFrameworkProvider
+  )(executionContextExecutor)
 }
