@@ -17,6 +17,8 @@
 
 package controllers
 
+import java.nio.charset.StandardCharsets
+
 import api.ApiResponseFactory
 import com.elkozmon.zoonavigator.core.command.commands._
 import com.elkozmon.zoonavigator.core.query.queries._
@@ -249,7 +251,7 @@ class ZNodeController(
             .dispatch(
               UpdateZNodeDataCommand(
                 ZNodePath(path),
-                ZNodeData(curatorRequest.body.getBytes),
+                ZNodeData(curatorRequest.body.getBytes(StandardCharsets.UTF_8)),
                 ZNodeDataVersion(version)
               )
             )
