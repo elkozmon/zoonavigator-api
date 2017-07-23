@@ -53,8 +53,8 @@ class ZNodeController(
       apiResponseFactory.fromThrowable(throwable)
   }
 
-  def getAcl: Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async {
+  def getAcl: Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async {
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
@@ -74,8 +74,8 @@ class ZNodeController(
         )
     }
 
-  def getData: Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async {
+  def getData: Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async {
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
@@ -95,8 +95,8 @@ class ZNodeController(
         )
     }
 
-  def getMeta: Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async {
+  def getMeta: Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async {
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
@@ -112,8 +112,8 @@ class ZNodeController(
         )
     }
 
-  def getChildren: Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async {
+  def getChildren: Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async {
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
@@ -133,8 +133,8 @@ class ZNodeController(
         )
     }
 
-  def create(): Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async {
+  def create(): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async {
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
@@ -147,8 +147,8 @@ class ZNodeController(
         )
     }
 
-  def delete(): Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async {
+  def delete(): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async {
       implicit curatorRequest =>
         val eitherResult = for {
           path <- getRequiredQueryParam("path").right
@@ -169,8 +169,8 @@ class ZNodeController(
         eitherResult.fold(Future.successful, identity)
     }
 
-  def deleteChildren(): Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async {
+  def deleteChildren(): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async {
       implicit curatorRequest =>
         val eitherResult = for {
           path <- getRequiredQueryParam("path").right.map(_.stripSuffix("/")).right
