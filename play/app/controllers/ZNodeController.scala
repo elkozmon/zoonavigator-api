@@ -202,7 +202,7 @@ class ZNodeController(
     newCuratorAction(playBodyParsers.json).async {
       implicit curatorRequest =>
         val eitherResult = for {
-          jsonAclList <- parseRequestBodyJson[List[JsonAcl]]
+          jsonAclList <- parseRequestBodyJson[List[JsonAcl]].right
           path <- getRequiredQueryParam("path").right
           version <- getRequiredQueryParam("version").right.map(_.toLong).right
         } yield {
