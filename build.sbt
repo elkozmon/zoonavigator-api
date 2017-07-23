@@ -38,10 +38,10 @@ val core = (project in file("core"))
   .settings(
     name := "zoonavigator-core",
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-api" % "1.7.24",
-      "joda-time" % "joda-time" % "2.9.7",
-      "org.apache.curator" % "curator-framework" % "2.11.1",
-      "org.apache.curator" % "curator-test" % "2.11.1" % Test,
+      "org.slf4j" % "slf4j-api" % "1.7.25",
+      "joda-time" % "joda-time" % "2.9.9",
+      "org.apache.curator" % "curator-framework" % "2.12.0",
+      "org.apache.curator" % "curator-test" % "2.12.0" % Test,
       "com.chuusai" %% "shapeless" % "2.3.2",
       "org.scalatest" %% "scalatest" % "3.0.1" % Test
     )
@@ -49,17 +49,17 @@ val core = (project in file("core"))
   .enablePlugins(AutomateHeaderPlugin)
 
 val play = (project in file("play"))
+  .enablePlugins(PlayScala, AutomateHeaderPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "zoonavigator-play",
     libraryDependencies ++= Seq(
       filters,
       "org.typelevel" %% "cats" % "0.9.0",
-      "ch.qos.logback" % "logback-classic" % "1.2.1",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
       "com.google.guava" % "guava" % "16.0.1",
       "com.softwaremill.macwire" %% "macros" % "2.3.0" % Provided,
       "com.softwaremill.macwire" %% "util" % "2.3.0"
     )
   )
   .dependsOn(core)
-  .enablePlugins(PlayScala, AutomateHeaderPlugin)
