@@ -6,17 +6,16 @@ services:
   - docker
 
 scala:
-  - 2.11.8
+  - 2.12.2
 
 jdk:
   - openjdk8
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean test play/stage
+  - sbt ++$TRAVIS_SCALA_VERSION test
 
 deploy:
   provider: script
   script: docker/deploy.sh $TRAVIS_TAG
-  skip_cleanup: true
   on:
     tags: true

@@ -1,5 +1,12 @@
-FROM openjdk:8
+FROM hseeberger/scala-sbt:8u141-jdk_2.12.3_1.0.2 as sbt
 MAINTAINER Lubos Kozmon <lubosh91@gmail.com>
+
+# Make stage files
+WORKDIR /app
+COPY . .
+RUN sbt play/stage
+
+FROM openjdk:8
 
 # Default config
 ENV SERVER_HTTP_PORT=9000 \
@@ -22,6 +29,6 @@ HEALTHCHECK --interval=5m --timeout=3s \
     CMD /app/healthcheck.sh
 
 # Copy stage files
-COPY ./play/target/universal/stage /app
+COPY --from=sbt /app/play/target/universal/stage /app
 
 CMD ["/app/run.sh"]
