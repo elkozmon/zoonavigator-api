@@ -5,6 +5,11 @@ language: scala
 services:
   - docker
 
+addons:
+  apt:
+    packages:
+      - docker-ce
+
 scala:
   - 2.12.2
 
