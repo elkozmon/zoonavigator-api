@@ -1,4 +1,4 @@
-FROM hseeberger/scala-sbt:8u141-jdk_2.12.3_1.0.2 as sbt
+FROM hseeberger/scala-sbt:8u151-2.12.4-1.0.2 as sbt
 MAINTAINER Lubos Kozmon <lubosh91@gmail.com>
 
 # Make stage files

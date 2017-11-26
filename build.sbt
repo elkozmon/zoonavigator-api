@@ -1,23 +1,15 @@
-import java.net.URL
-
-import de.heikoseeberger.sbtheader.license.AGPLv3
-
 val commonSettings = Seq(
   organization := "com.elkozmon",
-  version := "0.2.1",
-  headers := Map(
-    "scala" -> AGPLv3("2017", "Ľuboš Kozmon")
-  ),
   licenses += ("GNU Affero GPL V3", url("http://www.gnu.org/licenses/agpl-3.0.html")),
   developers := List(
     Developer(
       id = "elkozmon",
       name = "Ľuboš Kozmon",
       email = "lubosh91@gmail.com",
-      url = new URL("http://www.elkozmon.com")
+      url = url("http://www.elkozmon.com")
     )
   ),
-  scalaVersion := "2.12.2",
+  scalaVersion := "2.12.4",
   scalacOptions ++= Seq(
     "-target:jvm-1.8",
     "-encoding", "UTF-8",
@@ -43,13 +35,12 @@ val core = (project in file("core"))
       "org.apache.curator" % "curator-framework" % "2.12.0",
       "org.apache.curator" % "curator-test" % "2.12.0" % Test,
       "com.chuusai" %% "shapeless" % "2.3.2",
-      "org.scalatest" %% "scalatest" % "3.0.1" % Test
+      "org.scalatest" %% "scalatest" % "3.0.4" % Test
     )
   )
-  .enablePlugins(AutomateHeaderPlugin)
 
 val play = (project in file("play"))
-  .enablePlugins(PlayScala, AutomateHeaderPlugin)
+  .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
     name := "zoonavigator-play",
@@ -60,6 +51,21 @@ val play = (project in file("play"))
       "com.google.guava" % "guava" % "16.0.1",
       "com.softwaremill.macwire" %% "macros" % "2.3.0" % Provided,
       "com.softwaremill.macwire" %% "util" % "2.3.0"
+    ),
+    wartremoverWarnings ++= Seq(
+      PlayWart.AssetsObject,
+      PlayWart.CookiesPartial,
+      PlayWart.FlashPartial,
+      PlayWart.FormPartial,
+      PlayWart.HeadersPartial,
+      PlayWart.JavaApi,
+      PlayWart.JsLookupResultPartial,
+      PlayWart.JsReadablePartial,
+      PlayWart.LangObject,
+      PlayWart.MessagesObject,
+      PlayWart.SessionPartial,
+      PlayWart.TypedMapPartial,
+      PlayWart.WSResponsePartial
     )
   )
   .dependsOn(core)
