@@ -20,16 +20,14 @@ package controllers
 import java.nio.charset.StandardCharsets
 
 import api.ApiResponseFactory
-import com.elkozmon.zoonavigator.core.command.commands._
-import com.elkozmon.zoonavigator.core.query.queries._
+import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import command.CommandModule
+import action.ActionModule
 import curator.action.{CuratorActionBuilder, CuratorRequest}
 import json.zookeeper.acl.JsonAcl
 import json.zookeeper.znode._
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Reads}
 import play.api.mvc._
-import query.QueryModule
 import session.action.SessionActionBuilder
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,16 +37,13 @@ class ZNodeController(
   apiResponseFactory: ApiResponseFactory,
   curatorActionBuilder: CuratorActionBuilder,
   sessionActionBuilder: SessionActionBuilder,
-  queryModule: QueryModule,
-  commandModule: CommandModule,
+  actionModule: ActionModule,
   playBodyParsers: PlayBodyParsers,
   val controllerComponents: ControllerComponents,
   implicit val executionContext: ExecutionContext
 ) extends BaseController {
 
-  private val queryDispatcherProvider = queryModule.queryDispatcherProvider
-
-  private val commandDispatcherProvider = commandModule.commandDispatcherProvider
+  private val actionDispatcherProvider = actionModule.actionDispatcherProvider
 
   private val recoverResult: PartialFunction[Throwable, Result] = {
     case throwable =>
@@ -60,9 +55,9 @@ class ZNodeController(
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
-            queryDispatcherProvider
+            actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(GetZNodeAclQuery(ZNodePath(path)))
+              .dispatch(GetZNodeAclAction(ZNodePath(path)))
               .map {
                 metaWithAcl =>
                   val jsonMetaWithAcl = JsonZNodeMetaWith(
@@ -81,9 +76,9 @@ class ZNodeController(
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
-            queryDispatcherProvider
+            actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(GetZNodeDataQuery(ZNodePath(path)))
+              .dispatch(GetZNodeDataAction(ZNodePath(path)))
               .map {
                 metaWithData =>
                   val jsonMetaWithData = JsonZNodeMetaWith(
@@ -102,9 +97,9 @@ class ZNodeController(
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
-            queryDispatcherProvider
+            actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(GetZNodeMetaQuery(ZNodePath(path)))
+              .dispatch(GetZNodeMetaAction(ZNodePath(path)))
               .map(meta => apiResponseFactory.okPayload(JsonZNodeMeta(meta)))
               .recover {
                 case NonFatal(throwable) =>
@@ -119,9 +114,9 @@ class ZNodeController(
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
-            queryDispatcherProvider
+            actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(GetZNodeChildrenQuery(ZNodePath(path)))
+              .dispatch(GetZNodeChildrenAction(ZNodePath(path)))
               .map {
                 metaWithChildren =>
                   val jsonMetaWithChildren = JsonZNodeMetaWith(
@@ -140,9 +135,9 @@ class ZNodeController(
       implicit curatorRequest =>
         getRequiredQueryParam("path").fold(
           Future.successful, { path =>
-            commandDispatcherProvider
+            actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(CreateZNodeCommand(ZNodePath(path)))
+              .dispatch(CreateZNodeAction(ZNodePath(path)))
               .map(_ => apiResponseFactory.okEmpty)
               .recover(recoverResult)
           }
@@ -156,10 +151,10 @@ class ZNodeController(
           path <- getRequiredQueryParam("path").right
           version <- getRequiredQueryParam("version").right.map(_.toLong).right
         } yield {
-          commandDispatcherProvider
+          actionDispatcherProvider
             .getDispatcher(curatorRequest.curatorFramework)
             .dispatch(
-              DeleteZNodeRecursiveCommand(
+              DeleteZNodeRecursiveAction(
                 ZNodePath(path),
                 ZNodeDataVersion(version)
               )
@@ -182,9 +177,9 @@ class ZNodeController(
             name =>
               val zNodePath = ZNodePath(s"$path/$name")
 
-              commandDispatcherProvider
+              actionDispatcherProvider
                 .getDispatcher(curatorRequest.curatorFramework)
-                .dispatch(ForceDeleteZNodeRecursiveCommand(zNodePath))
+                .dispatch(ForceDeleteZNodeRecursiveAction(zNodePath))
           }
         }
 
@@ -210,20 +205,20 @@ class ZNodeController(
 
           val futureMeta: Future[ZNodeMeta] =
             if (recursive) {
-              commandDispatcherProvider
+              actionDispatcherProvider
                 .getDispatcher(curatorRequest.curatorFramework)
                 .dispatch(
-                  UpdateZNodeAclListRecursiveCommand(
+                  UpdateZNodeAclListRecursiveAction(
                     ZNodePath(path),
                     ZNodeAcl(jsonAclList.map(_.underlying)),
                     ZNodeAclVersion(version)
                   )
                 )
             } else {
-              commandDispatcherProvider
+              actionDispatcherProvider
                 .getDispatcher(curatorRequest.curatorFramework)
                 .dispatch(
-                  UpdateZNodeAclListCommand(
+                  UpdateZNodeAclListAction(
                     ZNodePath(path),
                     ZNodeAcl(jsonAclList.map(_.underlying)),
                     ZNodeAclVersion(version)
@@ -246,10 +241,10 @@ class ZNodeController(
           path <- getRequiredQueryParam("path").right
           version <- getRequiredQueryParam("version").right.map(_.toLong).right
         } yield {
-          commandDispatcherProvider
+          actionDispatcherProvider
             .getDispatcher(curatorRequest.curatorFramework)
             .dispatch(
-              UpdateZNodeDataCommand(
+              UpdateZNodeDataAction(
                 ZNodePath(path),
                 ZNodeData(curatorRequest.body.getBytes(StandardCharsets.UTF_8)),
                 ZNodeDataVersion(version)

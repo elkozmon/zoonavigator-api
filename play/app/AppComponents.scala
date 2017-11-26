@@ -18,11 +18,9 @@
 import java.util.concurrent.TimeUnit
 
 import api.{ApiErrorHandler, ApiResponseFactory, JsonApiResponseFactory}
-import com.elkozmon.zoonavigator.core.command.CommandHandler
-import com.elkozmon.zoonavigator.core.command.commands._
+import com.elkozmon.zoonavigator.core.action.ActionHandler
+import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.curator.background.{BackgroundPromiseFactory, DefaultBackgroundPromiseFactory}
-import com.elkozmon.zoonavigator.core.query.QueryHandler
-import com.elkozmon.zoonavigator.core.query.queries._
 import com.softwaremill.macwire._
 import curator.action.CuratorActionBuilder
 import curator.provider._
@@ -131,33 +129,33 @@ class AppComponents(context: Context)
   override lazy val sessionActionBuilder: SessionActionBuilder =
     wire[SessionActionBuilder]
 
-  override def getZNodeAclListQueryHandler(curatorFramework: CuratorFramework): QueryHandler[GetZNodeAclQuery] =
-    wire[GetZNodeAclQueryHandler]
+  override def getZNodeAclListActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeAclAction] =
+    wire[GetZNodeAclActionHandler]
 
-  override def getZNodeChildrenQueryHandler(curatorFramework: CuratorFramework): QueryHandler[GetZNodeChildrenQuery] =
-    wire[GetZNodeChildrenQueryHandler]
+  override def getZNodeChildrenActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeChildrenAction] =
+    wire[GetZNodeChildrenActionHandler]
 
-  override def getZNodeDataQueryHandler(curatorFramework: CuratorFramework): QueryHandler[GetZNodeDataQuery] =
-    wire[GetZNodeDataQueryHandler]
+  override def getZNodeDataActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeDataAction] =
+    wire[GetZNodeDataActionHandler]
 
-  override def getZNodeMetaQueryHandler(curatorFramework: CuratorFramework): QueryHandler[GetZNodeMetaQuery] =
-    wire[GetZNodeMetaQueryHandler]
+  override def getZNodeMetaActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeMetaAction] =
+    wire[GetZNodeMetaActionHandler]
 
-  override def createZNodeCommandHandler(curatorFramework: CuratorFramework): CommandHandler[CreateZNodeCommand] =
-    wire[CreateZNodeCommandHandler]
+  override def createZNodeActionHandler(curatorFramework: CuratorFramework): ActionHandler[CreateZNodeAction] =
+    wire[CreateZNodeActionHandler]
 
-  override def deleteZNodeRecursiveCommandHandler(curatorFramework: CuratorFramework): CommandHandler[DeleteZNodeRecursiveCommand] =
-    wire[DeleteZNodeRecursiveCommandHandler]
+  override def deleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework): ActionHandler[DeleteZNodeRecursiveAction] =
+    wire[DeleteZNodeRecursiveActionHandler]
 
-  override def forceDeleteZNodeRecursiveCommandHandler(curatorFramework: CuratorFramework): CommandHandler[ForceDeleteZNodeRecursiveCommand] =
-    wire[ForceDeleteZNodeRecursiveCommandHandler]
+  override def forceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework): ActionHandler[ForceDeleteZNodeRecursiveAction] =
+    wire[ForceDeleteZNodeRecursiveActionHandler]
 
-  override def updateZNodeAclListCommandHandler(curatorFramework: CuratorFramework): CommandHandler[UpdateZNodeAclListCommand] =
-    wire[UpdateZNodeAclListCommandHandler]
+  override def updateZNodeAclListActionHandler(curatorFramework: CuratorFramework): ActionHandler[UpdateZNodeAclListAction] =
+    wire[UpdateZNodeAclListActionHandler]
 
-  override def updateZNodeAclListRecursiveCommandHandler(curatorFramework: CuratorFramework): CommandHandler[UpdateZNodeAclListRecursiveCommand] =
-    wire[UpdateZNodeAclListRecursiveCommandHandler]
+  override def updateZNodeAclListRecursiveActionHandler(curatorFramework: CuratorFramework): ActionHandler[UpdateZNodeAclListRecursiveAction] =
+    wire[UpdateZNodeAclListRecursiveActionHandler]
 
-  override def updateZNodeDataCommandHandler(curatorFramework: CuratorFramework): CommandHandler[UpdateZNodeDataCommand] =
-    wire[UpdateZNodeDataCommandHandler]
+  override def updateZNodeDataActionHandler(curatorFramework: CuratorFramework): ActionHandler[UpdateZNodeDataAction] =
+    wire[UpdateZNodeDataActionHandler]
 }
