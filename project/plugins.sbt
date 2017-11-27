@@ -9,3 +9,6 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.6")
 addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.2.1")
 
 addSbtPlugin("org.danielnixon" % "sbt-playwarts" % "1.1.2")
+
+// Scalafmt
+addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.10")
