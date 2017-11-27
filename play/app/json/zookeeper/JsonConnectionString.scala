@@ -26,7 +26,9 @@ final case class JsonConnectionString(underlying: ConnectionString)
 
 object JsonConnectionString {
 
-  private implicit def wrap(connectionString: ConnectionString): JsonConnectionString =
+  private implicit def wrap(
+      connectionString: ConnectionString
+  ): JsonConnectionString =
     JsonConnectionString(connectionString)
 
   implicit object ConnectionStringFormat extends Format[JsonConnectionString] {

@@ -25,32 +25,33 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.apache.curator.framework.CuratorFramework
-import org.apache.curator.framework.api.{ACLable, BackgroundPathable}
-import org.apache.zookeeper.data.{ACL, Id, Stat}
+import org.apache.curator.framework.api.ACLable
+import org.apache.curator.framework.api.BackgroundPathable
+import org.apache.zookeeper.data.ACL
+import org.apache.zookeeper.data.Id
+import org.apache.zookeeper.data.Stat
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Try}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Try
 
 class UpdateZNodeAclListRecursiveActionHandler(
-  curatorFramework: CuratorFramework,
-  backgroundPromiseFactory: BackgroundPromiseFactory,
-  implicit val executionContextExecutor: ExecutionContextExecutor
+    curatorFramework: CuratorFramework,
+    backgroundPromiseFactory: BackgroundPromiseFactory,
+    implicit val executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[UpdateZNodeAclListRecursiveAction] {
 
-  override def handle(action: UpdateZNodeAclListRecursiveAction): Future[ZNodeMeta] = {
+  override def handle(
+      action: UpdateZNodeAclListRecursiveAction
+  ): Future[ZNodeMeta] = {
     // set acl for the parent node
-    val futureMeta = setNodeAcl(
-      action.path,
-      action.acl,
-      Some(action.expectedAclVersion)
-    )
+    val futureMeta =
+      setNodeAcl(action.path, action.acl, Some(action.expectedAclVersion))
 
     // set acl for children nodes recursively
-    val futureUnit = setChildrenAclRecursive(
-      action.path,
-      action.acl
-    )
+    val futureUnit = setChildrenAclRecursive(action.path, action.acl)
 
     for {
       meta <- futureMeta
@@ -61,20 +62,19 @@ class UpdateZNodeAclListRecursiveActionHandler(
   }
 
   private def setChildrenAclRecursive(
-    parent: ZNodePath,
-    acl: ZNodeAcl
-  ): Future[Unit] = {
+      parent: ZNodePath,
+      acl: ZNodeAcl
+  ): Future[Unit] =
     for {
       children <- getNodeChildren(parent)
       _ <- Future.sequence(children.map(setNodeAcl(_, acl, None)))
       _ <- Future.sequence(children.map(setChildrenAclRecursive(_, acl)))
     } yield ()
-  }
 
   private def setNodeAcl(
-    path: ZNodePath,
-    acl: ZNodeAcl,
-    aclVersionOpt: Option[ZNodeAclVersion]
+      path: ZNodePath,
+      acl: ZNodeAcl,
+      aclVersionOpt: Option[ZNodeAclVersion]
   ): Future[ZNodeMeta] = {
     val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
       event =>
@@ -91,36 +91,22 @@ class UpdateZNodeAclListRecursiveActionHandler(
         }
 
       aclBuilder
-        .withACL(
-          acl
-            .aclList
-            .map {
-              rawAcl =>
-                new ACL(
-                  Permission.toZookeeperMask(rawAcl.permissions),
-                  new Id(
-                    rawAcl.aclId.scheme,
-                    rawAcl.aclId.id
-                  )
-                )
-            }
-            .asJava
-        )
+        .withACL(acl.aclList.map { rawAcl =>
+          new ACL(
+            Permission.toZookeeperMask(rawAcl.permissions),
+            new Id(rawAcl.aclId.scheme, rawAcl.aclId.id)
+          )
+        }.asJava)
         .inBackground(
           backgroundPromise.eventCallback,
           executionContextExecutor: Executor
         )
-        .withUnhandledErrorListener(
-          backgroundPromise.errorListener
-        )
-        .forPath(
-          path.path
-        )
+        .withUnhandledErrorListener(backgroundPromise.errorListener)
+        .forPath(path.path)
         .asUnit()
     } match {
       case Failure(throwable) =>
-        backgroundPromise
-          .promise
+        backgroundPromise.promise
           .tryFailure(throwable)
           .asUnit()
       case _ =>
@@ -132,31 +118,23 @@ class UpdateZNodeAclListRecursiveActionHandler(
   private def getNodeChildren(path: ZNodePath): Future[List[ZNodePath]] = {
     val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
       event =>
-        event
-          .getChildren
-          .asScala
+        event.getChildren.asScala
           .map(name => ZNodePath(s"${path.path}/$name"))
           .toList
     }
 
     Try {
-      curatorFramework
-        .getChildren
+      curatorFramework.getChildren
         .inBackground(
           backgroundPromise.eventCallback,
           executionContextExecutor: Executor
         )
-        .withUnhandledErrorListener(
-          backgroundPromise.errorListener
-        )
-        .forPath(
-          path.path
-        )
+        .withUnhandledErrorListener(backgroundPromise.errorListener)
+        .forPath(path.path)
         .asUnit()
     } match {
       case Failure(throwable) =>
-        backgroundPromise
-          .promise
+        backgroundPromise.promise
           .tryFailure(throwable)
           .asUnit()
       case _ =>

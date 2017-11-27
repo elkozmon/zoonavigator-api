@@ -25,25 +25,45 @@ import shapeless.HNil
 
 trait ActionModule {
 
-  def createZNodeActionHandler(curatorFramework: CuratorFramework): ActionHandler[CreateZNodeAction]
+  def createZNodeActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[CreateZNodeAction]
 
-  def deleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework): ActionHandler[DeleteZNodeRecursiveAction]
+  def deleteZNodeRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[DeleteZNodeRecursiveAction]
 
-  def forceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework): ActionHandler[ForceDeleteZNodeRecursiveAction]
+  def forceDeleteZNodeRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[ForceDeleteZNodeRecursiveAction]
 
-  def getZNodeAclListActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeAclAction]
+  def getZNodeAclListActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[GetZNodeAclAction]
 
-  def getZNodeDataActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeDataAction]
+  def getZNodeDataActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[GetZNodeDataAction]
 
-  def getZNodeMetaActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeMetaAction]
+  def getZNodeMetaActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[GetZNodeMetaAction]
 
-  def getZNodeChildrenActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeChildrenAction]
+  def getZNodeChildrenActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[GetZNodeChildrenAction]
 
-  def updateZNodeAclListActionHandler(curatorFramework: CuratorFramework): ActionHandler[UpdateZNodeAclListAction]
+  def updateZNodeAclListActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[UpdateZNodeAclListAction]
 
-  def updateZNodeAclListRecursiveActionHandler(curatorFramework: CuratorFramework): ActionHandler[UpdateZNodeAclListRecursiveAction]
+  def updateZNodeAclListRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[UpdateZNodeAclListRecursiveAction]
 
-  def updateZNodeDataActionHandler(curatorFramework: CuratorFramework): ActionHandler[UpdateZNodeDataAction]
+  def updateZNodeDataActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[UpdateZNodeDataAction]
 
   val actionDispatcherProvider = new DefaultActionDispatcherProvider(
     curatorFramework =>
@@ -57,6 +77,6 @@ trait ActionModule {
         updateZNodeAclListActionHandler(curatorFramework) ::
         updateZNodeAclListRecursiveActionHandler(curatorFramework) ::
         updateZNodeDataActionHandler(curatorFramework) ::
-        HNil
+      HNil
   )
 }

@@ -26,32 +26,28 @@ import play.core.SourceMapper
 import scala.concurrent._
 
 class ApiErrorHandler(
-  env: Environment,
-  config: Configuration,
-  sourceMapper: Option[SourceMapper],
-  router: => Option[Router],
-  apiResponseFactory: ApiResponseFactory
+    env: Environment,
+    config: Configuration,
+    sourceMapper: Option[SourceMapper],
+    router: => Option[Router],
+    apiResponseFactory: ApiResponseFactory
 ) extends DefaultHttpErrorHandler(env, config, sourceMapper, router) {
 
   override def onProdServerError(
-    request: RequestHeader,
-    exception: UsefulException
-  ): Future[Result] = {
+      request: RequestHeader,
+      exception: UsefulException
+  ): Future[Result] =
     Future.successful(
       apiResponseFactory.internalServerError(
         Some("A server error occurred: " + exception.getMessage)
       )
     )
-  }
 
   override protected def onNotFound(
-    request: RequestHeader,
-    message: String
-  ): Future[Result] = {
+      request: RequestHeader,
+      message: String
+  ): Future[Result] =
     Future.successful(
-      apiResponseFactory.notFound(
-        Some("Requested resource does not exist")
-      )
+      apiResponseFactory.notFound(Some("Requested resource does not exist"))
     )
-  }
 }

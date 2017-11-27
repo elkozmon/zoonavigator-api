@@ -17,7 +17,8 @@
 
 package json.zookeeper.acl
 
-import com.elkozmon.zoonavigator.core.zookeeper.acl.{Acl, AclId}
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
+import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -34,20 +35,20 @@ object JsonAcl {
     private implicit val aclIdReads: Reads[AclId] = (
       (JsPath \ SchemeKey).read[String] and
         (JsPath \ IdKey).read[String]
-      ) (AclId.apply _)
+    )(AclId.apply _)
 
     private implicit val aclReads: Reads[Acl] = (
       JsPath.read[AclId] and
-        (JsPath \ PermissionsKey).read[List[JsonPermission]].map(_.map(_.underlying).toSet)
-      ) (Acl.apply _)
+        (JsPath \ PermissionsKey)
+          .read[List[JsonPermission]]
+          .map(_.map(_.underlying).toSet)
+    )(Acl.apply _)
 
     override def reads(json: JsValue): JsResult[JsonAcl] =
       json.validate[Acl].map(JsonAcl(_))
 
     override def writes(o: JsonAcl): JsValue = {
-      val jsonPermissions = o.underlying
-        .permissions
-        .toList
+      val jsonPermissions = o.underlying.permissions.toList
         .map(perm => JsonPermission(perm))
 
       Json.obj(

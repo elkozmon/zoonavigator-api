@@ -17,10 +17,8 @@
 
 package com.elkozmon.zoonavigator.core.zookeeper.znode
 
-final case class ZNodeMetaWith[T](
-  data: T,
-  meta: ZNodeMeta
-) {
+final case class ZNodeMetaWith[T](data: T, meta: ZNodeMeta) {
+
   def map[U](fn: T => U): ZNodeMetaWith[U] =
     this.copy(data = fn(this.data))
 }

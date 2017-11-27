@@ -22,62 +22,54 @@ import java.util.concurrent.Executor
 import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.zookeeper.acl.{Acl, AclId, Permission}
-import com.elkozmon.zoonavigator.core.zookeeper.znode.{ZNodeAcl, ZNodeMeta, ZNodeMetaWith}
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
+import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMetaWith
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Try}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Try
 
 class GetZNodeAclActionHandler(
-  curatorFramework: CuratorFramework,
-  backgroundPromiseFactory: BackgroundPromiseFactory,
-  executionContextExecutor: ExecutionContextExecutor
+    curatorFramework: CuratorFramework,
+    backgroundPromiseFactory: BackgroundPromiseFactory,
+    executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[GetZNodeAclAction] {
 
-  override def handle(action: GetZNodeAclAction): Future[ZNodeMetaWith[ZNodeAcl]] = {
+  override def handle(
+      action: GetZNodeAclAction
+  ): Future[ZNodeMetaWith[ZNodeAcl]] = {
     val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
       event =>
         val meta = ZNodeMeta.fromStat(event.getStat)
-        val acl = ZNodeAcl(
-          event
-            .getACLList
-            .asScala
-            .map {
-              acl =>
-                Acl(
-                  AclId(
-                    acl.getId.getScheme,
-                    acl.getId.getId
-                  ),
-                  Permission.fromZookeeperMask(acl.getPerms)
-                )
-            }
-            .toList
-        )
+        val acl = ZNodeAcl(event.getACLList.asScala.map { acl =>
+          Acl(
+            AclId(acl.getId.getScheme, acl.getId.getId),
+            Permission.fromZookeeperMask(acl.getPerms)
+          )
+        }.toList)
 
         ZNodeMetaWith(acl, meta)
     }
 
     Try {
-      curatorFramework
-        .getACL
+      curatorFramework.getACL
         .inBackground(
           backgroundPromise.eventCallback,
           executionContextExecutor: Executor
         )
-        .withUnhandledErrorListener(
-          backgroundPromise.errorListener
-        )
-        .forPath(
-          action.path.path
-        )
+        .withUnhandledErrorListener(backgroundPromise.errorListener)
+        .forPath(action.path.path)
         .asUnit()
     } match {
       case Failure(throwable) =>
-        backgroundPromise
-          .promise
+        backgroundPromise.promise
           .tryFailure(throwable)
           .asUnit()
       case _ =>

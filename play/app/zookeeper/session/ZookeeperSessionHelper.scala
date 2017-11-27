@@ -24,10 +24,12 @@ import zookeeper.ConnectionParams
 trait ZookeeperSessionHelper {
 
   def setConnectionParams(params: ConnectionParams)(
-    implicit token: SessionToken, manager: SessionManager
+      implicit token: SessionToken,
+      manager: SessionManager
   ): Option[ConnectionParams]
 
   def getConnectionParams(
-    implicit token: SessionToken, manager: SessionManager
+      implicit token: SessionToken,
+      manager: SessionManager
   ): Option[ConnectionParams]
 }

@@ -39,20 +39,20 @@ object JsonPermission {
     override def reads(json: JsValue): JsResult[JsonPermission] =
       json match {
         case JsString(Create) => JsSuccess(Permission.Create)
-        case JsString(Read) => JsSuccess(Permission.Read)
-        case JsString(Write) => JsSuccess(Permission.Write)
+        case JsString(Read)   => JsSuccess(Permission.Read)
+        case JsString(Write)  => JsSuccess(Permission.Write)
         case JsString(Delete) => JsSuccess(Permission.Delete)
-        case JsString(Admin) => JsSuccess(Permission.Admin)
-        case _ => JsError("Invalid permission format")
+        case JsString(Admin)  => JsSuccess(Permission.Admin)
+        case _                => JsError("Invalid permission format")
       }
 
     override def writes(o: JsonPermission): JsValue =
       o.underlying match {
         case Permission.Create => JsString(Create)
-        case Permission.Read => JsString(Read)
-        case Permission.Write => JsString(Write)
+        case Permission.Read   => JsString(Read)
+        case Permission.Write  => JsString(Write)
         case Permission.Delete => JsString(Delete)
-        case Permission.Admin => JsString(Admin)
+        case Permission.Admin  => JsString(Admin)
       }
   }
 

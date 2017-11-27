@@ -18,23 +18,23 @@
 package json.zookeeper.znode
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMetaWith
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json
+import play.api.libs.json.Writes
 
-final case class JsonZNodeMetaWith[T](underlying: ZNodeMetaWith[T])(implicit val fmt: Writes[T])
+final case class JsonZNodeMetaWith[T](underlying: ZNodeMetaWith[T])(
+    implicit val fmt: Writes[T]
+)
 
 object JsonZNodeMetaWith {
 
   implicit def zNodeMetaWithWrites[T]: Writes[JsonZNodeMetaWith[T]] =
     new Writes[JsonZNodeMetaWith[T]] {
-      override def writes(o: JsonZNodeMetaWith[T]): JsValue = {
+      override def writes(o: JsonZNodeMetaWith[T]): JsValue =
         Json.obj(
           "data" -> o.fmt.writes(o.underlying.data),
           "meta" -> JsonZNodeMeta(o.underlying.meta)
         )
-      }
     }
 
 }
-
-
-

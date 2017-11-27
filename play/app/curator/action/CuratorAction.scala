@@ -25,20 +25,27 @@ import session.action.SessionRequest
 import zookeeper.ConnectionParams
 import zookeeper.session.ZookeeperSessionHelper
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 class CuratorAction(
-  apiResponseFactory: ApiResponseFactory,
-  zookeeperSessionHelper: ZookeeperSessionHelper,
-  curatorFrameworkProvider: CuratorFrameworkProvider
+    apiResponseFactory: ApiResponseFactory,
+    zookeeperSessionHelper: ZookeeperSessionHelper,
+    curatorFrameworkProvider: CuratorFrameworkProvider
 )(implicit val executionContext: ExecutionContext)
-  extends ActionRefiner[SessionRequest, CuratorRequest] {
+    extends ActionRefiner[SessionRequest, CuratorRequest] {
 
-  override protected def refine[A](request: SessionRequest[A]): Future[Either[Result, CuratorRequest[A]]] = {
+  override protected def refine[A](
+      request: SessionRequest[A]
+  ): Future[Either[Result, CuratorRequest[A]]] = {
     val futureOrFuture: Either[Future[Result], Future[CuratorRequest[A]]] =
       zookeeperSessionHelper
         .getConnectionParams(request.sessionToken, request.sessionManager)
-        .toRight(Future.successful(apiResponseFactory.unauthorized(Some("Session was lost."))))
+        .toRight(
+          Future.successful(
+            apiResponseFactory.unauthorized(Some("Session was lost."))
+          )
+        )
         .right
         .map {
           case ConnectionParams(connectionString, authInfoList) =>

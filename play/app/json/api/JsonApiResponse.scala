@@ -18,21 +18,24 @@
 package json.api
 
 import api.ApiResponse
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json
+import play.api.libs.json.Writes
 
-final case class JsonApiResponse[T](underlying: ApiResponse[T])(implicit val fmt: Writes[T])
+final case class JsonApiResponse[T](underlying: ApiResponse[T])(
+    implicit val fmt: Writes[T]
+)
 
 object JsonApiResponse {
 
   implicit def apiResponseWrites[T]: Writes[JsonApiResponse[T]] =
     new Writes[JsonApiResponse[T]] {
-      override def writes(o: JsonApiResponse[T]): JsValue = {
+      override def writes(o: JsonApiResponse[T]): JsValue =
         Json.obj(
           "success" -> o.underlying.success,
           "message" -> o.underlying.message,
           "payload" -> o.underlying.payload.map(o.fmt.writes)
         )
-      }
     }
 
 }

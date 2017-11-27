@@ -17,7 +17,4 @@
 
 package zookeeper
 
-final case class AuthInfo(
-  scheme: String,
-  auth: Array[Byte]
-)
+final case class AuthInfo(scheme: String, auth: Array[Byte])

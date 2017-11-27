@@ -18,7 +18,9 @@
 package json.zookeeper.znode
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeChildren
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json
+import play.api.libs.json.Writes
 
 final case class JsonZNodeChildren(underlying: ZNodeChildren)
 
@@ -27,8 +29,7 @@ object JsonZNodeChildren {
   implicit object ZNodeChildrenWrites extends Writes[JsonZNodeChildren] {
     override def writes(o: JsonZNodeChildren): JsValue =
       Json.arr(
-        o.underlying
-          .children
+        o.underlying.children
           .map(zNode => Json.toJsFieldJsValueWrapper(JsonZNode(zNode))): _*
       )
   }

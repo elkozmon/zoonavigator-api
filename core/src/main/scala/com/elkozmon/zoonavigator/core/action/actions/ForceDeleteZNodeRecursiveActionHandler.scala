@@ -24,13 +24,15 @@ import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactor
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import org.apache.curator.framework.CuratorFramework
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Try}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Try
 
 class ForceDeleteZNodeRecursiveActionHandler(
-  curatorFramework: CuratorFramework,
-  backgroundPromiseFactory: BackgroundPromiseFactory,
-  executionContextExecutor: ExecutionContextExecutor
+    curatorFramework: CuratorFramework,
+    backgroundPromiseFactory: BackgroundPromiseFactory,
+    executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[ForceDeleteZNodeRecursiveAction] {
 
   override def handle(action: ForceDeleteZNodeRecursiveAction): Future[Unit] = {
@@ -44,17 +46,12 @@ class ForceDeleteZNodeRecursiveActionHandler(
           backgroundPromise.eventCallback,
           executionContextExecutor: Executor
         )
-        .withUnhandledErrorListener(
-          backgroundPromise.errorListener
-        )
-        .forPath(
-          action.path.path
-        )
+        .withUnhandledErrorListener(backgroundPromise.errorListener)
+        .forPath(action.path.path)
         .asUnit()
     } match {
       case Failure(throwable) =>
-        backgroundPromise
-          .promise
+        backgroundPromise.promise
           .tryFailure(throwable)
           .asUnit()
       case _ =>

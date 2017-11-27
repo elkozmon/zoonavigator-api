@@ -17,7 +17,4 @@
 
 package com.elkozmon.zoonavigator.core.zookeeper.acl
 
-final case class Acl(
-  aclId: AclId,
-  permissions: Set[Permission]
-)
+final case class Acl(aclId: AclId, permissions: Set[Permission])

@@ -17,7 +17,8 @@
 
 package logging
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 trait AppLogger {
   val logger: Logger = LoggerFactory.getLogger("application")

@@ -18,14 +18,15 @@
 package curator.provider
 
 import org.apache.curator.framework.CuratorFramework
-import zookeeper.{AuthInfo, ConnectionString}
+import zookeeper.AuthInfo
+import zookeeper.ConnectionString
 
 import scala.concurrent.Future
 
 trait CuratorFrameworkProvider {
 
   def getCuratorInstance(
-    connectionString: ConnectionString,
-    authInfoList: List[AuthInfo]
+      connectionString: ConnectionString,
+      authInfoList: List[AuthInfo]
   ): Future[CuratorFramework]
 }

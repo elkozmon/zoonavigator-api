@@ -19,7 +19,9 @@ package com.elkozmon.zoonavigator.core.curator.background
 
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import org.apache.curator.framework.CuratorFramework
-import org.apache.curator.framework.api.{BackgroundCallback, CuratorEvent, UnhandledErrorListener}
+import org.apache.curator.framework.api.BackgroundCallback
+import org.apache.curator.framework.api.CuratorEvent
+import org.apache.curator.framework.api.UnhandledErrorListener
 import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.KeeperException.Code
 import org.slf4j.LoggerFactory
@@ -30,12 +32,21 @@ class DefaultBackgroundPromiseFactory extends BackgroundPromiseFactory {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override def newBackgroundPromise[T](extractor: CuratorEvent => T): BackgroundPromise[T] = {
+  override def newBackgroundPromise[T](
+      extractor: CuratorEvent => T
+  ): BackgroundPromise[T] = {
     val promise = Promise[T]()
 
     val eventCallback = new BackgroundCallback {
-      override def processResult(client: CuratorFramework, event: CuratorEvent): Unit = {
-        logger.debug("{} event completed with result code {}", event.getType, event.getResultCode)
+      override def processResult(
+          client: CuratorFramework,
+          event: CuratorEvent
+      ): Unit = {
+        logger.debug(
+          "{} event completed with result code {}",
+          event.getType,
+          event.getResultCode
+        )
 
         if (event.getResultCode == 0) {
           promise.trySuccess(extractor(event)).asUnit()
@@ -55,10 +66,6 @@ class DefaultBackgroundPromiseFactory extends BackgroundPromiseFactory {
       }
     }
 
-    BackgroundPromise(
-      promise,
-      eventCallback,
-      errorListener
-    )
+    BackgroundPromise(promise, eventCallback, errorListener)
   }
 }

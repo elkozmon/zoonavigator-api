@@ -22,19 +22,25 @@ import java.util.concurrent.Executor
 import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.zookeeper.znode.{ZNodeData, ZNodeMeta, ZNodeMetaWith}
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMetaWith
 import org.apache.curator.framework.CuratorFramework
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Try}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Try
 
 class GetZNodeDataActionHandler(
-  curatorFramework: CuratorFramework,
-  backgroundPromiseFactory: BackgroundPromiseFactory,
-  executionContextExecutor: ExecutionContextExecutor
+    curatorFramework: CuratorFramework,
+    backgroundPromiseFactory: BackgroundPromiseFactory,
+    executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[GetZNodeDataAction] {
 
-  override def handle(action: GetZNodeDataAction): Future[ZNodeMetaWith[ZNodeData]] = {
+  override def handle(
+      action: GetZNodeDataAction
+  ): Future[ZNodeMetaWith[ZNodeData]] = {
     val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
       event =>
         val meta = ZNodeMeta.fromStat(event.getStat)
@@ -44,23 +50,17 @@ class GetZNodeDataActionHandler(
     }
 
     Try {
-      curatorFramework
-        .getData
+      curatorFramework.getData
         .inBackground(
           backgroundPromise.eventCallback,
           executionContextExecutor: Executor
         )
-        .withUnhandledErrorListener(
-          backgroundPromise.errorListener
-        )
-        .forPath(
-          action.path.path
-        )
+        .withUnhandledErrorListener(backgroundPromise.errorListener)
+        .forPath(action.path.path)
         .asUnit()
     } match {
       case Failure(throwable) =>
-        backgroundPromise
-          .promise
+        backgroundPromise.promise
           .tryFailure(throwable)
           .asUnit()
       case _ =>

@@ -18,13 +18,15 @@
 package curator.provider
 
 import java.nio.charset.StandardCharsets
-import java.security.{MessageDigest, SecureRandom}
+import java.security.MessageDigest
+import java.security.SecureRandom
 
-import zookeeper.{AuthInfo, ConnectionString}
+import zookeeper.AuthInfo
+import zookeeper.ConnectionString
 
 final case class CuratorKey(
-  connectionString: ConnectionString,
-  authInfoHash: String
+    connectionString: ConnectionString,
+    authInfoHash: String
 )
 
 object CuratorKey {
@@ -40,8 +42,8 @@ object CuratorKey {
   }
 
   def apply(
-    connectionString: ConnectionString,
-    authInfoList: List[AuthInfo]
+      connectionString: ConnectionString,
+      authInfoList: List[AuthInfo]
   ): CuratorKey = {
     val authInfoListBytes = authInfoList
       .flatMap(info => info.scheme.toString.getBytes(utf8) ++ info.auth)
@@ -51,9 +53,6 @@ object CuratorKey {
       .getInstance("SHA-256")
       .digest(randomSalt ++ authInfoListBytes)
 
-    CuratorKey(
-      connectionString,
-      new String(digestedBytes, utf8)
-    )
+    CuratorKey(connectionString, new String(digestedBytes, utf8))
   }
 }

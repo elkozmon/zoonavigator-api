@@ -42,10 +42,10 @@ object Permission {
     permissions
       .map {
         case Permission.Create => Perms.CREATE
-        case Permission.Read => Perms.READ
-        case Permission.Write => Perms.WRITE
+        case Permission.Read   => Perms.READ
+        case Permission.Write  => Perms.WRITE
         case Permission.Delete => Perms.DELETE
-        case Permission.Admin => Perms.ADMIN
+        case Permission.Admin  => Perms.ADMIN
       }
       .fold(0)(_ | _)
 

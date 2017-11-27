@@ -17,10 +17,13 @@
 
 import java.util.concurrent.TimeUnit
 
-import api.{ApiErrorHandler, ApiResponseFactory, JsonApiResponseFactory}
+import api.ApiErrorHandler
+import api.ApiResponseFactory
+import api.JsonApiResponseFactory
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
-import com.elkozmon.zoonavigator.core.curator.background.{BackgroundPromiseFactory, DefaultBackgroundPromiseFactory}
+import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
+import com.elkozmon.zoonavigator.core.curator.background.DefaultBackgroundPromiseFactory
 import com.softwaremill.macwire._
 import curator.action.CuratorActionBuilder
 import curator.provider._
@@ -30,18 +33,21 @@ import play.api._
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-import play.filters.cors.{CORSConfig, CORSFilter}
+import play.filters.cors.CORSConfig
+import play.filters.cors.CORSFilter
 import router.Routes
 import session.SessionInactivityTimeout
 import session.action.SessionActionBuilder
-import session.manager.{ExpiringSessionManager, SessionManager}
-import zookeeper.session.{DefaultZookeeperSessionHelper, ZookeeperSessionHelper}
+import session.manager.ExpiringSessionManager
+import session.manager.SessionManager
+import zookeeper.session.DefaultZookeeperSessionHelper
+import zookeeper.session.ZookeeperSessionHelper
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
 
 class AppComponents(context: Context)
-  extends BuiltInComponentsFromContext(context)
+    extends BuiltInComponentsFromContext(context)
     with AppModule {
 
   LoggerConfigurator(context.environment.classLoader)
@@ -92,8 +98,7 @@ class AppComponents(context: Context)
   lazy val curatorCacheMaxAge: CuratorCacheMaxAge =
     CuratorCacheMaxAge(
       FiniteDuration(
-        context
-          .initialConfiguration
+        context.initialConfiguration
           .getOptional[Long]("zookeeper.client.maxAge")
           .getOrElse(5000L),
         TimeUnit.MILLISECONDS
@@ -103,8 +108,7 @@ class AppComponents(context: Context)
   lazy val curatorConnectTimeout: CuratorConnectTimeout =
     CuratorConnectTimeout(
       FiniteDuration(
-        context
-          .initialConfiguration
+        context.initialConfiguration
           .getOptional[Long]("zookeeper.client.connectTimeout")
           .getOrElse(5000L),
         TimeUnit.MILLISECONDS
@@ -129,33 +133,53 @@ class AppComponents(context: Context)
   override lazy val sessionActionBuilder: SessionActionBuilder =
     wire[SessionActionBuilder]
 
-  override def getZNodeAclListActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeAclAction] =
+  override def getZNodeAclListActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[GetZNodeAclAction] =
     wire[GetZNodeAclActionHandler]
 
-  override def getZNodeChildrenActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeChildrenAction] =
+  override def getZNodeChildrenActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[GetZNodeChildrenAction] =
     wire[GetZNodeChildrenActionHandler]
 
-  override def getZNodeDataActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeDataAction] =
+  override def getZNodeDataActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[GetZNodeDataAction] =
     wire[GetZNodeDataActionHandler]
 
-  override def getZNodeMetaActionHandler(curatorFramework: CuratorFramework): ActionHandler[GetZNodeMetaAction] =
+  override def getZNodeMetaActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[GetZNodeMetaAction] =
     wire[GetZNodeMetaActionHandler]
 
-  override def createZNodeActionHandler(curatorFramework: CuratorFramework): ActionHandler[CreateZNodeAction] =
+  override def createZNodeActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[CreateZNodeAction] =
     wire[CreateZNodeActionHandler]
 
-  override def deleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework): ActionHandler[DeleteZNodeRecursiveAction] =
+  override def deleteZNodeRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[DeleteZNodeRecursiveAction] =
     wire[DeleteZNodeRecursiveActionHandler]
 
-  override def forceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework): ActionHandler[ForceDeleteZNodeRecursiveAction] =
+  override def forceDeleteZNodeRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[ForceDeleteZNodeRecursiveAction] =
     wire[ForceDeleteZNodeRecursiveActionHandler]
 
-  override def updateZNodeAclListActionHandler(curatorFramework: CuratorFramework): ActionHandler[UpdateZNodeAclListAction] =
+  override def updateZNodeAclListActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[UpdateZNodeAclListAction] =
     wire[UpdateZNodeAclListActionHandler]
 
-  override def updateZNodeAclListRecursiveActionHandler(curatorFramework: CuratorFramework): ActionHandler[UpdateZNodeAclListRecursiveAction] =
+  override def updateZNodeAclListRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[UpdateZNodeAclListRecursiveAction] =
     wire[UpdateZNodeAclListRecursiveActionHandler]
 
-  override def updateZNodeDataActionHandler(curatorFramework: CuratorFramework): ActionHandler[UpdateZNodeDataAction] =
+  override def updateZNodeDataActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[UpdateZNodeDataAction] =
     wire[UpdateZNodeDataActionHandler]
 }

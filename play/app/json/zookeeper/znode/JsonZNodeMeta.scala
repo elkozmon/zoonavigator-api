@@ -19,7 +19,9 @@ package json.zookeeper.znode
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import org.joda.time.format.ISODateTimeFormat
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json
+import play.api.libs.json.Writes
 
 final case class JsonZNodeMeta(underlying: ZNodeMeta)
 
@@ -31,9 +33,11 @@ object JsonZNodeMeta {
     override def writes(o: JsonZNodeMeta): JsValue =
       Json.obj(
         "creationId" -> o.underlying.creationId,
-        "creationTime" -> o.underlying.creationTime.toString(isoDateTimeFormatter),
+        "creationTime" -> o.underlying.creationTime
+          .toString(isoDateTimeFormatter),
         "modifiedId" -> o.underlying.modifiedId,
-        "modifiedTime" -> o.underlying.modifiedTime.toString(isoDateTimeFormatter),
+        "modifiedTime" -> o.underlying.modifiedTime
+          .toString(isoDateTimeFormatter),
         "dataLength" -> o.underlying.dataLength,
         "dataVersion" -> o.underlying.dataVersion.version,
         "aclVersion" -> o.underlying.aclVersion.version,

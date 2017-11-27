@@ -21,16 +21,16 @@ import org.apache.zookeeper.data.Stat
 import org.joda.time.DateTime
 
 final case class ZNodeMeta(
-  creationId: Long,
-  creationTime: DateTime,
-  modifiedId: Long,
-  modifiedTime: DateTime,
-  dataLength: Int,
-  dataVersion: ZNodeDataVersion,
-  aclVersion: ZNodeAclVersion,
-  childrenVersion: ZNodeChildrenVersion,
-  childrenNumber: Int,
-  ephemeralOwner: Long
+    creationId: Long,
+    creationTime: DateTime,
+    modifiedId: Long,
+    modifiedTime: DateTime,
+    dataLength: Int,
+    dataVersion: ZNodeDataVersion,
+    aclVersion: ZNodeAclVersion,
+    childrenVersion: ZNodeChildrenVersion,
+    childrenNumber: Int,
+    ephemeralOwner: Long
 )
 
 object ZNodeMeta {

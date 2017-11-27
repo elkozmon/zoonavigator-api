@@ -21,7 +21,10 @@ import org.apache.curator.framework.api.CuratorEvent
 
 trait BackgroundPromiseFactory {
 
-  def newBackgroundPromise[T](extractor: CuratorEvent => T): BackgroundPromise[T]
+  def newBackgroundPromise[T](
+      extractor: CuratorEvent => T
+  ): BackgroundPromise[T]
 
-  def newBackgroundPromiseUnit: BackgroundPromise[Unit] = newBackgroundPromise(_ => ())
+  def newBackgroundPromiseUnit: BackgroundPromise[Unit] =
+    newBackgroundPromise(_ => ())
 }

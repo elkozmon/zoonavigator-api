@@ -17,12 +17,13 @@
 
 package com.elkozmon.zoonavigator.core.curator.background
 
-import org.apache.curator.framework.api.{BackgroundCallback, UnhandledErrorListener}
+import org.apache.curator.framework.api.BackgroundCallback
+import org.apache.curator.framework.api.UnhandledErrorListener
 
 import scala.concurrent.Promise
 
 final case class BackgroundPromise[T](
-  promise: Promise[T],
-  eventCallback: BackgroundCallback,
-  errorListener: UnhandledErrorListener
+    promise: Promise[T],
+    eventCallback: BackgroundCallback,
+    errorListener: UnhandledErrorListener
 )

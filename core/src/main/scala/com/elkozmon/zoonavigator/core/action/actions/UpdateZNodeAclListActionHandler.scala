@@ -25,16 +25,19 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import org.apache.curator.framework.CuratorFramework
-import org.apache.zookeeper.data.{ACL, Id}
+import org.apache.zookeeper.data.ACL
+import org.apache.zookeeper.data.Id
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Try}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Try
 
 class UpdateZNodeAclListActionHandler(
-  curatorFramework: CuratorFramework,
-  backgroundPromiseFactory: BackgroundPromiseFactory,
-  executionContextExecutor: ExecutionContextExecutor
+    curatorFramework: CuratorFramework,
+    backgroundPromiseFactory: BackgroundPromiseFactory,
+    executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[UpdateZNodeAclListAction] {
 
   override def handle(action: UpdateZNodeAclListAction): Future[ZNodeMeta] = {
@@ -46,40 +49,23 @@ class UpdateZNodeAclListActionHandler(
     Try {
       curatorFramework
         .setACL()
-        .withVersion(
-          action.expectedAclVersion.version.toInt
-        )
-        .withACL(
-          action
-            .acl
-            .aclList
-            .map {
-              rawAcl =>
-                new ACL(
-                  Permission.toZookeeperMask(rawAcl.permissions),
-                  new Id(
-                    rawAcl.aclId.scheme,
-                    rawAcl.aclId.id
-                  )
-                )
-            }
-            .asJava
-        )
+        .withVersion(action.expectedAclVersion.version.toInt)
+        .withACL(action.acl.aclList.map { rawAcl =>
+          new ACL(
+            Permission.toZookeeperMask(rawAcl.permissions),
+            new Id(rawAcl.aclId.scheme, rawAcl.aclId.id)
+          )
+        }.asJava)
         .inBackground(
           backgroundPromise.eventCallback,
           executionContextExecutor: Executor
         )
-        .withUnhandledErrorListener(
-          backgroundPromise.errorListener
-        )
-        .forPath(
-          action.path.path
-        )
+        .withUnhandledErrorListener(backgroundPromise.errorListener)
+        .forPath(action.path.path)
         .asUnit()
     } match {
       case Failure(throwable) =>
-        backgroundPromise
-          .promise
+        backgroundPromise.promise
           .tryFailure(throwable)
           .asUnit()
       case _ =>

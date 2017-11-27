@@ -24,15 +24,16 @@ import zookeeper.session.ZookeeperSessionHelper
 import scala.concurrent.ExecutionContextExecutor
 
 class CuratorActionBuilder(
-  apiResponseFactory: ApiResponseFactory,
-  zookeeperSessionHelper: ZookeeperSessionHelper,
-  curatorFrameworkProvider: CuratorFrameworkProvider,
-  executionContextExecutor: ExecutionContextExecutor
+    apiResponseFactory: ApiResponseFactory,
+    zookeeperSessionHelper: ZookeeperSessionHelper,
+    curatorFrameworkProvider: CuratorFrameworkProvider,
+    executionContextExecutor: ExecutionContextExecutor
 ) {
 
-  def apply(): CuratorAction = new CuratorAction(
-    apiResponseFactory,
-    zookeeperSessionHelper,
-    curatorFrameworkProvider
-  )(executionContextExecutor)
+  def apply(): CuratorAction =
+    new CuratorAction(
+      apiResponseFactory,
+      zookeeperSessionHelper,
+      curatorFrameworkProvider
+    )(executionContextExecutor)
 }

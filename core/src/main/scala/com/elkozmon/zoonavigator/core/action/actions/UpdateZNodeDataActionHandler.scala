@@ -25,13 +25,15 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import org.apache.curator.framework.CuratorFramework
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Try}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Try
 
 class UpdateZNodeDataActionHandler(
-  curatorFramework: CuratorFramework,
-  backgroundPromiseFactory: BackgroundPromiseFactory,
-  executionContextExecutor: ExecutionContextExecutor
+    curatorFramework: CuratorFramework,
+    backgroundPromiseFactory: BackgroundPromiseFactory,
+    executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[UpdateZNodeDataAction] {
 
   override def handle(action: UpdateZNodeDataAction): Future[ZNodeMeta] = {
@@ -43,25 +45,17 @@ class UpdateZNodeDataActionHandler(
     Try {
       curatorFramework
         .setData()
-        .withVersion(
-          action.expectedDataVersion.version.toInt
-        )
+        .withVersion(action.expectedDataVersion.version.toInt)
         .inBackground(
           backgroundPromise.eventCallback,
           executionContextExecutor: Executor
         )
-        .withUnhandledErrorListener(
-          backgroundPromise.errorListener
-        )
-        .forPath(
-          action.path.path,
-          action.data.bytes
-        )
+        .withUnhandledErrorListener(backgroundPromise.errorListener)
+        .forPath(action.path.path, action.data.bytes)
         .asUnit()
     } match {
       case Failure(throwable) =>
-        backgroundPromise
-          .promise
+        backgroundPromise.promise
           .tryFailure(throwable)
           .asUnit()
       case _ =>

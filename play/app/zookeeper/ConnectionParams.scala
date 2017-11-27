@@ -18,6 +18,6 @@
 package zookeeper
 
 final case class ConnectionParams(
-  connectionString: ConnectionString,
-  authInfoList: List[AuthInfo]
+    connectionString: ConnectionString,
+    authInfoList: List[AuthInfo]
 )

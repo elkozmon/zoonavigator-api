@@ -22,8 +22,10 @@ import org.apache.curator.framework.CuratorFramework
 import shapeless.HList
 
 class DefaultActionDispatcherProvider[L <: HList](fn: CuratorFramework => L)
-  extends ActionDispatcherProvider[L] {
+    extends ActionDispatcherProvider[L] {
 
-  override def getDispatcher(curatorFramework: CuratorFramework): ActionDispatcher[L] =
+  override def getDispatcher(
+      curatorFramework: CuratorFramework
+  ): ActionDispatcher[L] =
     new ActionDispatcher(fn(curatorFramework))
 }

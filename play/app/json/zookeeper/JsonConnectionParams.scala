@@ -18,7 +18,8 @@
 package json.zookeeper
 
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.json.JsPath
+import play.api.libs.json.Reads
 import zookeeper.ConnectionParams
 
 final case class JsonConnectionParams(underlying: ConnectionParams)
@@ -26,7 +27,9 @@ final case class JsonConnectionParams(underlying: ConnectionParams)
 object JsonConnectionParams {
 
   implicit val connectionParamsReads: Reads[JsonConnectionParams] = (
-    (JsPath \ "connectionString").read[JsonConnectionString].map(_.underlying) and
+    (JsPath \ "connectionString")
+      .read[JsonConnectionString]
+      .map(_.underlying) and
       (JsPath \ "authInfo").read[List[JsonAuthInfo]].map(_.map(_.underlying))
-    ) (ConnectionParams.apply _) map (JsonConnectionParams(_))
+  )(ConnectionParams.apply _) map (JsonConnectionParams(_))
 }

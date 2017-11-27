@@ -21,6 +21,6 @@ import session.SessionToken
 import zookeeper.ConnectionString
 
 final case class SessionInfo(
-  token: SessionToken,
-  connectionString: ConnectionString
+    token: SessionToken,
+    connectionString: ConnectionString
 )

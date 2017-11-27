@@ -18,7 +18,7 @@
 package api
 
 final case class ApiResponse[T](
-  success: Boolean,
-  message: Option[String],
-  payload: Option[T]
+    success: Boolean,
+    message: Option[String],
+    payload: Option[T]
 )

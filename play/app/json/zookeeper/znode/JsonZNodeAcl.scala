@@ -19,7 +19,9 @@ package json.zookeeper.znode
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
 import json.zookeeper.acl.JsonAcl
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json
+import play.api.libs.json.Writes
 
 final case class JsonZNodeAcl(underlying: ZNodeAcl)
 
@@ -28,12 +30,9 @@ object JsonZNodeAcl {
   implicit object ZNodeAclWrites extends Writes[JsonZNodeAcl] {
     override def writes(o: JsonZNodeAcl): JsValue =
       Json.arr(
-        o.underlying
-          .aclList
+        o.underlying.aclList
           .map(acl => Json.toJsFieldJsValueWrapper(JsonAcl(acl))): _*
       )
   }
 
 }
-
-

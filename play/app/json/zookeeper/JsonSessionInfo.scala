@@ -17,7 +17,9 @@
 
 package json.zookeeper
 
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json
+import play.api.libs.json.Writes
 import zookeeper.session.SessionInfo
 
 final case class JsonSessionInfo(underlying: SessionInfo)
@@ -28,7 +30,9 @@ object JsonSessionInfo {
     override def writes(o: JsonSessionInfo): JsValue =
       Json.obj(
         "token" -> JsonSessionToken(o.underlying.token),
-        "connectionString" -> JsonConnectionString(o.underlying.connectionString)
+        "connectionString" -> JsonConnectionString(
+          o.underlying.connectionString
+        )
       )
   }
 

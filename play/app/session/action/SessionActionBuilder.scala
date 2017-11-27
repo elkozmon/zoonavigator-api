@@ -24,14 +24,13 @@ import session.manager.SessionManager
 import scala.concurrent.ExecutionContextExecutor
 
 class SessionActionBuilder(
-  apiResponseFactory: ApiResponseFactory,
-  sessionManager: SessionManager,
-  executionContextExecutor: ExecutionContextExecutor
+    apiResponseFactory: ApiResponseFactory,
+    sessionManager: SessionManager,
+    executionContextExecutor: ExecutionContextExecutor
 ) {
 
-  def apply[B](bodyParser: BodyParser[B]): SessionAction[B] = new SessionAction(
-    apiResponseFactory,
-    sessionManager,
-    bodyParser
-  )(executionContextExecutor)
+  def apply[B](bodyParser: BodyParser[B]): SessionAction[B] =
+    new SessionAction(apiResponseFactory, sessionManager, bodyParser)(
+      executionContextExecutor
+    )
 }

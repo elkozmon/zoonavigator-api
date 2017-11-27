@@ -26,24 +26,26 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Try}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Try
 
 class GetZNodeChildrenActionHandler(
-  curatorFramework: CuratorFramework,
-  backgroundPromiseFactory: BackgroundPromiseFactory,
-  executionContextExecutor: ExecutionContextExecutor
+    curatorFramework: CuratorFramework,
+    backgroundPromiseFactory: BackgroundPromiseFactory,
+    executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[GetZNodeChildrenAction] {
 
-  override def handle(action: GetZNodeChildrenAction): Future[ZNodeMetaWith[ZNodeChildren]] = {
+  override def handle(
+      action: GetZNodeChildrenAction
+  ): Future[ZNodeMetaWith[ZNodeChildren]] = {
     val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
       event =>
         val path = event.getPath.stripSuffix("/")
         val meta = ZNodeMeta.fromStat(event.getStat)
         val children = ZNodeChildren(
-          event
-            .getChildren
-            .asScala
+          event.getChildren.asScala
             .map(name => ZNode(ZNodePath(s"$path/$name")))
             .toList
         )
@@ -52,23 +54,17 @@ class GetZNodeChildrenActionHandler(
     }
 
     Try {
-      curatorFramework
-        .getChildren
+      curatorFramework.getChildren
         .inBackground(
           backgroundPromise.eventCallback,
           executionContextExecutor: Executor
         )
-        .withUnhandledErrorListener(
-          backgroundPromise.errorListener
-        )
-        .forPath(
-          action.path.path
-        )
+        .withUnhandledErrorListener(backgroundPromise.errorListener)
+        .forPath(action.path.path)
         .asUnit()
     } match {
       case Failure(throwable) =>
-        backgroundPromise
-          .promise
+        backgroundPromise.promise
           .tryFailure(throwable)
           .asUnit()
       case _ =>

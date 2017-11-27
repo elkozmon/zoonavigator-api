@@ -17,29 +17,38 @@
 
 package curator.provider
 
-import java.util.concurrent.{Executor, Executors, TimeUnit}
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.google.common.cache.{CacheBuilder, RemovalListener, RemovalNotification}
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.RemovalListener
+import com.google.common.cache.RemovalNotification
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import logging.AppLogger
 import org.apache.curator.framework
 import org.apache.curator.framework.api.UnhandledErrorListener
-import org.apache.curator.framework.state.{ConnectionState, ConnectionStateListener}
-import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
+import org.apache.curator.framework.state.ConnectionState
+import org.apache.curator.framework.state.ConnectionStateListener
+import org.apache.curator.framework.CuratorFramework
+import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
-import zookeeper.{AuthInfo, ConnectionString}
+import zookeeper.AuthInfo
+import zookeeper.ConnectionString
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
-import scala.util.{Failure, Try}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
+import scala.concurrent.Promise
+import scala.util.Failure
+import scala.util.Try
 
 class CacheCuratorFrameworkProvider(
-  curatorCacheMaxAge: CuratorCacheMaxAge,
-  curatorConnectTimeout: CuratorConnectTimeout,
-  implicit val executionContextExecutor: ExecutionContextExecutor
-)
-  extends CuratorFrameworkProvider
+    curatorCacheMaxAge: CuratorCacheMaxAge,
+    curatorConnectTimeout: CuratorConnectTimeout,
+    implicit val executionContextExecutor: ExecutionContextExecutor
+) extends CuratorFrameworkProvider
     with RemovalListener[CuratorKey, Future[CuratorFramework]]
     with AppLogger {
 
@@ -60,14 +69,9 @@ class CacheCuratorFrameworkProvider(
         .setNameFormat(getClass.getSimpleName + "-cleanUp-%d")
         .build()
     )
-    .scheduleWithFixedDelay(
-      new Runnable {
-        override def run(): Unit = sessionCache.cleanUp()
-      },
-      1000,
-      1000,
-      TimeUnit.MILLISECONDS
-    )
+    .scheduleWithFixedDelay(new Runnable {
+      override def run(): Unit = sessionCache.cleanUp()
+    }, 1000, 1000, TimeUnit.MILLISECONDS)
     .asUnit()
 
   private val sessionCacheMap =
@@ -76,7 +80,7 @@ class CacheCuratorFrameworkProvider(
       .asScala
 
   override def onRemoval(
-    notification: RemovalNotification[CuratorKey, Future[CuratorFramework]]
+      notification: RemovalNotification[CuratorKey, Future[CuratorFramework]]
   ): Unit = {
     val curatorKey = notification.getKey
     val removalCause = notification.getCause
@@ -90,8 +94,8 @@ class CacheCuratorFrameworkProvider(
   }
 
   override def getCuratorInstance(
-    connectionString: ConnectionString,
-    authInfoList: List[AuthInfo]
+      connectionString: ConnectionString,
+      authInfoList: List[AuthInfo]
   ): Future[CuratorFramework] =
     sessionCacheMap.synchronized(
       sessionCacheMap.getOrElseUpdate(
@@ -101,22 +105,19 @@ class CacheCuratorFrameworkProvider(
     )
 
   private def newCuratorInstance(
-    connectionString: ConnectionString,
-    authInfoList: List[AuthInfo]
+      connectionString: ConnectionString,
+      authInfoList: List[AuthInfo]
   ): Future[CuratorFramework] = {
     val promiseCurator = Promise[CuratorFramework]()
 
     val tryStartCurator = Try {
       // Create Curator instance
-      val frameworkAuthInfoList = authInfoList.map {
-        authInfo =>
-          new framework.AuthInfo(
-            authInfo.scheme,
-            authInfo.auth
-          )
+      val frameworkAuthInfoList = authInfoList.map { authInfo =>
+        new framework.AuthInfo(authInfo.scheme, authInfo.auth)
       }
 
-      val curatorFramework = CuratorFrameworkFactory.builder()
+      val curatorFramework = CuratorFrameworkFactory
+        .builder()
         .authorization(frameworkAuthInfoList.asJava)
         .connectString(connectionString.string)
         .retryPolicy(new ExponentialBackoffRetry(100, 3))
@@ -126,27 +127,21 @@ class CacheCuratorFrameworkProvider(
       // Listen for successful connection
       val connectionListener = new ConnectionStateListener {
         override def stateChanged(
-          client: CuratorFramework,
-          newState: ConnectionState
-        ): Unit = {
+            client: CuratorFramework,
+            newState: ConnectionState
+        ): Unit =
           if (newState == ConnectionState.CONNECTED) {
             promiseCurator
               .trySuccess(client)
               .asUnit()
 
-            client
-              .getConnectionStateListenable
+            client.getConnectionStateListenable
               .removeListener(this)
           }
-        }
       }
 
-      curatorFramework
-        .getConnectionStateListenable
-        .addListener(
-          connectionListener,
-          executionContextExecutor: Executor
-        )
+      curatorFramework.getConnectionStateListenable
+        .addListener(connectionListener, executionContextExecutor: Executor)
 
       // Log unhandled errors
       val unhandledErrorListener = new UnhandledErrorListener {
@@ -154,12 +149,8 @@ class CacheCuratorFrameworkProvider(
           logger.warn(message, e)
       }
 
-      curatorFramework
-        .getUnhandledErrorListenable
-        .addListener(
-          unhandledErrorListener,
-          executionContextExecutor: Executor
-        )
+      curatorFramework.getUnhandledErrorListenable
+        .addListener(unhandledErrorListener, executionContextExecutor: Executor)
 
       // Timeout the connection
       Executors

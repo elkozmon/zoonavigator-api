@@ -30,7 +30,11 @@ trait SessionManager {
 
   def getSessionData(key: String)(implicit token: SessionToken): Option[AnyRef]
 
-  def putSessionData(key: String, value: AnyRef)(implicit token: SessionToken): Option[AnyRef]
+  def putSessionData(key: String, value: AnyRef)(
+      implicit token: SessionToken
+  ): Option[AnyRef]
 
-  def removeSessionData(key: String)(implicit token: SessionToken): Option[AnyRef]
+  def removeSessionData(key: String)(
+      implicit token: SessionToken
+  ): Option[AnyRef]
 }

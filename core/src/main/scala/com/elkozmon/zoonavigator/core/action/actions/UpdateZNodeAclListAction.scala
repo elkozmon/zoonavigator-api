@@ -18,12 +18,15 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.Action
-import com.elkozmon.zoonavigator.core.zookeeper.znode.{ZNodeAcl, ZNodeAclVersion, ZNodeMeta, ZNodePath}
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 
 final case class UpdateZNodeAclListAction(
-  path: ZNodePath,
-  acl: ZNodeAcl,
-  expectedAclVersion: ZNodeAclVersion
+    path: ZNodePath,
+    acl: ZNodeAcl,
+    expectedAclVersion: ZNodeAclVersion
 ) extends Action {
   override type Out = ZNodeMeta
 }

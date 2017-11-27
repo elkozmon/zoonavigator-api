@@ -24,6 +24,8 @@ import scala.concurrent.Future
 
 class ActionDispatcher[L <: HList](handlers: L) {
 
-  def dispatch[A <: Action](action: A)(implicit selector: hlist.Selector[L, ActionHandler[A]]): Future[A#Out] =
+  def dispatch[A <: Action](
+      action: A
+  )(implicit selector: hlist.Selector[L, ActionHandler[A]]): Future[A#Out] =
     selector(handlers).handle(action)
 }

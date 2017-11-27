@@ -19,7 +19,9 @@ package api
 
 import json.api.JsonApiResponse
 import org.apache.zookeeper.KeeperException.NoAuthException
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json
+import play.api.libs.json.Writes
 import play.api.mvc.Result
 import play.api.mvc.Results._
 
@@ -42,11 +44,7 @@ class JsonApiResponseFactory extends ApiResponseFactory {
     Ok(
       Json.toJson(
         JsonApiResponse(
-          ApiResponse(
-            success = true,
-            message = None,
-            payload = Some(payload)
-          )
+          ApiResponse(success = true, message = None, payload = Some(payload))
         )
       )
     )
@@ -55,7 +53,8 @@ class JsonApiResponseFactory extends ApiResponseFactory {
     NotFound(failureResponse(message))
 
   override def unauthorized(message: Option[String]): Result =
-    Unauthorized(failureResponse(message)).withHeaders(("WWW-Authenticate", "Digest"))
+    Unauthorized(failureResponse(message))
+      .withHeaders(("WWW-Authenticate", "Digest"))
 
   override def forbidden(message: Option[String]): Result =
     Forbidden(failureResponse(message))
