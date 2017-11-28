@@ -28,8 +28,8 @@ import play.api.mvc.RequestHeader
 import session.SessionInactivityTimeout
 import session.SessionToken
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.collection.JavaConverters._
 
 class ExpiringSessionManager(
     apiResponseFactory: ApiResponseFactory,

@@ -19,18 +19,15 @@ package controllers
 
 import java.nio.charset.StandardCharsets
 
+import action.ActionModule
 import api.ApiResponseFactory
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import action.ActionModule
 import curator.action.CuratorActionBuilder
 import curator.action.CuratorRequest
 import json.zookeeper.acl.JsonAcl
 import json.zookeeper.znode._
-import play.api.libs.json.JsError
-import play.api.libs.json.JsSuccess
-import play.api.libs.json.JsValue
-import play.api.libs.json.Reads
+import play.api.libs.json._
 import play.api.mvc._
 import session.action.SessionActionBuilder
 
@@ -58,8 +55,8 @@ class ZNodeController(
   def getAcl: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
-        .fold(Future.successful, {
-          path =>
+        .fold(
+          Future.successful, { path =>
             actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
               .dispatch(GetZNodeAclAction(ZNodePath(path)))
@@ -70,14 +67,15 @@ class ZNodeController(
                 apiResponseFactory.okPayload(jsonMetaWithAcl)
               }
               .recover(recoverResult)
-        })
+          }
+        )
     }
 
   def getData: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
-        .fold(Future.successful, {
-          path =>
+        .fold(
+          Future.successful, { path =>
             actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
               .dispatch(GetZNodeDataAction(ZNodePath(path)))
@@ -88,14 +86,15 @@ class ZNodeController(
                 apiResponseFactory.okPayload(jsonMetaWithData)
               }
               .recover(recoverResult)
-        })
+          }
+        )
     }
 
   def getMeta: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
-        .fold(Future.successful, {
-          path =>
+        .fold(
+          Future.successful, { path =>
             actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
               .dispatch(GetZNodeMetaAction(ZNodePath(path)))
@@ -104,14 +103,15 @@ class ZNodeController(
                 case NonFatal(throwable) =>
                   apiResponseFactory.fromThrowable(throwable)
               }
-        })
+          }
+        )
     }
 
   def getChildren: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
-        .fold(Future.successful, {
-          path =>
+        .fold(
+          Future.successful, { path =>
             actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
               .dispatch(GetZNodeChildrenAction(ZNodePath(path)))
@@ -122,7 +122,8 @@ class ZNodeController(
                 apiResponseFactory.okPayload(jsonMetaWithChildren)
               }
               .recover(recoverResult)
-        })
+          }
+        )
     }
 
   def create(): Action[Unit] =

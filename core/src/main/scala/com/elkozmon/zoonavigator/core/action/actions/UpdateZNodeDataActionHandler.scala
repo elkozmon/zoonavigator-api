@@ -17,50 +17,26 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import java.util.concurrent.Executor
-
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
-import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+import com.elkozmon.zoonavigator.core.curator.BackgroundOps
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import org.apache.curator.framework.CuratorFramework
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
-import scala.util.Failure
-import scala.util.Try
 
 class UpdateZNodeDataActionHandler(
     curatorFramework: CuratorFramework,
-    backgroundPromiseFactory: BackgroundPromiseFactory,
-    executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[UpdateZNodeDataAction] {
+    implicit val executionContextExecutor: ExecutionContextExecutor
+) extends ActionHandler[UpdateZNodeDataAction]
+    with BackgroundOps {
 
-  override def handle(action: UpdateZNodeDataAction): Future[ZNodeMeta] = {
-    val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
-      event =>
+  override def handle(action: UpdateZNodeDataAction): Future[ZNodeMeta] =
+    curatorFramework
+      .setData()
+      .withVersion(action.expectedDataVersion.version.toInt)
+      .forPathBackground(action.path.path, action.data.bytes)
+      .map { event =>
         ZNodeMeta.fromStat(event.getStat)
-    }
-
-    Try {
-      curatorFramework
-        .setData()
-        .withVersion(action.expectedDataVersion.version.toInt)
-        .inBackground(
-          backgroundPromise.eventCallback,
-          executionContextExecutor: Executor
-        )
-        .withUnhandledErrorListener(backgroundPromise.errorListener)
-        .forPath(action.path.path, action.data.bytes)
-        .asUnit()
-    } match {
-      case Failure(throwable) =>
-        backgroundPromise.promise
-          .tryFailure(throwable)
-          .asUnit()
-      case _ =>
-    }
-
-    backgroundPromise.promise.future
-  }
+      }
 }

@@ -17,49 +17,23 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import java.util.concurrent.Executor
-
-import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+import com.elkozmon.zoonavigator.core.curator.BackgroundOps
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import org.apache.curator.framework.CuratorFramework
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
-import scala.util.Failure
-import scala.util.Try
 
 class GetZNodeMetaActionHandler(
     curatorFramework: CuratorFramework,
-    backgroundPromiseFactory: BackgroundPromiseFactory,
-    executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[GetZNodeMetaAction] {
+    implicit val executionContextExecutor: ExecutionContextExecutor
+) extends ActionHandler[GetZNodeMetaAction]
+    with BackgroundOps {
 
-  override def handle(action: GetZNodeMetaAction): Future[ZNodeMeta] = {
-    val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
-      event =>
-        ZNodeMeta.fromStat(event.getStat)
-    }
-
-    Try {
-      curatorFramework
-        .checkExists()
-        .inBackground(
-          backgroundPromise.eventCallback,
-          executionContextExecutor: Executor
-        )
-        .withUnhandledErrorListener(backgroundPromise.errorListener)
-        .forPath(action.path.path)
-        .asUnit()
-    } match {
-      case Failure(throwable) =>
-        backgroundPromise.promise
-          .tryFailure(throwable)
-          .asUnit()
-      case _ =>
-    }
-
-    backgroundPromise.promise.future
-  }
+  override def handle(action: GetZNodeMetaAction): Future[ZNodeMeta] =
+    curatorFramework
+      .checkExists()
+      .forPathBackground(action.path.path)
+      .map(event => ZNodeMeta.fromStat(event.getStat))
 }

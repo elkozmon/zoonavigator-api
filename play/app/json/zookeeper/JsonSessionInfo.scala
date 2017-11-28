@@ -17,9 +17,7 @@
 
 package json.zookeeper
 
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json
-import play.api.libs.json.Writes
+import play.api.libs.json._
 import zookeeper.session.SessionInfo
 
 final case class JsonSessionInfo(underlying: SessionInfo)

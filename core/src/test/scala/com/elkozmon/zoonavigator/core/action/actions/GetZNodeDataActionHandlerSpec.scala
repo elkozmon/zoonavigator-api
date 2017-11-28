@@ -18,23 +18,22 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.curator.TestingCuratorFrameworkProvider
-import com.elkozmon.zoonavigator.core.curator.background.DefaultBackgroundPromiseFactory
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import org.scalatest.FlatSpec
 
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
 
 @SuppressWarnings(Array("org.wartremover.warts.Null"))
 class GetZNodeDataActionHandlerSpec extends FlatSpec {
 
-  private val curatorFramework = TestingCuratorFrameworkProvider.getCuratorFramework(getClass.getName)
+  private val curatorFramework =
+    TestingCuratorFrameworkProvider.getCuratorFramework(getClass.getName)
 
   private val executionContext = ExecutionContext.global
-
-  private val backgroundPromiseFactory = new DefaultBackgroundPromiseFactory
 
   "GetZNodeDataActionHandler" should "return empty byte array for ZNode with null data" in {
     curatorFramework
@@ -42,11 +41,8 @@ class GetZNodeDataActionHandlerSpec extends FlatSpec {
       .forPath("/nullNode", null)
       .asUnit()
 
-    val handler = new GetZNodeDataActionHandler(
-      curatorFramework,
-      backgroundPromiseFactory,
-      executionContext
-    )
+    val handler =
+      new GetZNodeDataActionHandler(curatorFramework, executionContext)
 
     val action = GetZNodeDataAction(ZNodePath("/nullNode"))
 

@@ -18,9 +18,7 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.Action
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMetaWith
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
 
 final case class GetZNodeAclAction(path: ZNodePath) extends Action {
   override type Out = ZNodeMetaWith[ZNodeAcl]

@@ -17,9 +17,9 @@
 
 package action
 
+import action.dispatcher.DefaultActionDispatcherProvider
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
-import action.dispatcher.DefaultActionDispatcherProvider
 import org.apache.curator.framework.CuratorFramework
 import shapeless.HNil
 

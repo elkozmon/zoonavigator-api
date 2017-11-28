@@ -17,19 +17,15 @@
 
 import java.util.concurrent.TimeUnit
 
-import api.ApiErrorHandler
-import api.ApiResponseFactory
-import api.JsonApiResponseFactory
+import api._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
-import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
-import com.elkozmon.zoonavigator.core.curator.background.DefaultBackgroundPromiseFactory
 import com.softwaremill.macwire._
 import curator.action.CuratorActionBuilder
 import curator.provider._
 import org.apache.curator.framework.CuratorFramework
-import play.api.ApplicationLoader.Context
 import play.api._
+import play.api.ApplicationLoader.Context
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
@@ -91,9 +87,6 @@ class AppComponents(context: Context)
 
   lazy val executionContextExecutor: ExecutionContextExecutor =
     actorSystem.dispatcher
-
-  lazy val backgroundPromiseFactory: BackgroundPromiseFactory =
-    wire[DefaultBackgroundPromiseFactory]
 
   lazy val curatorCacheMaxAge: CuratorCacheMaxAge =
     CuratorCacheMaxAge(

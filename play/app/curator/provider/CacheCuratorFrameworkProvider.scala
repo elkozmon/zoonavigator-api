@@ -17,22 +17,18 @@
 
 package curator.provider
 
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import java.util.concurrent._
 
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.google.common.cache.CacheBuilder
-import com.google.common.cache.RemovalListener
-import com.google.common.cache.RemovalNotification
+import com.google.common.cache._
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import logging.AppLogger
 import org.apache.curator.framework
+import org.apache.curator.framework.CuratorFramework
+import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.framework.api.UnhandledErrorListener
 import org.apache.curator.framework.state.ConnectionState
 import org.apache.curator.framework.state.ConnectionStateListener
-import org.apache.curator.framework.CuratorFramework
-import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import zookeeper.AuthInfo
 import zookeeper.ConnectionString
@@ -69,9 +65,12 @@ class CacheCuratorFrameworkProvider(
         .setNameFormat(getClass.getSimpleName + "-cleanUp-%d")
         .build()
     )
-    .scheduleWithFixedDelay(new Runnable {
-      override def run(): Unit = sessionCache.cleanUp()
-    }, 1000, 1000, TimeUnit.MILLISECONDS)
+    .scheduleWithFixedDelay(
+      () => sessionCache.cleanUp(),
+      1000,
+      1000,
+      TimeUnit.MILLISECONDS
+    )
     .asUnit()
 
   private val sessionCacheMap =

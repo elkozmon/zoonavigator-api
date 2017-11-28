@@ -18,10 +18,7 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.Action
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
 
 final case class UpdateZNodeAclListRecursiveAction(
     path: ZNodePath,

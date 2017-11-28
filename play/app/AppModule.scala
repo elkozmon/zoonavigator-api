@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import action.ActionModule
 import api.ApiResponseFactory
 import com.softwaremill.macwire._
-import action.ActionModule
 import controllers._
 import curator.action.CuratorActionBuilder
 import curator.provider.CuratorFrameworkProvider

@@ -17,46 +17,24 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import java.util.concurrent.Executor
-
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
+import com.elkozmon.zoonavigator.core.curator.BackgroundOps
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import org.apache.curator.framework.CuratorFramework
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
-import scala.util.Failure
-import scala.util.Try
 
 class ForceDeleteZNodeRecursiveActionHandler(
     curatorFramework: CuratorFramework,
-    backgroundPromiseFactory: BackgroundPromiseFactory,
-    executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[ForceDeleteZNodeRecursiveAction] {
+    implicit val executionContextExecutor: ExecutionContextExecutor
+) extends ActionHandler[ForceDeleteZNodeRecursiveAction]
+    with BackgroundOps {
 
-  override def handle(action: ForceDeleteZNodeRecursiveAction): Future[Unit] = {
-    val backgroundPromise = backgroundPromiseFactory.newBackgroundPromiseUnit
-
-    Try {
-      curatorFramework
-        .delete()
-        .deletingChildrenIfNeeded()
-        .inBackground(
-          backgroundPromise.eventCallback,
-          executionContextExecutor: Executor
-        )
-        .withUnhandledErrorListener(backgroundPromise.errorListener)
-        .forPath(action.path.path)
-        .asUnit()
-    } match {
-      case Failure(throwable) =>
-        backgroundPromise.promise
-          .tryFailure(throwable)
-          .asUnit()
-      case _ =>
-    }
-
-    backgroundPromise.promise.future
-  }
+  override def handle(action: ForceDeleteZNodeRecursiveAction): Future[Unit] =
+    curatorFramework
+      .delete()
+      .deletingChildrenIfNeeded()
+      .forPathBackground(action.path.path)
+      .map(_.asUnit())
 }

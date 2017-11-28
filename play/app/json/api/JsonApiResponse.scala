@@ -18,9 +18,7 @@
 package json.api
 
 import api.ApiResponse
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json
-import play.api.libs.json.Writes
+import play.api.libs.json._
 
 final case class JsonApiResponse[T](underlying: ApiResponse[T])(
     implicit val fmt: Writes[T]

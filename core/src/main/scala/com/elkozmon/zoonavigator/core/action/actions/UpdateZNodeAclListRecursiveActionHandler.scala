@@ -17,31 +17,22 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import java.util.concurrent.Executor
-
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
-import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+import com.elkozmon.zoonavigator.core.curator.BackgroundOps
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.apache.curator.framework.CuratorFramework
-import org.apache.curator.framework.api.ACLable
-import org.apache.curator.framework.api.BackgroundPathable
-import org.apache.zookeeper.data.ACL
-import org.apache.zookeeper.data.Id
-import org.apache.zookeeper.data.Stat
+import org.apache.zookeeper.data._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
-import scala.util.Failure
-import scala.util.Try
 
 class UpdateZNodeAclListRecursiveActionHandler(
     curatorFramework: CuratorFramework,
-    backgroundPromiseFactory: BackgroundPromiseFactory,
     implicit val executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[UpdateZNodeAclListRecursiveAction] {
+) extends ActionHandler[UpdateZNodeAclListRecursiveAction]
+    with BackgroundOps {
 
   override def handle(
       action: UpdateZNodeAclListRecursiveAction
@@ -75,71 +66,25 @@ class UpdateZNodeAclListRecursiveActionHandler(
       path: ZNodePath,
       acl: ZNodeAcl,
       aclVersionOpt: Option[ZNodeAclVersion]
-  ): Future[ZNodeMeta] = {
-    val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
-      event =>
-        ZNodeMeta.fromStat(event.getStat)
-    }
-
-    Try {
-      val aclBuilder: ACLable[BackgroundPathable[Stat]] =
-        aclVersionOpt match {
-          case Some(aclVersion) =>
-            curatorFramework.setACL().withVersion(aclVersion.version.toInt)
-          case None =>
-            curatorFramework.setACL()
-        }
-
-      aclBuilder
-        .withACL(acl.aclList.map { rawAcl =>
-          new ACL(
-            Permission.toZookeeperMask(rawAcl.permissions),
-            new Id(rawAcl.aclId.scheme, rawAcl.aclId.id)
-          )
-        }.asJava)
-        .inBackground(
-          backgroundPromise.eventCallback,
-          executionContextExecutor: Executor
+  ): Future[ZNodeMeta] =
+    aclVersionOpt
+      .map(ver => curatorFramework.setACL().withVersion(ver.version.toInt))
+      .getOrElse(curatorFramework.setACL())
+      .withACL(acl.aclList.map { rawAcl =>
+        new ACL(
+          Permission.toZookeeperMask(rawAcl.permissions),
+          new Id(rawAcl.aclId.scheme, rawAcl.aclId.id)
         )
-        .withUnhandledErrorListener(backgroundPromise.errorListener)
-        .forPath(path.path)
-        .asUnit()
-    } match {
-      case Failure(throwable) =>
-        backgroundPromise.promise
-          .tryFailure(throwable)
-          .asUnit()
-      case _ =>
-    }
+      }.asJava)
+      .forPathBackground(path.path)
+      .map(event => ZNodeMeta.fromStat(event.getStat))
 
-    backgroundPromise.promise.future
-  }
-
-  private def getNodeChildren(path: ZNodePath): Future[List[ZNodePath]] = {
-    val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
-      event =>
+  private def getNodeChildren(path: ZNodePath): Future[List[ZNodePath]] =
+    curatorFramework.getChildren
+      .forPathBackground(path.path)
+      .map { event =>
         event.getChildren.asScala
           .map(name => ZNodePath(s"${path.path}/$name"))
           .toList
-    }
-
-    Try {
-      curatorFramework.getChildren
-        .inBackground(
-          backgroundPromise.eventCallback,
-          executionContextExecutor: Executor
-        )
-        .withUnhandledErrorListener(backgroundPromise.errorListener)
-        .forPath(path.path)
-        .asUnit()
-    } match {
-      case Failure(throwable) =>
-        backgroundPromise.promise
-          .tryFailure(throwable)
-          .asUnit()
-      case _ =>
-    }
-
-    backgroundPromise.promise.future
-  }
+      }
 }

@@ -17,36 +17,28 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import java.util.concurrent.Executor
-
-import com.elkozmon.zoonavigator.core.curator.background.BackgroundPromiseFactory
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
-import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMetaWith
+import com.elkozmon.zoonavigator.core.curator.BackgroundOps
+import com.elkozmon.zoonavigator.core.zookeeper.acl._
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
-import scala.util.Failure
-import scala.util.Try
 
 class GetZNodeAclActionHandler(
     curatorFramework: CuratorFramework,
-    backgroundPromiseFactory: BackgroundPromiseFactory,
-    executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[GetZNodeAclAction] {
+    implicit val executionContextExecutor: ExecutionContextExecutor
+) extends ActionHandler[GetZNodeAclAction]
+    with BackgroundOps {
 
   override def handle(
       action: GetZNodeAclAction
-  ): Future[ZNodeMetaWith[ZNodeAcl]] = {
-    val backgroundPromise = backgroundPromiseFactory.newBackgroundPromise {
-      event =>
+  ): Future[ZNodeMetaWith[ZNodeAcl]] =
+    curatorFramework.getACL
+      .forPathBackground(action.path.path)
+      .map { event =>
         val meta = ZNodeMeta.fromStat(event.getStat)
         val acl = ZNodeAcl(event.getACLList.asScala.map { acl =>
           Acl(
@@ -56,25 +48,5 @@ class GetZNodeAclActionHandler(
         }.toList)
 
         ZNodeMetaWith(acl, meta)
-    }
-
-    Try {
-      curatorFramework.getACL
-        .inBackground(
-          backgroundPromise.eventCallback,
-          executionContextExecutor: Executor
-        )
-        .withUnhandledErrorListener(backgroundPromise.errorListener)
-        .forPath(action.path.path)
-        .asUnit()
-    } match {
-      case Failure(throwable) =>
-        backgroundPromise.promise
-          .tryFailure(throwable)
-          .asUnit()
-      case _ =>
-    }
-
-    backgroundPromise.promise.future
-  }
+      }
 }

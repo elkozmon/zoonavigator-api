@@ -18,9 +18,7 @@
 package json.zookeeper.znode
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMetaWith
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json
-import play.api.libs.json.Writes
+import play.api.libs.json._
 
 final case class JsonZNodeMetaWith[T](underlying: ZNodeMetaWith[T])(
     implicit val fmt: Writes[T]
