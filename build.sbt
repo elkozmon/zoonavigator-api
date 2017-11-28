@@ -59,6 +59,7 @@ val play = (project in file("play"))
       "com.softwaremill.macwire" %% "macros"         % "2.3.0" % Provided,
       "com.softwaremill.macwire" %% "util"           % "2.3.0"
     ),
+    wartremoverExcluded ++= routes.in(Compile).value,
     wartremoverWarnings ++= Seq(
       PlayWart.AssetsObject,
       PlayWart.CookiesPartial,
@@ -71,8 +72,7 @@ val play = (project in file("play"))
       PlayWart.LangObject,
       PlayWart.MessagesObject,
       PlayWart.SessionPartial,
-      PlayWart.TypedMapPartial,
-      PlayWart.WSResponsePartial
+      PlayWart.TypedMapPartial
     )
   )
   .dependsOn(core)
