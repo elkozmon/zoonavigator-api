@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
 import scala.concurrent.Promise
+import scala.util.Try
 
 trait BackgroundOps {
 
@@ -36,17 +37,14 @@ trait BackgroundOps {
 
     def forPathBackground(
         path: String
-    )(implicit e: Executor): Future[CuratorEvent] = {
-      val promise = Promise[CuratorEvent]()
-
-      action
-        .inBackground(newEventCallback(promise), e)
-        .withUnhandledErrorListener(newErrorListener(promise))
-        .forPath(path)
-        .asUnit()
-
-      promise.future
-    }
+    )(implicit e: Executor): Future[CuratorEvent] =
+      tryPromise[CuratorEvent] { promise =>
+        action
+          .inBackground(newEventCallback(promise), e)
+          .withUnhandledErrorListener(newErrorListener(promise))
+          .forPath(path)
+          .asUnit()
+      }
   }
 
   implicit class BackgroundPathAndBytesableOps[T](
@@ -55,31 +53,34 @@ trait BackgroundOps {
 
     def forPathBackground(
         path: String
-    )(implicit e: Executor): Future[CuratorEvent] = {
-      val promise = Promise[CuratorEvent]()
-
-      action
-        .inBackground(newEventCallback(promise), e)
-        .withUnhandledErrorListener(newErrorListener(promise))
-        .forPath(path)
-        .asUnit()
-
-      promise.future
-    }
+    )(implicit e: Executor): Future[CuratorEvent] =
+      tryPromise[CuratorEvent] { promise =>
+        action
+          .inBackground(newEventCallback(promise), e)
+          .withUnhandledErrorListener(newErrorListener(promise))
+          .forPath(path)
+          .asUnit()
+      }
 
     def forPathBackground(path: String, bytes: Array[Byte])(
         implicit e: Executor
-    ): Future[CuratorEvent] = {
-      val promise = Promise[CuratorEvent]()
+    ): Future[CuratorEvent] =
+      tryPromise[CuratorEvent] { promise =>
+        action
+          .inBackground(newEventCallback(promise), e)
+          .withUnhandledErrorListener(newErrorListener(promise))
+          .forPath(path, bytes)
+          .asUnit()
+      }
+  }
 
-      action
-        .inBackground(newEventCallback(promise), e)
-        .withUnhandledErrorListener(newErrorListener(promise))
-        .forPath(path, bytes)
-        .asUnit()
+  private def tryPromise[T](fn: Promise[T] => Unit): Future[T] = {
+    val promise = Promise[T]()
 
-      promise.future
-    }
+    Try(fn(promise)).toEither.left
+      .foreach(promise.tryFailure)
+
+    promise.future
   }
 
   private def newEventCallback(
