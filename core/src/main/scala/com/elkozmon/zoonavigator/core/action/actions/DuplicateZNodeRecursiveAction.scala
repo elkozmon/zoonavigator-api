@@ -15,19 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package json.zookeeper.znode
+package com.elkozmon.zoonavigator.core.action.actions
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeChildren
-import play.api.libs.json._
+import com.elkozmon.zoonavigator.core.action.Action
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 
-final case class JsonZNodeChildren(underlying: ZNodeChildren)
-
-object JsonZNodeChildren {
-
-  implicit def zNodeChildrenWrites(
-      implicit fmt: Writes[JsonZNodePath]
-  ): Writes[JsonZNodeChildren] =
-    (o: JsonZNodeChildren) =>
-      Json.toJson(o.underlying.children.map(JsonZNodePath(_)))
-
+final case class DuplicateZNodeRecursiveAction(
+    source: ZNodePath,
+    destination: ZNodePath
+) extends Action {
+  override type Out = Unit
 }

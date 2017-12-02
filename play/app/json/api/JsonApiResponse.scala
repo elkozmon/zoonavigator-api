@@ -27,13 +27,11 @@ final case class JsonApiResponse[T](underlying: ApiResponse[T])(
 object JsonApiResponse {
 
   implicit def apiResponseWrites[T]: Writes[JsonApiResponse[T]] =
-    new Writes[JsonApiResponse[T]] {
-      override def writes(o: JsonApiResponse[T]): JsValue =
-        Json.obj(
-          "success" -> o.underlying.success,
-          "message" -> o.underlying.message,
-          "payload" -> o.underlying.payload.map(o.fmt.writes)
-        )
-    }
+    (o: JsonApiResponse[T]) =>
+      Json.obj(
+        "success" -> o.underlying.success,
+        "message" -> o.underlying.message,
+        "payload" -> o.underlying.payload.map(o.fmt.writes)
+    )
 
 }

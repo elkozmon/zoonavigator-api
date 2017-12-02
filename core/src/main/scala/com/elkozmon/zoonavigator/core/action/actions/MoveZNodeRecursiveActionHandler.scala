@@ -19,33 +19,18 @@ package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundOps
-import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import org.apache.curator.framework.CuratorFramework
 
-import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
 
-class GetZNodeChildrenActionHandler(
+// TODO make transactions asynchronous using curator-async
+class MoveZNodeRecursiveActionHandler(
     curatorFramework: CuratorFramework,
     implicit val executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[GetZNodeChildrenAction]
+) extends ActionHandler[MoveZNodeRecursiveAction]
     with BackgroundOps {
 
-  override def handle(
-      action: GetZNodeChildrenAction
-  ): Future[ZNodeMetaWith[ZNodeChildren]] =
-    curatorFramework.getChildren
-      .forPathBackground(action.path.path)
-      .map { event =>
-        val path = event.getPath.stripSuffix("/")
-        val meta = ZNodeMeta.fromStat(event.getStat)
-        val children = ZNodeChildren(
-          event.getChildren.asScala
-            .map(name => ZNodePath(s"$path/$name"))
-            .toList
-        )
-
-        ZNodeMetaWith(children, meta)
-      }
+  override def handle(action: MoveZNodeRecursiveAction): Future[Unit] = ???
 }

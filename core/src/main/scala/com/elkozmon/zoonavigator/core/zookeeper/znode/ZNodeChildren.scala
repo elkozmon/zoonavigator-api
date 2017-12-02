@@ -17,4 +17,4 @@
 
 package com.elkozmon.zoonavigator.core.zookeeper.znode
 
-final case class ZNodeChildren(children: List[ZNode])
+final case class ZNodeChildren(children: List[ZNodePath])

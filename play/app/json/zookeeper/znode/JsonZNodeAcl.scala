@@ -27,10 +27,7 @@ object JsonZNodeAcl {
 
   implicit object ZNodeAclWrites extends Writes[JsonZNodeAcl] {
     override def writes(o: JsonZNodeAcl): JsValue =
-      Json.arr(
-        o.underlying.aclList
-          .map(acl => Json.toJsFieldJsValueWrapper(JsonAcl(acl))): _*
-      )
+      Json.toJson(o.underlying.aclList.map(JsonAcl(_)))
   }
 
 }

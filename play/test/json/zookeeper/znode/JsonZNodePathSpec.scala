@@ -17,17 +17,19 @@
 
 package json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeChildren
-import play.api.libs.json._
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import org.scalatest.FlatSpec
+import play.api.libs.json.Writes
 
-final case class JsonZNodeChildren(underlying: ZNodeChildren)
+class JsonZNodePathSpec extends FlatSpec {
 
-object JsonZNodeChildren {
+  "JsonZNodePath" should "be serialized as a JSON object with 'name' and 'path' keys" in {
+    val jsonZNodePath = JsonZNodePath(ZNodePath("/node0/node1"))
 
-  implicit def zNodeChildrenWrites(
-      implicit fmt: Writes[JsonZNodePath]
-  ): Writes[JsonZNodeChildren] =
-    (o: JsonZNodeChildren) =>
-      Json.toJson(o.underlying.children.map(JsonZNodePath(_)))
+    val jsonString = implicitly[Writes[JsonZNodePath]]
+      .writes(jsonZNodePath)
+      .toString()
 
+    assertResult("""{"name":"node1","path":"/node0/node1"}""")(jsonString)
+  }
 }

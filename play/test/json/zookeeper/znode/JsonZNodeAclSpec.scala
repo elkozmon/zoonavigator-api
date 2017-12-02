@@ -17,17 +17,20 @@
 
 package json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeChildren
-import play.api.libs.json._
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
+import org.scalatest.FlatSpec
+import play.api.libs.json.JsArray
+import play.api.libs.json.Writes
 
-final case class JsonZNodeChildren(underlying: ZNodeChildren)
+class JsonZNodeAclSpec extends FlatSpec {
 
-object JsonZNodeChildren {
+  "JsonZNodeAcl" should "be serialized as a JSON array of ACLs" in {
+    val jsonZNodeAcl = JsonZNodeAcl(ZNodeAcl(List.empty))
 
-  implicit def zNodeChildrenWrites(
-      implicit fmt: Writes[JsonZNodePath]
-  ): Writes[JsonZNodeChildren] =
-    (o: JsonZNodeChildren) =>
-      Json.toJson(o.underlying.children.map(JsonZNodePath(_)))
-
+    assert(
+      implicitly[Writes[JsonZNodeAcl]]
+        .writes(jsonZNodeAcl)
+        .isInstanceOf[JsArray]
+    )
+  }
 }

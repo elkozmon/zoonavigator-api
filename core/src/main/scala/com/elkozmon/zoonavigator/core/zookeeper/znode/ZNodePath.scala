@@ -17,4 +17,22 @@
 
 package com.elkozmon.zoonavigator.core.zookeeper.znode
 
-final case class ZNodePath(path: String)
+import org.apache.curator.utils.ZKPaths
+
+import scala.util.Try
+
+final case class ZNodePath(path: String) {
+
+  lazy val name: Try[String] = pathAndNode.map(_.getNode)
+
+  lazy val parent: Try[ZNodePath] = pathAndNode.map(p => ZNodePath(p.getPath))
+
+  def down(name: String): ZNodePath =
+    ZNodePath(
+      path
+        .stripSuffix(ZKPaths.PATH_SEPARATOR)
+        .concat(ZKPaths.PATH_SEPARATOR + name)
+    )
+
+  private lazy val pathAndNode = Try(ZKPaths.getPathAndNode(path))
+}

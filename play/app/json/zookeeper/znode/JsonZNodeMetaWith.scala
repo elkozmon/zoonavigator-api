@@ -27,12 +27,10 @@ final case class JsonZNodeMetaWith[T](underlying: ZNodeMetaWith[T])(
 object JsonZNodeMetaWith {
 
   implicit def zNodeMetaWithWrites[T]: Writes[JsonZNodeMetaWith[T]] =
-    new Writes[JsonZNodeMetaWith[T]] {
-      override def writes(o: JsonZNodeMetaWith[T]): JsValue =
-        Json.obj(
-          "data" -> o.fmt.writes(o.underlying.data),
-          "meta" -> JsonZNodeMeta(o.underlying.meta)
-        )
-    }
+    (o: JsonZNodeMetaWith[T]) =>
+      Json.obj(
+        "data" -> o.fmt.writes(o.underlying.data),
+        "meta" -> JsonZNodeMeta(o.underlying.meta)
+    )
 
 }

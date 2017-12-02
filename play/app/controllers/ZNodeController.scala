@@ -27,6 +27,8 @@ import curator.action.CuratorActionBuilder
 import curator.action.CuratorRequest
 import json.zookeeper.acl.JsonAcl
 import json.zookeeper.znode._
+import json.zookeeper.znode.JsonZNodeChildren._
+import json.zookeeper.znode.JsonZNodePath._
 import play.api.libs.json._
 import play.api.mvc._
 import session.action.SessionActionBuilder
@@ -139,6 +141,10 @@ class ZNodeController(
       )
     }
 
+  def duplicate(): Action[Unit] = ???
+
+  def move(): Action[Unit] = ???
+
   def delete(): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
@@ -166,7 +172,9 @@ class ZNodeController(
         path <- getRequiredQueryParam("path").right
           .map(_.stripSuffix("/"))
           .right
-        names <- getRequiredQueryParam("names").right.map(_.split("/")).right
+        names <- getRequiredQueryParam("names").right
+          .map(_.split("/"))
+          .right
       } yield {
         names.map { name =>
           val zNodePath = ZNodePath(s"$path/$name")
