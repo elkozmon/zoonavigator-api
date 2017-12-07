@@ -18,14 +18,13 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.action.actions.DuplicateZNodeRecursiveActionHandler.ZNodeTree
-import com.elkozmon.zoonavigator.core.curator.BackgroundOps
+import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
 import com.elkozmon.zoonavigator.core.curator.Transactions
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.transaction._
-import org.apache.zookeeper.data.ACL
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContextExecutor
@@ -36,58 +35,22 @@ class DuplicateZNodeRecursiveActionHandler(
     curatorFramework: CuratorFramework,
     implicit val executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[DuplicateZNodeRecursiveAction]
-    with BackgroundOps {
+    with BackgroundReadOps {
 
   override def handle(action: DuplicateZNodeRecursiveAction): Future[Unit] =
     for {
-      tree <- getTree(action.source)
-      destName <- Future.fromTry(action.destination.name)
-      destDir <- Future.fromTry(action.destination.parent)
-      unit <- createTree(destDir, tree.copy(name = destName))
-    } yield unit
-
-  private def getData(path: ZNodePath): Future[Array[Byte]] =
-    curatorFramework.getData
-      .forPathBackground(path.path)
-      .map(_.getData)
-
-  private def getAcl(path: ZNodePath): Future[List[ACL]] =
-    curatorFramework.getACL
-      .forPathBackground(path.path)
-      .map(_.getACLList.asScala.toList)
-
-  private def getChildren(path: ZNodePath): Future[List[ZNodePath]] =
-    curatorFramework.getChildren
-      .forPathBackground(path.path)
-      .map { event =>
-        val path = event.getPath.stripSuffix("/")
-
-        event.getChildren.asScala
-          .map(name => ZNodePath(s"$path/$name"))
-          .toList
-      }
-
-  /**
-    * @param node path to the root node of the tree to be fetched
-    */
-  private def getTree(node: ZNodePath): Future[ZNodeTree] = {
-    val futureAcl = getAcl(node)
-    val futureData = getData(node)
-    val futureChildren = getChildren(node).flatMap(Future.traverse(_)(getTree))
-
-    for {
-      acl <- futureAcl
-      name <- Future.fromTry(node.name)
-      data <- futureData
-      children <- futureChildren
-    } yield ZNodeTree(name, data, acl, children)
-  }
+      tree <- curatorFramework.getTreeBackground(action.source)
+      _ <- createTree(
+        action.destination.parent,
+        tree.copy(path = action.destination)
+      )
+    } yield ()
 
   /**
     * @param dir  directory where to create the tree's root node
     * @param tree tree to create
     */
-  private def createTree(dir: ZNodePath, tree: ZNodeTree): Future[Unit] = {
+  private def createTree(dir: ZNodePath, tree: ZNode): Future[Unit] = {
     val transaction = createTreeTransaction(
       dir,
       tree,
@@ -105,29 +68,18 @@ class DuplicateZNodeRecursiveActionHandler(
     */
   private def createTreeTransaction(
       dir: ZNodePath,
-      tree: ZNodeTree,
+      tree: ZNode,
       transaction: CuratorTransactionFinal
   ): CuratorTransactionFinal = {
-    val rootNode = dir.down(tree.name)
+    val rootNode = dir.down(tree.path.name)
 
     tree.children
       .foldRight {
         transaction
           .create()
-          .withACL(tree.acl.asJava)
-          .forPath(rootNode.path, tree.data)
+          .withACL(tree.acl.aclList.map(Acl.toZookeeper).asJava)
+          .forPath(rootNode.path, tree.data.bytes)
           .and()
       }(createTreeTransaction(rootNode, _, _))
   }
-}
-
-object DuplicateZNodeRecursiveActionHandler {
-
-  private case class ZNodeTree(
-      name: String,
-      data: Array[Byte],
-      acl: List[ACL],
-      children: List[ZNodeTree]
-  )
-
 }

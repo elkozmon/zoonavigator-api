@@ -17,4 +17,22 @@
 
 package com.elkozmon.zoonavigator.core.zookeeper.acl
 
+import org.apache.zookeeper.data.ACL
+import org.apache.zookeeper.data.Id
+
 final case class Acl(aclId: AclId, permissions: Set[Permission])
+
+object Acl {
+
+  def fromZookeeper(acl: ACL): Acl =
+    Acl(
+      AclId(acl.getId.getScheme, acl.getId.getId),
+      Permission.fromZookeeperMask(acl.getPerms)
+    )
+
+  def toZookeeper(acl: Acl): ACL =
+    new ACL(
+      Permission.toZookeeperMask(acl.permissions),
+      new Id(acl.aclId.scheme, acl.aclId.id)
+    )
+}

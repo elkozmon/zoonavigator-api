@@ -18,21 +18,21 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundOps
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
+import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.apache.curator.framework.CuratorFramework
-import org.apache.zookeeper.data._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
+import cats.implicits._
 
 class UpdateZNodeAclListRecursiveActionHandler(
     curatorFramework: CuratorFramework,
     implicit val executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[UpdateZNodeAclListRecursiveAction]
-    with BackgroundOps {
+    with BackgroundReadOps {
 
   override def handle(
       action: UpdateZNodeAclListRecursiveAction
@@ -46,21 +46,26 @@ class UpdateZNodeAclListRecursiveActionHandler(
 
     for {
       meta <- futureMeta
-      unit <- futureUnit
-    } yield {
-      meta
-    }
+      _ <- futureUnit
+    } yield meta
   }
 
   private def setChildrenAclRecursive(
       parent: ZNodePath,
       acl: ZNodeAcl
   ): Future[Unit] =
-    for {
-      children <- getNodeChildren(parent)
-      _ <- Future.sequence(children.map(setNodeAcl(_, acl, None)))
-      _ <- Future.sequence(children.map(setChildrenAclRecursive(_, acl)))
-    } yield ()
+    curatorFramework
+      .getChildrenBackground(parent)
+      .flatMap {
+        case ZNodeMetaWith(ZNodeChildren(paths), _) =>
+          val aclsFuture = paths.traverseU(setNodeAcl(_, acl, None))
+          val childrenFuture = paths.traverseU(setChildrenAclRecursive(_, acl))
+
+          for {
+            _ <- aclsFuture
+            _ <- childrenFuture
+          } yield ()
+      }
 
   private def setNodeAcl(
       path: ZNodePath,
@@ -70,21 +75,8 @@ class UpdateZNodeAclListRecursiveActionHandler(
     aclVersionOpt
       .map(ver => curatorFramework.setACL().withVersion(ver.version.toInt))
       .getOrElse(curatorFramework.setACL())
-      .withACL(acl.aclList.map { rawAcl =>
-        new ACL(
-          Permission.toZookeeperMask(rawAcl.permissions),
-          new Id(rawAcl.aclId.scheme, rawAcl.aclId.id)
-        )
-      }.asJava)
+      .withACL(acl.aclList.map(Acl.toZookeeper).asJava)
       .forPathBackground(path.path)
       .map(event => ZNodeMeta.fromStat(event.getStat))
 
-  private def getNodeChildren(path: ZNodePath): Future[List[ZNodePath]] =
-    curatorFramework.getChildren
-      .forPathBackground(path.path)
-      .map { event =>
-        event.getChildren.asScala
-          .map(name => ZNodePath(s"${path.path}/$name"))
-          .toList
-      }
 }

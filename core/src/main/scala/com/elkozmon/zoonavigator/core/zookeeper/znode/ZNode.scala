@@ -15,24 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package json.zookeeper.znode
+package com.elkozmon.zoonavigator.core.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeChildren
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
-import org.scalatest.FlatSpec
-import play.api.libs.json.JsArray
-import play.api.libs.json.Writes
-
-class JsonZNodeChildrenSpec extends FlatSpec {
-
-  "JsonZNodeChildren" should "be serialized as a JSON array" in {
-    val jsonZNodeChildren =
-      JsonZNodeChildren(ZNodeChildren(List.empty[ZNodePath]))
-
-    assert(
-      implicitly[Writes[JsonZNodeChildren]]
-        .writes(jsonZNodeChildren)
-        .isInstanceOf[JsArray]
-    )
-  }
-}
+final case class ZNode(
+    acl: ZNodeAcl,
+    path: ZNodePath,
+    data: ZNodeData,
+    meta: ZNodeMeta,
+    children: List[ZNode]
+)

@@ -21,18 +21,32 @@ import org.apache.curator.utils.ZKPaths
 
 import scala.util.Try
 
-final case class ZNodePath(path: String) {
+class ZNodePath private (val path: String) {
 
-  lazy val name: Try[String] = pathAndNode.map(_.getNode)
+  private val pathAndNode = ZKPaths.getPathAndNode(path)
 
-  lazy val parent: Try[ZNodePath] = pathAndNode.map(p => ZNodePath(p.getPath))
+  val name: ZNodePathSegment = ZNodePathSegment(pathAndNode.getNode)
 
-  def down(name: String): ZNodePath =
-    ZNodePath(
+  lazy val parent: ZNodePath = ZNodePath.unsafe(pathAndNode.getPath)
+
+  def down(name: String): Try[ZNodePath] =
+    ZNodePath.parse(
       path
         .stripSuffix(ZKPaths.PATH_SEPARATOR)
         .concat(ZKPaths.PATH_SEPARATOR + name)
     )
 
-  private lazy val pathAndNode = Try(ZKPaths.getPathAndNode(path))
+  def down(name: ZNodePathSegment): ZNodePath =
+    ZNodePath.unsafe(
+      path
+        .stripSuffix(ZKPaths.PATH_SEPARATOR)
+        .concat(ZKPaths.PATH_SEPARATOR + name.string)
+    )
+}
+
+object ZNodePath {
+
+  def parse(path: String): Try[ZNodePath] = Try(unsafe(path))
+
+  def unsafe(path: String): ZNodePath = new ZNodePath(path)
 }

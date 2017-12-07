@@ -36,7 +36,5 @@ class UpdateZNodeDataActionHandler(
       .setData()
       .withVersion(action.expectedDataVersion.version.toInt)
       .forPathBackground(action.path.path, action.data.bytes)
-      .map { event =>
-        ZNodeMeta.fromStat(event.getStat)
-      }
+      .map(event => ZNodeMeta.fromStat(event.getStat))
 }

@@ -24,10 +24,9 @@ final case class JsonZNodePath(underlying: ZNodePath)
 
 object JsonZNodePath {
 
-  @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
   implicit object ZNodePathWrites extends Writes[JsonZNodePath] {
     override def writes(o: JsonZNodePath): JsValue =
-      Json.obj("name" -> o.underlying.name.get, "path" -> o.underlying.path)
+      Json.obj("name" -> o.underlying.name.string, "path" -> o.underlying.path)
   }
 
 }

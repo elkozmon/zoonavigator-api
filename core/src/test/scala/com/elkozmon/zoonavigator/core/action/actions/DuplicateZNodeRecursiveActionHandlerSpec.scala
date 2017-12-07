@@ -29,9 +29,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
-@SuppressWarnings(Array("org.wartremover.warts.Null"))
 class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
 
   private val curatorFramework =
@@ -59,11 +57,11 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
 
     val action =
       DuplicateZNodeRecursiveAction(
-        ZNodePath("/test1"),
-        ZNodePath("/test1-copy")
+        ZNodePath.unsafe("/test1"),
+        ZNodePath.unsafe("/test1-copy")
       )
 
-    Await.result(duplicateActionHandler.handle(action), 1 second)
+    Await.result(duplicateActionHandler.handle(action), Duration.Inf)
 
     val bar = new String(curatorFramework.getData.forPath("/test1-copy/bar"))
     val baz = new String(curatorFramework.getData.forPath("/test1-copy/baz"))
@@ -85,11 +83,11 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
 
     val action =
       DuplicateZNodeRecursiveAction(
-        ZNodePath("/test2"),
-        ZNodePath("/test2-copy")
+        ZNodePath.unsafe("/test2"),
+        ZNodePath.unsafe("/test2-copy")
       )
 
-    Await.result(duplicateActionHandler.handle(action), 1 second)
+    Await.result(duplicateActionHandler.handle(action), Duration.Inf)
 
     assert(
       curatorFramework.getACL

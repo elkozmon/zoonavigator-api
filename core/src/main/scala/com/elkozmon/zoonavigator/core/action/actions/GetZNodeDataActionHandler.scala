@@ -18,7 +18,7 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundOps
+import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.apache.curator.framework.CuratorFramework
 
@@ -29,17 +29,10 @@ class GetZNodeDataActionHandler(
     curatorFramework: CuratorFramework,
     implicit val executionContextExecutor: ExecutionContextExecutor
 ) extends ActionHandler[GetZNodeDataAction]
-    with BackgroundOps {
+    with BackgroundReadOps {
 
   override def handle(
       action: GetZNodeDataAction
   ): Future[ZNodeMetaWith[ZNodeData]] =
-    curatorFramework.getData
-      .forPathBackground(action.path.path)
-      .map { event =>
-        val meta = ZNodeMeta.fromStat(event.getStat)
-        val data = ZNodeData(Option(event.getData).getOrElse(Array.empty))
-
-        ZNodeMetaWith(data, meta)
-      }
+    curatorFramework.getDataBackground(action.path)
 }

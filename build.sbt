@@ -30,6 +30,7 @@ val commonSettings = Seq(
     )
   ),
   libraryDependencies ++= Seq(
+    "org.typelevel" %% "cats" % "0.9.0",
     "org.scalatest" %% "scalatest" % "3.0.4" % Test
   ),
   wartremoverErrors ++= Warts.unsafe
@@ -57,7 +58,6 @@ val play = (project in file("play"))
       filters,
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "com.google.guava" % "guava" % "16.0.1",
-      "org.typelevel" %% "cats" % "0.9.0",
       "com.softwaremill.macwire" %% "macros" % "2.3.0" % Provided,
       "com.softwaremill.macwire" %% "util" % "2.3.0"
     ),

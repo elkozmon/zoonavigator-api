@@ -24,7 +24,7 @@ import play.api.libs.json.Writes
 class JsonZNodePathSpec extends FlatSpec {
 
   "JsonZNodePath" should "be serialized as a JSON object with 'name' and 'path' keys" in {
-    val jsonZNodePath = JsonZNodePath(ZNodePath("/node0/node1"))
+    val jsonZNodePath = JsonZNodePath(ZNodePath.unsafe("/node0/node1"))
 
     val jsonString = implicitly[Writes[JsonZNodePath]]
       .writes(jsonZNodePath)

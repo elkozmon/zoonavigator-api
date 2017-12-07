@@ -25,7 +25,6 @@ import org.scalatest.FlatSpec
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 @SuppressWarnings(Array("org.wartremover.warts.Null"))
 class GetZNodeDataActionHandlerSpec extends FlatSpec {
@@ -44,9 +43,9 @@ class GetZNodeDataActionHandlerSpec extends FlatSpec {
     val handler =
       new GetZNodeDataActionHandler(curatorFramework, executionContext)
 
-    val action = GetZNodeDataAction(ZNodePath("/nullNode"))
+    val action = GetZNodeDataAction(ZNodePath.unsafe("/nullNode"))
 
-    val metaWithData = Await.result(handler.handle(action), 1 second)
+    val metaWithData = Await.result(handler.handle(action), Duration.Inf)
 
     assert(metaWithData.data.bytes.isEmpty)
   }

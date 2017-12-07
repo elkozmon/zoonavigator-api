@@ -19,11 +19,9 @@ package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundOps
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import org.apache.curator.framework.CuratorFramework
-import org.apache.zookeeper.data.ACL
-import org.apache.zookeeper.data.Id
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContextExecutor
@@ -39,12 +37,7 @@ class UpdateZNodeAclListActionHandler(
     curatorFramework
       .setACL()
       .withVersion(action.expectedAclVersion.version.toInt)
-      .withACL(action.acl.aclList.map { rawAcl =>
-        new ACL(
-          Permission.toZookeeperMask(rawAcl.permissions),
-          new Id(rawAcl.aclId.scheme, rawAcl.aclId.id)
-        )
-      }.asJava)
+      .withACL(action.acl.aclList.map(Acl.toZookeeper).asJava)
       .forPathBackground(action.path.path)
       .map(event => ZNodeMeta.fromStat(event.getStat))
 }
