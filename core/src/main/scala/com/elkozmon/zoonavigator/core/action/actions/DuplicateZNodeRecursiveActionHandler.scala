@@ -19,7 +19,6 @@ package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
-import com.elkozmon.zoonavigator.core.curator.Transactions
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
@@ -51,35 +50,33 @@ class DuplicateZNodeRecursiveActionHandler(
     * @param tree tree to create
     */
   private def createTree(dir: ZNodePath, tree: ZNode): Future[Unit] = {
-    val transaction = createTreeTransaction(
-      dir,
-      tree,
-      Transactions.emptyTransaction(curatorFramework)
-    )
+    val transactions = createTransactions(dir, tree, List.empty)
 
-    Future(transaction.commit().asUnit())
+    curatorFramework
+      .transaction()
+      .forOperationsBackground(transactions)
+      .map(_.asUnit())
   }
 
   /**
     * @param dir         directory where to create the tree's root node
     * @param tree        tree to create
-    * @param transaction transaction builder
+    * @param ops         accumulative list of transactions
     * @return prepared transaction
     */
-  private def createTreeTransaction(
+  private def createTransactions(
       dir: ZNodePath,
       tree: ZNode,
-      transaction: CuratorTransactionFinal
-  ): CuratorTransactionFinal = {
+      ops: List[CuratorOp]
+  ): List[CuratorOp] = {
     val rootNode = dir.down(tree.path.name)
+    val nextOp = curatorFramework
+      .transactionOp()
+      .create()
+      .withACL(tree.acl.aclList.map(Acl.toZookeeper).asJava)
+      .forPath(rootNode.path, tree.data.bytes)
 
     tree.children
-      .foldRight {
-        transaction
-          .create()
-          .withACL(tree.acl.aclList.map(Acl.toZookeeper).asJava)
-          .forPath(rootNode.path, tree.data.bytes)
-          .and()
-      }(createTreeTransaction(rootNode, _, _))
+      .foldRight(ops :+ nextOp)(createTransactions(rootNode, _, _))
   }
 }

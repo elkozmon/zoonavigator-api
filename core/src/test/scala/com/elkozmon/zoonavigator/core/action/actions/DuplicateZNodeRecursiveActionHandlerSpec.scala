@@ -42,17 +42,21 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
 
   "DuplicateZNodeRecursiveActionHandler" should "copy 2nd level ZNodes" in {
     curatorFramework
-      .inTransaction()
-      .create()
-      .forPath("/test1", "foo".getBytes)
-      .and()
-      .create()
-      .forPath("/test1/bar", "bar".getBytes)
-      .and()
-      .create()
-      .forPath("/test1/baz", "baz".getBytes)
-      .and()
-      .commit()
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/test1", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/test1/bar", "bar".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/test1/baz", "baz".getBytes)
+      )
       .asUnit()
 
     val action =

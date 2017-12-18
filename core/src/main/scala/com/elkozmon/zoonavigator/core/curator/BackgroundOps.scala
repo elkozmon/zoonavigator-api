@@ -21,6 +21,7 @@ import java.util.concurrent.Executor
 
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import org.apache.curator.framework.api._
+import org.apache.curator.framework.api.transaction.CuratorOp
 import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.KeeperException.Code
 import org.slf4j.LoggerFactory
@@ -32,6 +33,22 @@ import scala.util.Try
 trait BackgroundOps {
 
   private val logger = LoggerFactory.getLogger(getClass)
+
+  implicit class BackgroundTransactionOps(
+      action: Backgroundable[ErrorListenerMultiTransactionMain]
+  ) {
+
+    def forOperationsBackground(
+        ops: Seq[CuratorOp]
+    )(implicit e: Executor): Future[CuratorEvent] =
+      tryPromise[CuratorEvent] { promise =>
+        action
+          .inBackground(newEventCallback(promise), e)
+          .withUnhandledErrorListener(newErrorListener(promise))
+          .forOperations(ops: _*)
+          .asUnit()
+      }
+  }
 
   implicit class BackgroundPathableOps[T](action: BackgroundPathable[T]) {
 

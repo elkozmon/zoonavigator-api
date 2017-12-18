@@ -43,8 +43,9 @@ val core = (project in file("core"))
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % "1.7.25",
       "joda-time" % "joda-time" % "2.9.9",
-      "org.apache.curator" % "curator-framework" % "2.12.0",
-      "org.apache.curator" % "curator-test" % "2.12.0" % Test,
+      "org.apache.curator" % "curator-framework" % "4.0.0",
+      "org.apache.curator" % "curator-test" % "4.0.0" % Test,
+      "org.apache.zookeeper" % "zookeeper" % "3.4.11",
       "com.chuusai" %% "shapeless" % "2.3.2"
     )
   )
@@ -57,7 +58,6 @@ val play = (project in file("play"))
     libraryDependencies ++= Seq(
       filters,
       "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "com.google.guava" % "guava" % "16.0.1",
       "com.softwaremill.macwire" %% "macros" % "2.3.0" % Provided,
       "com.softwaremill.macwire" %% "util" % "2.3.0"
     ),
