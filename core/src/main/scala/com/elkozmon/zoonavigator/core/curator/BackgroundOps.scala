@@ -17,17 +17,17 @@
 
 package com.elkozmon.zoonavigator.core.curator
 
-import java.util.concurrent.Executor
-
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+import monix.eval.Callback
+import monix.eval.Task
+import monix.execution.Cancelable
+import monix.execution.Scheduler
 import org.apache.curator.framework.api._
 import org.apache.curator.framework.api.transaction.CuratorOp
 import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.KeeperException.Code
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.Future
-import scala.concurrent.Promise
 import scala.util.Try
 
 trait BackgroundOps {
@@ -38,13 +38,11 @@ trait BackgroundOps {
       action: Backgroundable[ErrorListenerMultiTransactionMain]
   ) {
 
-    def forOperationsBackground(
-        ops: Seq[CuratorOp]
-    )(implicit e: Executor): Future[CuratorEvent] =
-      tryPromise[CuratorEvent] { promise =>
+    def forOperationsBackground(ops: Seq[CuratorOp]): Task[CuratorEvent] =
+      tryTaskCreate[CuratorEvent] { (scheduler, callback) =>
         action
-          .inBackground(newEventCallback(promise), e)
-          .withUnhandledErrorListener(newErrorListener(promise))
+          .inBackground(newEventCallback(callback), scheduler)
+          .withUnhandledErrorListener(newErrorListener(callback))
           .forOperations(ops: _*)
           .asUnit()
       }
@@ -52,13 +50,11 @@ trait BackgroundOps {
 
   implicit class BackgroundPathableOps[T](action: BackgroundPathable[T]) {
 
-    def forPathBackground(
-        path: String
-    )(implicit e: Executor): Future[CuratorEvent] =
-      tryPromise[CuratorEvent] { promise =>
+    def forPathBackground(path: String): Task[CuratorEvent] =
+      tryTaskCreate[CuratorEvent] { (scheduler, callback) =>
         action
-          .inBackground(newEventCallback(promise), e)
-          .withUnhandledErrorListener(newErrorListener(promise))
+          .inBackground(newEventCallback(callback), scheduler)
+          .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path)
           .asUnit()
       }
@@ -68,40 +64,38 @@ trait BackgroundOps {
       action: BackgroundPathAndBytesable[T]
   ) {
 
-    def forPathBackground(
-        path: String
-    )(implicit e: Executor): Future[CuratorEvent] =
-      tryPromise[CuratorEvent] { promise =>
+    def forPathBackground(path: String): Task[CuratorEvent] =
+      tryTaskCreate[CuratorEvent] { (scheduler, callback) =>
         action
-          .inBackground(newEventCallback(promise), e)
-          .withUnhandledErrorListener(newErrorListener(promise))
+          .inBackground(newEventCallback(callback), scheduler)
+          .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path)
           .asUnit()
       }
 
-    def forPathBackground(path: String, bytes: Array[Byte])(
-        implicit e: Executor
-    ): Future[CuratorEvent] =
-      tryPromise[CuratorEvent] { promise =>
+    def forPathBackground(
+        path: String,
+        bytes: Array[Byte]
+    ): Task[CuratorEvent] =
+      tryTaskCreate[CuratorEvent] { (scheduler, callback) =>
         action
-          .inBackground(newEventCallback(promise), e)
-          .withUnhandledErrorListener(newErrorListener(promise))
+          .inBackground(newEventCallback(callback), scheduler)
+          .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path, bytes)
           .asUnit()
       }
   }
 
-  private def tryPromise[T](fn: Promise[T] => Unit): Future[T] = {
-    val promise = Promise[T]()
+  private def tryTaskCreate[T](fn: (Scheduler, Callback[T]) => Unit): Task[T] =
+    Task.create[T] { (scheduler, callback) =>
+      Try(fn(scheduler, callback)).toEither.left
+        .foreach(callback.onError)
 
-    Try(fn(promise)).toEither.left
-      .foreach(promise.tryFailure)
-
-    promise.future
-  }
+      Cancelable.empty
+    }
 
   private def newEventCallback(
-      promise: Promise[CuratorEvent]
+      callback: Callback[CuratorEvent]
   ): BackgroundCallback =
     (_, event: CuratorEvent) => {
       logger.debug(
@@ -111,18 +105,18 @@ trait BackgroundOps {
       )
 
       if (event.getResultCode == 0) {
-        promise.trySuccess(event).asUnit()
+        callback.onSuccess(event)
       } else {
         val code = Code.get(event.getResultCode)
         val path = event.getPath
 
-        promise.tryFailure(KeeperException.create(code, path)).asUnit()
+        callback.onError(KeeperException.create(code, path))
       }
     }
 
-  private def newErrorListener(promise: Promise[_]): UnhandledErrorListener =
+  private def newErrorListener(callback: Callback[_]): UnhandledErrorListener =
     (message: String, e: Throwable) => {
       logger.error(message, e)
-      promise.tryFailure(e).asUnit()
+      callback.onError(e)
     }
 }

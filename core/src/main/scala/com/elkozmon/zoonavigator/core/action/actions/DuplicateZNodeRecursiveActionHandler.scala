@@ -22,21 +22,17 @@ import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.transaction._
 
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
 
-// TODO make transactions asynchronous using curator-async
-class DuplicateZNodeRecursiveActionHandler(
-    curatorFramework: CuratorFramework,
-    implicit val executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[DuplicateZNodeRecursiveAction]
+class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[DuplicateZNodeRecursiveAction]
     with BackgroundReadOps {
 
-  override def handle(action: DuplicateZNodeRecursiveAction): Future[Unit] =
+  override def handle(action: DuplicateZNodeRecursiveAction): Task[Unit] =
     for {
       tree <- curatorFramework.getTreeBackground(action.source)
       _ <- createTree(
@@ -49,7 +45,7 @@ class DuplicateZNodeRecursiveActionHandler(
     * @param dir  directory where to create the tree's root node
     * @param tree tree to create
     */
-  private def createTree(dir: ZNodePath, tree: ZNode): Future[Unit] = {
+  private def createTree(dir: ZNodePath, tree: ZNode): Task[Unit] = {
     val transactions = createTransactions(dir, tree, List.empty)
 
     curatorFramework

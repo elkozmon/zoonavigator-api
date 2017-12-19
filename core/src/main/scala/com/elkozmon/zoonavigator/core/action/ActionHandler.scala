@@ -17,9 +17,9 @@
 
 package com.elkozmon.zoonavigator.core.action
 
-import scala.concurrent.Future
+import monix.eval.Task
 
 trait ActionHandler[A <: Action] {
 
-  def handle(action: A): Future[A#Out]
+  def handle(action: A): Task[A#Out]
 }

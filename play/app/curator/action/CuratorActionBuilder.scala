@@ -19,15 +19,14 @@ package curator.action
 
 import api.ApiResponseFactory
 import curator.provider.CuratorFrameworkProvider
+import monix.execution.Scheduler
 import zookeeper.session.ZookeeperSessionHelper
-
-import scala.concurrent.ExecutionContextExecutor
 
 class CuratorActionBuilder(
     apiResponseFactory: ApiResponseFactory,
     zookeeperSessionHelper: ZookeeperSessionHelper,
     curatorFrameworkProvider: CuratorFrameworkProvider,
-    executionContextExecutor: ExecutionContextExecutor
+    scheduler: Scheduler
 ) {
 
   def apply(): CuratorAction =
@@ -35,5 +34,5 @@ class CuratorActionBuilder(
       apiResponseFactory,
       zookeeperSessionHelper,
       curatorFrameworkProvider
-    )(executionContextExecutor)
+    )(scheduler)
 }

@@ -21,45 +21,43 @@ import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
-import cats.implicits._
 
 class UpdateZNodeAclListRecursiveActionHandler(
-    curatorFramework: CuratorFramework,
-    implicit val executionContextExecutor: ExecutionContextExecutor
+    curatorFramework: CuratorFramework
 ) extends ActionHandler[UpdateZNodeAclListRecursiveAction]
     with BackgroundReadOps {
 
   override def handle(
       action: UpdateZNodeAclListRecursiveAction
-  ): Future[ZNodeMeta] = {
+  ): Task[ZNodeMeta] = {
     // set acl for the parent node
-    val futureMeta =
+    val taskMeta =
       setNodeAcl(action.path, action.acl, Some(action.expectedAclVersion))
 
     // set acl for children nodes recursively
-    val futureUnit = setChildrenAclRecursive(action.path, action.acl)
+    val taskUnit = setChildrenAclRecursive(action.path, action.acl)
 
     for {
-      meta <- futureMeta
-      _ <- futureUnit
+      meta <- taskMeta
+      _ <- taskUnit
     } yield meta
   }
 
   private def setChildrenAclRecursive(
       parent: ZNodePath,
       acl: ZNodeAcl
-  ): Future[Unit] =
+  ): Task[Unit] =
     curatorFramework
       .getChildrenBackground(parent)
       .flatMap {
         case ZNodeMetaWith(ZNodeChildren(paths), _) =>
-          val aclsFuture = paths.traverseU(setNodeAcl(_, acl, None))
-          val childrenFuture = paths.traverseU(setChildrenAclRecursive(_, acl))
+          val aclsFuture = Task.traverse(paths)(setNodeAcl(_, acl, None))
+          val childrenFuture =
+            Task.traverse(paths)(setChildrenAclRecursive(_, acl))
 
           for {
             _ <- aclsFuture
@@ -71,7 +69,7 @@ class UpdateZNodeAclListRecursiveActionHandler(
       path: ZNodePath,
       acl: ZNodeAcl,
       aclVersionOpt: Option[ZNodeAclVersion]
-  ): Future[ZNodeMeta] =
+  ): Task[ZNodeMeta] =
     aclVersionOpt
       .map(ver => curatorFramework.setACL().withVersion(ver.version.toInt))
       .getOrElse(curatorFramework.setACL())

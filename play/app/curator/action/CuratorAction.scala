@@ -20,19 +20,19 @@ package curator.action
 import api.ApiResponseFactory
 import cats.implicits._
 import curator.provider.CuratorFrameworkProvider
+import monix.execution.Scheduler
 import play.api.mvc._
 import session.action.SessionRequest
 import zookeeper.ConnectionParams
 import zookeeper.session.ZookeeperSessionHelper
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 class CuratorAction(
     apiResponseFactory: ApiResponseFactory,
     zookeeperSessionHelper: ZookeeperSessionHelper,
     curatorFrameworkProvider: CuratorFrameworkProvider
-)(implicit val executionContext: ExecutionContext)
+)(implicit val executionContext: Scheduler)
     extends ActionRefiner[SessionRequest, CuratorRequest] {
 
   override protected def refine[A](
@@ -52,6 +52,7 @@ class CuratorAction(
             curatorFrameworkProvider
               .getCuratorInstance(connectionString, authInfoList)
               .map(new CuratorRequest(_, request))
+              .runAsync
         }
 
     futureOrFuture.bisequence

@@ -24,11 +24,10 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
 import scala.collection.JavaConverters._
 import scala.util.Try
 import cats.implicits._
+import monix.eval.Task
 import org.apache.curator.utils.ZKPaths
 
 trait BackgroundReadOps extends BackgroundOps {
@@ -38,14 +37,12 @@ trait BackgroundReadOps extends BackgroundOps {
     /**
       * @param node path to the root node of the tree to be fetched
       */
-    def getTreeBackground(
-        node: ZNodePath
-    )(implicit e: ExecutionContextExecutor): Future[ZNode] = {
+    def getTreeBackground(node: ZNodePath): Task[ZNode] = {
       val futureAcl = getAclBackground(node)
       val futureData = getDataBackground(node)
       val futureChildren = getChildrenBackground(node)
         .map(_.data.children)
-        .flatMap(Future.traverse(_)(getTreeBackground))
+        .flatMap(Task.traverse(_)(getTreeBackground))
 
       for {
         metaAcl <- futureAcl
@@ -54,9 +51,7 @@ trait BackgroundReadOps extends BackgroundOps {
       } yield ZNode(metaAcl.data, node, metaData.data, metaData.meta, children)
     }
 
-    def getDataBackground(
-        path: ZNodePath
-    )(implicit e: ExecutionContextExecutor): Future[ZNodeMetaWith[ZNodeData]] =
+    def getDataBackground(path: ZNodePath): Task[ZNodeMetaWith[ZNodeData]] =
       curatorFramework.getData
         .forPathBackground(path.path)
         .map { event =>
@@ -66,9 +61,7 @@ trait BackgroundReadOps extends BackgroundOps {
           )
         }
 
-    def getAclBackground(
-        path: ZNodePath
-    )(implicit e: ExecutionContextExecutor): Future[ZNodeMetaWith[ZNodeAcl]] =
+    def getAclBackground(path: ZNodePath): Task[ZNodeMetaWith[ZNodeAcl]] =
       curatorFramework.getACL
         .forPathBackground(path.path)
         .map { event =>
@@ -87,9 +80,9 @@ trait BackgroundReadOps extends BackgroundOps {
           ZNodeMetaWith(acl, meta)
         }
 
-    def getChildrenBackground(path: ZNodePath)(
-        implicit e: ExecutionContextExecutor
-    ): Future[ZNodeMetaWith[ZNodeChildren]] = {
+    def getChildrenBackground(
+        path: ZNodePath
+    ): Task[ZNodeMetaWith[ZNodeChildren]] = {
       def getChildrenFromEvent(event: CuratorEvent): Try[ZNodeChildren] =
         event.getChildren.asScala.toList
           .traverseU { name =>
@@ -103,7 +96,7 @@ trait BackgroundReadOps extends BackgroundOps {
 
       for {
         event <- curatorFramework.getChildren.forPathBackground(path.path)
-        children <- Future.fromTry(getChildrenFromEvent(event))
+        children <- Task.fromTry(getChildrenFromEvent(event))
       } yield ZNodeMetaWith(children, ZNodeMeta.fromStat(event.getStat))
     }
   }

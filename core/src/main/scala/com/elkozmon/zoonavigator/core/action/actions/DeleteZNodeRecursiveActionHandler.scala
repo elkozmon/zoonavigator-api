@@ -20,18 +20,14 @@ package com.elkozmon.zoonavigator.core.action.actions
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundOps
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
-
-class DeleteZNodeRecursiveActionHandler(
-    curatorFramework: CuratorFramework,
-    implicit val executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[DeleteZNodeRecursiveAction]
+class DeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[DeleteZNodeRecursiveAction]
     with BackgroundOps {
 
-  override def handle(action: DeleteZNodeRecursiveAction): Future[Unit] =
+  override def handle(action: DeleteZNodeRecursiveAction): Task[Unit] =
     curatorFramework
       .delete()
       .deletingChildrenIfNeeded()

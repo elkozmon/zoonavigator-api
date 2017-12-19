@@ -17,7 +17,6 @@
 
 import action.ActionModule
 import api.ApiResponseFactory
-import com.softwaremill.macwire._
 import controllers._
 import curator.action.CuratorActionBuilder
 import curator.provider.CuratorFrameworkProvider
@@ -31,7 +30,7 @@ import zookeeper.session.ZookeeperSessionHelper
 trait AppModule extends ActionModule with FiltersModule {
   self: BuiltInComponentsFromContext =>
 
-  private val actionModule: ActionModule = this
+  val actionModule: ActionModule = this
 
   val apiResponseFactory: ApiResponseFactory
 
@@ -45,12 +44,9 @@ trait AppModule extends ActionModule with FiltersModule {
 
   val sessionActionBuilder: SessionActionBuilder
 
-  lazy val homeController: HomeController =
-    wire[HomeController]
+  val homeController: HomeController
 
-  lazy val zNodeController: ZNodeController =
-    wire[ZNodeController]
+  val zNodeController: ZNodeController
 
-  lazy val zSessionController: ZSessionController =
-    wire[ZSessionController]
+  val zSessionController: ZSessionController
 }

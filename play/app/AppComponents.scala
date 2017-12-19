@@ -18,13 +18,16 @@
 import java.util.concurrent.TimeUnit
 
 import api._
+import controllers._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
 import curator.action.CuratorActionBuilder
 import curator.provider._
+import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
-import play.api._
+import play.api.BuiltInComponentsFromContext
+import play.api.LoggerConfigurator
 import play.api.ApplicationLoader.Context
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
@@ -39,7 +42,6 @@ import session.manager.SessionManager
 import zookeeper.session.DefaultZookeeperSessionHelper
 import zookeeper.session.ZookeeperSessionHelper
 
-import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
 
 class AppComponents(context: Context)
@@ -69,6 +71,7 @@ class AppComponents(context: Context)
   override def corsFilter: CORSFilter = {
     //noinspection ScalaUnusedSymbol
     val prefixes: Seq[String] = Seq(httpContext)
+
     wire[CORSFilter]
   }
 
@@ -85,8 +88,8 @@ class AppComponents(context: Context)
       )
     )
 
-  lazy val executionContextExecutor: ExecutionContextExecutor =
-    actorSystem.dispatcher
+  lazy val scheduler: Scheduler =
+    Scheduler(actorSystem.dispatcher)
 
   lazy val curatorCacheMaxAge: CuratorCacheMaxAge =
     CuratorCacheMaxAge(
@@ -125,6 +128,15 @@ class AppComponents(context: Context)
 
   override lazy val sessionActionBuilder: SessionActionBuilder =
     wire[SessionActionBuilder]
+
+  override lazy val homeController: HomeController =
+    wire[HomeController]
+
+  override lazy val zNodeController: ZNodeController =
+    wire[ZNodeController]
+
+  override lazy val zSessionController: ZSessionController =
+    wire[ZSessionController]
 
   override def getZNodeAclListActionHandler(
       curatorFramework: CuratorFramework

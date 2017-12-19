@@ -20,18 +20,14 @@ package com.elkozmon.zoonavigator.core.action.actions
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundOps
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
-
-class CreateZNodeActionHandler(
-    curatorFramework: CuratorFramework,
-    implicit val executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[CreateZNodeAction]
+class CreateZNodeActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[CreateZNodeAction]
     with BackgroundOps {
 
-  override def handle(action: CreateZNodeAction): Future[Unit] =
+  override def handle(action: CreateZNodeAction): Task[Unit] =
     curatorFramework
       .create()
       .forPathBackground(action.path.path)

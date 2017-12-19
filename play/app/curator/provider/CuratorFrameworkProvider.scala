@@ -17,16 +17,15 @@
 
 package curator.provider
 
+import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 import zookeeper.AuthInfo
 import zookeeper.ConnectionString
-
-import scala.concurrent.Future
 
 trait CuratorFrameworkProvider {
 
   def getCuratorInstance(
       connectionString: ConnectionString,
       authInfoList: List[AuthInfo]
-  ): Future[CuratorFramework]
+  ): Task[CuratorFramework]
 }

@@ -21,24 +21,25 @@ import com.elkozmon.zoonavigator.core.curator.TestingCuratorFrameworkProvider
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import monix.execution.Scheduler
 import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
 import org.scalatest.FlatSpec
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
 
+  import Scheduler.Implicits.global
+
   private val curatorFramework =
     TestingCuratorFrameworkProvider.getCuratorFramework(getClass.getName)
 
-  private val executionContext = ExecutionContext.global
-
-  private val duplicateActionHandler =
-    new DuplicateZNodeRecursiveActionHandler(curatorFramework, executionContext)
+  private val duplicateActionHandler = new DuplicateZNodeRecursiveActionHandler(
+    curatorFramework
+  )
 
   "DuplicateZNodeRecursiveActionHandler" should "copy 2nd level ZNodes" in {
     curatorFramework
@@ -65,7 +66,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
         ZNodePath.unsafe("/test1-copy")
       )
 
-    Await.result(duplicateActionHandler.handle(action), Duration.Inf)
+    Await.result(duplicateActionHandler.handle(action).runAsync, Duration.Inf)
 
     val bar = new String(curatorFramework.getData.forPath("/test1-copy/bar"))
     val baz = new String(curatorFramework.getData.forPath("/test1-copy/baz"))
@@ -91,7 +92,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
         ZNodePath.unsafe("/test2-copy")
       )
 
-    Await.result(duplicateActionHandler.handle(action), Duration.Inf)
+    Await.result(duplicateActionHandler.handle(action).runAsync, Duration.Inf)
 
     assert(
       curatorFramework.getACL

@@ -20,19 +20,15 @@ package com.elkozmon.zoonavigator.core.action.actions
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
-
-class GetZNodeChildrenActionHandler(
-    curatorFramework: CuratorFramework,
-    implicit val executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[GetZNodeChildrenAction]
+class GetZNodeChildrenActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[GetZNodeChildrenAction]
     with BackgroundReadOps {
 
   override def handle(
       action: GetZNodeChildrenAction
-  ): Future[ZNodeMetaWith[ZNodeChildren]] =
+  ): Task[ZNodeMetaWith[ZNodeChildren]] =
     curatorFramework.getChildrenBackground(action.path)
 }

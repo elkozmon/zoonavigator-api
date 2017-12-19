@@ -21,19 +21,16 @@ import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundOps
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
+import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
 
-class UpdateZNodeAclListActionHandler(
-    curatorFramework: CuratorFramework,
-    implicit val executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[UpdateZNodeAclListAction]
+class UpdateZNodeAclListActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[UpdateZNodeAclListAction]
     with BackgroundOps {
 
-  override def handle(action: UpdateZNodeAclListAction): Future[ZNodeMeta] =
+  override def handle(action: UpdateZNodeAclListAction): Task[ZNodeMeta] =
     curatorFramework
       .setACL()
       .withVersion(action.expectedAclVersion.version.toInt)

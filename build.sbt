@@ -46,6 +46,8 @@ val core = (project in file("core"))
       "org.apache.curator" % "curator-framework" % "4.0.0",
       "org.apache.curator" % "curator-test" % "4.0.0" % Test,
       "org.apache.zookeeper" % "zookeeper" % "3.4.11",
+      "io.monix" %% "monix-eval" % "2.3.2",
+      "io.monix" %% "monix-cats" % "2.3.2",
       "com.chuusai" %% "shapeless" % "2.3.2"
     )
   )

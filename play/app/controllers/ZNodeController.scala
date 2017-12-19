@@ -33,10 +33,10 @@ import play.api.libs.json._
 import play.api.mvc._
 import session.action.SessionActionBuilder
 import cats.implicits._
+import monix.eval.Task
+import monix.execution.Scheduler
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import scala.util.control.NonFatal
 
 class ZNodeController(
     apiResponseFactory: ApiResponseFactory,
@@ -45,15 +45,10 @@ class ZNodeController(
     actionModule: ActionModule,
     playBodyParsers: PlayBodyParsers,
     val controllerComponents: ControllerComponents,
-    implicit val executionContext: ExecutionContext
+    implicit val scheduler: Scheduler
 ) extends BaseController {
 
   private val actionDispatcherProvider = actionModule.actionDispatcherProvider
-
-  private val recoverResult: PartialFunction[Throwable, Result] = {
-    case throwable =>
-      apiResponseFactory.fromThrowable(throwable)
-  }
 
   def getAcl: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
@@ -70,7 +65,8 @@ class ZNodeController(
 
                 apiResponseFactory.okPayload(jsonMetaWithAcl)
               }
-              .recover(recoverResult)
+              .onErrorHandle(apiResponseFactory.fromThrowable)
+              .runAsync
           }
         )
     }
@@ -90,7 +86,8 @@ class ZNodeController(
 
                 apiResponseFactory.okPayload(jsonMetaWithData)
               }
-              .recover(recoverResult)
+              .onErrorHandle(apiResponseFactory.fromThrowable)
+              .runAsync
           }
         )
     }
@@ -105,10 +102,8 @@ class ZNodeController(
               .getDispatcher(curatorRequest.curatorFramework)
               .dispatch(GetZNodeMetaAction(path))
               .map(meta => apiResponseFactory.okPayload(JsonZNodeMeta(meta)))
-              .recover {
-                case NonFatal(throwable) =>
-                  apiResponseFactory.fromThrowable(throwable)
-              }
+              .onErrorHandle(apiResponseFactory.fromThrowable)
+              .runAsync
           }
         )
     }
@@ -128,7 +123,8 @@ class ZNodeController(
 
                 apiResponseFactory.okPayload(jsonMetaWithChildren)
               }
-              .recover(recoverResult)
+              .onErrorHandle(apiResponseFactory.fromThrowable)
+              .runAsync
           }
         )
     }
@@ -143,7 +139,8 @@ class ZNodeController(
               .getDispatcher(curatorRequest.curatorFramework)
               .dispatch(CreateZNodeAction(path))
               .map(_ => apiResponseFactory.okEmpty)
-              .recover(recoverResult)
+              .onErrorHandle(apiResponseFactory.fromThrowable)
+              .runAsync
           }
         )
     }
@@ -162,7 +159,8 @@ class ZNodeController(
           .getDispatcher(curatorRequest.curatorFramework)
           .dispatch(DeleteZNodeRecursiveAction(path, ZNodeDataVersion(version)))
           .map(_ => apiResponseFactory.okEmpty)
-          .recover(recoverResult)
+          .onErrorHandle(apiResponseFactory.fromThrowable)
+          .runAsync
       }
 
       eitherResult.fold(Future.successful, identity)
@@ -186,11 +184,12 @@ class ZNodeController(
         }
       }
 
-      eitherResult.fold(Future.successful, { futures =>
-        Future
-          .sequence(futures)
+      eitherResult.fold(Future.successful, { tasks =>
+        Task
+          .gatherUnordered(tasks)
           .map(_ => apiResponseFactory.okEmpty)
-          .recover(recoverResult)
+          .onErrorHandle(apiResponseFactory.fromThrowable)
+          .runAsync
       })
     }
 
@@ -203,7 +202,7 @@ class ZNodeController(
       } yield {
         val recursive = curatorRequest.getQueryString("recursive").isDefined
 
-        val futureMeta: Future[ZNodeMeta] =
+        val taskMeta: Task[ZNodeMeta] =
           if (recursive) {
             actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
@@ -226,9 +225,10 @@ class ZNodeController(
               )
           }
 
-        futureMeta
+        taskMeta
           .map(meta => apiResponseFactory.okPayload(JsonZNodeMeta(meta)))
-          .recover(recoverResult)
+          .onErrorHandle(apiResponseFactory.fromThrowable)
+          .runAsync
       }
 
       eitherResult.fold(Future.successful, identity)
@@ -250,7 +250,8 @@ class ZNodeController(
             )
           )
           .map(meta => apiResponseFactory.okPayload(JsonZNodeMeta(meta)))
-          .recover(recoverResult)
+          .onErrorHandle(apiResponseFactory.fromThrowable)
+          .runAsync
       }
 
       eitherResult.fold(Future.successful, identity)

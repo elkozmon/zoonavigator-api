@@ -20,18 +20,14 @@ package com.elkozmon.zoonavigator.core.action.actions
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundOps
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
+import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
-
-class GetZNodeMetaActionHandler(
-    curatorFramework: CuratorFramework,
-    implicit val executionContextExecutor: ExecutionContextExecutor
-) extends ActionHandler[GetZNodeMetaAction]
+class GetZNodeMetaActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[GetZNodeMetaAction]
     with BackgroundOps {
 
-  override def handle(action: GetZNodeMetaAction): Future[ZNodeMeta] =
+  override def handle(action: GetZNodeMetaAction): Task[ZNodeMeta] =
     curatorFramework
       .checkExists()
       .forPathBackground(action.path.path)

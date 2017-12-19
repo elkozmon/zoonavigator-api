@@ -21,16 +21,16 @@ import api.ApiResponseFactory
 import play.api.mvc.BodyParser
 import session.manager.SessionManager
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.ExecutionContext
 
 class SessionActionBuilder(
     apiResponseFactory: ApiResponseFactory,
     sessionManager: SessionManager,
-    executionContextExecutor: ExecutionContextExecutor
+    executionContext: ExecutionContext
 ) {
 
   def apply[B](bodyParser: BodyParser[B]): SessionAction[B] =
     new SessionAction(apiResponseFactory, sessionManager, bodyParser)(
-      executionContextExecutor
+      executionContext
     )
 }

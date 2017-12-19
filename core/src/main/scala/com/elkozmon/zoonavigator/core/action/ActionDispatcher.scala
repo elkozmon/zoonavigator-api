@@ -17,15 +17,14 @@
 
 package com.elkozmon.zoonavigator.core.action
 
+import monix.eval.Task
 import shapeless.HList
 import shapeless.ops.hlist
-
-import scala.concurrent.Future
 
 class ActionDispatcher[L <: HList](handlers: L) {
 
   def dispatch[A <: Action](
       action: A
-  )(implicit selector: hlist.Selector[L, ActionHandler[A]]): Future[A#Out] =
+  )(implicit selector: hlist.Selector[L, ActionHandler[A]]): Task[A#Out] =
     selector(handlers).handle(action)
 }

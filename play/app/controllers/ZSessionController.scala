@@ -22,6 +22,7 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import curator.provider.CuratorFrameworkProvider
 import json.zookeeper.JsonConnectionParams
 import json.zookeeper.JsonSessionInfo
+import monix.execution.Scheduler
 import play.api.libs.json.JsSuccess
 import play.api.mvc._
 import session.SessionToken
@@ -29,7 +30,6 @@ import session.manager.SessionManager
 import zookeeper.session.SessionInfo
 import zookeeper.session.ZookeeperSessionHelper
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 class ZSessionController(
@@ -37,7 +37,7 @@ class ZSessionController(
     zookeeperSessionHelper: ZookeeperSessionHelper,
     curatorFrameworkProvider: CuratorFrameworkProvider,
     val controllerComponents: ControllerComponents,
-    implicit val executionContext: ExecutionContext,
+    implicit val scheduler: Scheduler,
     implicit val sessionManager: SessionManager
 ) extends BaseController {
 
@@ -63,10 +63,8 @@ class ZSessionController(
 
             apiResponseFactory.okPayload(JsonSessionInfo(sessionInfo))
           }
-          .recover {
-            case throwable =>
-              apiResponseFactory.fromThrowable(throwable)
-          }
+          .onErrorHandle(apiResponseFactory.fromThrowable)
+          .runAsync
       case _ =>
         Future.successful(
           apiResponseFactory

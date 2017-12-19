@@ -23,6 +23,9 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.google.common.cache._
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import logging.AppLogger
+import monix.eval.Task
+import monix.execution.Cancelable
+import monix.execution.Scheduler
 import org.apache.curator.framework
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.CuratorFrameworkFactory
@@ -34,18 +37,14 @@ import zookeeper.AuthInfo
 import zookeeper.ConnectionString
 
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.Future
-import scala.concurrent.Promise
-import scala.util.Failure
 import scala.util.Try
 
 class CacheCuratorFrameworkProvider(
     curatorCacheMaxAge: CuratorCacheMaxAge,
     curatorConnectTimeout: CuratorConnectTimeout,
-    implicit val executionContextExecutor: ExecutionContextExecutor
+    implicit val scheduler: Scheduler
 ) extends CuratorFrameworkProvider
-    with RemovalListener[CuratorKey, Future[CuratorFramework]]
+    with RemovalListener[CuratorKey, Task[CuratorFramework]]
     with AppLogger {
 
   private val sessionCache =
@@ -56,7 +55,7 @@ class CacheCuratorFrameworkProvider(
         TimeUnit.MILLISECONDS
       )
       .removalListener(CacheCuratorFrameworkProvider.this)
-      .build[CuratorKey, Future[CuratorFramework]]()
+      .build[CuratorKey, Task[CuratorFramework]]()
 
   // start cache clean up
   Executors
@@ -79,7 +78,7 @@ class CacheCuratorFrameworkProvider(
       .asScala
 
   override def onRemoval(
-      notification: RemovalNotification[CuratorKey, Future[CuratorFramework]]
+      notification: RemovalNotification[CuratorKey, Task[CuratorFramework]]
   ): Unit = {
     val curatorKey = notification.getKey
     val removalCause = notification.getCause
@@ -89,13 +88,15 @@ class CacheCuratorFrameworkProvider(
         s"Cause: $removalCause"
     )
 
-    notification.getValue.foreach(_.close())
+    notification.getValue
+      .foreach(_.close())
+      .asUnit()
   }
 
   override def getCuratorInstance(
       connectionString: ConnectionString,
       authInfoList: List[AuthInfo]
-  ): Future[CuratorFramework] =
+  ): Task[CuratorFramework] =
     sessionCacheMap.synchronized(
       sessionCacheMap.getOrElseUpdate(
         CuratorKey(connectionString, authInfoList),
@@ -106,91 +107,73 @@ class CacheCuratorFrameworkProvider(
   private def newCuratorInstance(
       connectionString: ConnectionString,
       authInfoList: List[AuthInfo]
-  ): Future[CuratorFramework] = {
-    val promiseCurator = Promise[CuratorFramework]()
-
-    val tryStartCurator = Try {
-      // Create Curator instance
-      val frameworkAuthInfoList = authInfoList.map { authInfo =>
-        new framework.AuthInfo(authInfo.scheme, authInfo.auth)
-      }
-
-      val curatorFramework = CuratorFrameworkFactory
-        .builder()
-        .authorization(frameworkAuthInfoList.asJava)
-        .connectString(connectionString.string)
-        .retryPolicy(new ExponentialBackoffRetry(100, 3))
-        .defaultData(Array.emptyByteArray)
-        .build()
-
-      // Listen for successful connection
-      val connectionListener = new ConnectionStateListener {
-        override def stateChanged(
-            client: CuratorFramework,
-            newState: ConnectionState
-        ): Unit =
-          if (newState == ConnectionState.CONNECTED) {
-            promiseCurator
-              .trySuccess(client)
-              .asUnit()
-
-            client.getConnectionStateListenable
-              .removeListener(this)
+  ): Task[CuratorFramework] =
+    Task
+      .create[CuratorFramework] { (scheduler, callback) =>
+        val tryStartCurator = Try {
+          // Create Curator instance
+          val frameworkAuthInfoList = authInfoList.map { authInfo =>
+            new framework.AuthInfo(authInfo.scheme, authInfo.auth)
           }
-      }
 
-      curatorFramework.getConnectionStateListenable
-        .addListener(connectionListener, executionContextExecutor: Executor)
-
-      // Log unhandled errors
-      val unhandledErrorListener = new UnhandledErrorListener {
-        override def unhandledError(message: String, e: Throwable): Unit =
-          logger.warn(message, e)
-      }
-
-      curatorFramework.getUnhandledErrorListenable
-        .addListener(unhandledErrorListener, executionContextExecutor: Executor)
-
-      // Timeout the connection
-      Executors
-        .newSingleThreadScheduledExecutor(
-          new ThreadFactoryBuilder()
-            .setNameFormat(getClass.getSimpleName + "-timeoutWatcher-%d")
+          val curatorFramework = CuratorFrameworkFactory
+            .builder()
+            .authorization(frameworkAuthInfoList.asJava)
+            .connectString(connectionString.string)
+            .retryPolicy(new ExponentialBackoffRetry(100, 3))
+            .defaultData(Array.emptyByteArray)
             .build()
-        )
-        .schedule(
-          new Runnable {
-            override def run(): Unit = {
+
+          // Log unhandled errors
+          val unhandledErrorListener: UnhandledErrorListener =
+            (message: String, e: Throwable) => logger.warn(message, e)
+
+          curatorFramework.getUnhandledErrorListenable
+            .addListener(unhandledErrorListener, scheduler)
+
+          // Timeout hanging connection
+          val timeoutConnectionCancelable =
+            scheduler.scheduleOnce(curatorConnectTimeout.duration) {
               val throwable = new Exception(
-                s"Unable to establish connection with ZooKeeper (${connectionString.string})."
+                s"Unable to establish connection " +
+                  s"with ZooKeeper (${connectionString.string})."
               )
 
-              if (promiseCurator.tryFailure(throwable)) {
-                // Curator didn't make it to the cache,
-                // stop it from retrying indefinitely
-                logger.debug("Stopping Curator Framework", throwable)
-                curatorFramework.close()
-              }
+              callback.onError(throwable)
+
+              // Curator didn't make it to the cache,
+              // stop it from retrying indefinitely
+              logger.debug("Stopping Curator Framework", throwable)
+              curatorFramework.close()
             }
-          },
-          curatorConnectTimeout.duration.toMillis,
-          TimeUnit.MILLISECONDS
-        )
-        .asUnit()
 
-      curatorFramework.start()
-    }
+          // Listen for successful connection
+          val connectionListener =
+            new ConnectionStateListener {
+              override def stateChanged(
+                  client: CuratorFramework,
+                  newState: ConnectionState
+              ): Unit =
+                if (newState.equals(ConnectionState.CONNECTED)) {
+                  callback.onSuccess(client)
 
-    tryStartCurator match {
-      case Failure(throwable) =>
-        logger.error("Failed to start Curator Framework", throwable)
+                  client.getConnectionStateListenable
+                    .removeListener(this)
 
-        promiseCurator
-          .tryFailure(throwable)
-          .asUnit()
-      case _ =>
-    }
+                  timeoutConnectionCancelable.cancel()
+                }
+            }
 
-    promiseCurator.future
-  }
+          curatorFramework.getConnectionStateListenable
+            .addListener(connectionListener, scheduler)
+
+          // Start the client
+          curatorFramework.start()
+        }
+
+        tryStartCurator.toEither.left.foreach(callback.onError)
+
+        Cancelable.empty
+      }
+      .memoize
 }
