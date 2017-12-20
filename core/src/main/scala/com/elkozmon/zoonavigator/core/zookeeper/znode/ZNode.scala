@@ -21,6 +21,5 @@ final case class ZNode(
     acl: ZNodeAcl,
     path: ZNodePath,
     data: ZNodeData,
-    meta: ZNodeMeta,
-    children: List[ZNode]
+    meta: ZNodeMeta
 )

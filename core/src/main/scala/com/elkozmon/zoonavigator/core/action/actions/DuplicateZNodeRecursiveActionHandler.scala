@@ -17,6 +17,8 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
+import cats.free.Cofree
+import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
@@ -34,45 +36,35 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
 
   override def handle(action: DuplicateZNodeRecursiveAction): Task[Unit] =
     for {
-      tree <- curatorFramework.getTreeBackground(action.source)
-      _ <- createTree(
-        action.destination.parent,
-        tree.copy(path = action.destination)
-      )
-    } yield ()
+      tree <- curatorFramework
+        .getTreeBackground(action.source)
+        .map(rewritePaths(action.destination, _))
+      unit <- createTree(tree)
+    } yield unit
 
-  /**
-    * @param dir  directory where to create the tree's root node
-    * @param tree tree to create
-    */
-  private def createTree(dir: ZNodePath, tree: ZNode): Task[Unit] = {
-    val transactions = createTransactions(dir, tree, List.empty)
+  private def createTree(tree: Cofree[List, ZNode]): Task[Unit] = {
+    val ops: Seq[CuratorOp] =
+      tree.reduceMap((node: ZNode) => List(createZNode(node)))
 
     curatorFramework
       .transaction()
-      .forOperationsBackground(transactions)
+      .forOperationsBackground(ops)
       .map(_.asUnit())
   }
 
-  /**
-    * @param dir         directory where to create the tree's root node
-    * @param tree        tree to create
-    * @param ops         accumulative list of transactions
-    * @return prepared transaction
-    */
-  private def createTransactions(
-      dir: ZNodePath,
-      tree: ZNode,
-      ops: List[CuratorOp]
-  ): List[CuratorOp] = {
-    val rootNode = dir.down(tree.path.name)
-    val nextOp = curatorFramework
+  private def rewritePaths(
+      path: ZNodePath,
+      tree: Cofree[List, ZNode]
+  ): Cofree[List, ZNode] =
+    Cofree(
+      tree.head.copy(path = path),
+      tree.tail.map(_.map(c => rewritePaths(path.down(c.head.path.name), c)))
+    )
+
+  private def createZNode(node: ZNode): CuratorOp =
+    curatorFramework
       .transactionOp()
       .create()
-      .withACL(tree.acl.aclList.map(Acl.toZookeeper).asJava)
-      .forPath(rootNode.path, tree.data.bytes)
-
-    tree.children
-      .foldRight(ops :+ nextOp)(createTransactions(rootNode, _, _))
-  }
+      .withACL(node.acl.aclList.map(Acl.toZookeeper).asJava)
+      .forPath(node.path.path, node.data.bytes)
 }

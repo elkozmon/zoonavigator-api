@@ -17,6 +17,8 @@
 
 package com.elkozmon.zoonavigator.core.curator
 
+import cats.Eval
+import cats.free.Cofree
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
@@ -37,18 +39,23 @@ trait BackgroundReadOps extends BackgroundOps {
     /**
       * @param node path to the root node of the tree to be fetched
       */
-    def getTreeBackground(node: ZNodePath): Task[ZNode] = {
-      val futureAcl = getAclBackground(node)
-      val futureData = getDataBackground(node)
-      val futureChildren = getChildrenBackground(node)
+    def getTreeBackground(node: ZNodePath): Task[Cofree[List, ZNode]] = {
+      val taskZNode = getZNodeBackground(node)
+      val taskChildren = getChildrenBackground(node)
         .map(_.data.children)
         .flatMap(Task.traverse(_)(getTreeBackground))
+        .map(Eval.now)
 
-      for {
-        metaAcl <- futureAcl
-        metaData <- futureData
-        children <- futureChildren
-      } yield ZNode(metaAcl.data, node, metaData.data, metaData.meta, children)
+      Task.mapBoth(taskZNode, taskChildren)(Cofree(_, _))
+    }
+
+    def getZNodeBackground(node: ZNodePath): Task[ZNode] = {
+      val taskAcl = getAclBackground(node)
+      val taskData = getDataBackground(node)
+
+      Task.mapBoth(taskAcl, taskData) { (acl, data) =>
+        ZNode(acl.data, node, data.data, data.meta)
+      }
     }
 
     def getDataBackground(path: ZNodePath): Task[ZNodeMetaWith[ZNodeData]] =
@@ -94,10 +101,16 @@ trait BackgroundReadOps extends BackgroundOps {
           }
           .map(ZNodeChildren)
 
-      for {
-        event <- curatorFramework.getChildren.forPathBackground(path.path)
-        children <- Task.fromTry(getChildrenFromEvent(event))
-      } yield ZNodeMetaWith(children, ZNodeMeta.fromStat(event.getStat))
+      val taskEvent =
+        curatorFramework.getChildren.forPathBackground(path.path)
+
+      val taskChildren =
+        taskEvent.flatMap(event => Task.fromTry(getChildrenFromEvent(event)))
+
+      val taskMeta =
+        taskEvent.map(event => ZNodeMeta.fromStat(event.getStat))
+
+      Task.mapBoth(taskChildren, taskMeta)(ZNodeMetaWith(_, _))
     }
   }
 }
