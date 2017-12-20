@@ -36,7 +36,7 @@ val commonSettings = Seq(
   wartremoverErrors ++= Warts.unsafe
 )
 
-val core = (project in file("core"))
+val core = project
   .settings(commonSettings: _*)
   .settings(
     name := "zoonavigator-core",
@@ -52,7 +52,7 @@ val core = (project in file("core"))
     )
   )
 
-val play = (project in file("play"))
+val play = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
