@@ -21,7 +21,6 @@ import java.util.concurrent._
 
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.google.common.cache._
-import com.google.common.util.concurrent.ThreadFactoryBuilder
 import logging.AppLogger
 import monix.eval.Task
 import monix.execution.Cancelable
@@ -37,6 +36,8 @@ import zookeeper.AuthInfo
 import zookeeper.ConnectionString
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
+import scala.language.postfixOps
 import scala.util.Try
 
 class CacheCuratorFrameworkProvider(
@@ -57,25 +58,14 @@ class CacheCuratorFrameworkProvider(
       .removalListener(CacheCuratorFrameworkProvider.this)
       .build[CuratorKey, Task[CuratorFramework]]()
 
-  // start cache clean up
-  Executors
-    .newSingleThreadScheduledExecutor(
-      new ThreadFactoryBuilder()
-        .setNameFormat(getClass.getSimpleName + "-cleanUp-%d")
-        .build()
-    )
-    .scheduleWithFixedDelay(
-      () => sessionCache.cleanUp(),
-      1000,
-      1000,
-      TimeUnit.MILLISECONDS
-    )
-    .asUnit()
-
   private val sessionCacheMap =
     sessionCache
       .asMap()
       .asScala
+
+  //noinspection ScalaUnusedSymbol
+  private val sessionCacheCleanUpJob =
+    scheduler.scheduleWithFixedDelay(1 second, 1 second)(sessionCache.cleanUp())
 
   override def onRemoval(
       notification: RemovalNotification[CuratorKey, Task[CuratorFramework]]
@@ -132,7 +122,7 @@ class CacheCuratorFrameworkProvider(
             .addListener(unhandledErrorListener, scheduler)
 
           // Timeout hanging connection
-          val timeoutConnectionCancelable =
+          val connectionTimeoutJob =
             scheduler.scheduleOnce(curatorConnectTimeout.duration) {
               val throwable = new Exception(
                 s"Unable to establish connection " +
@@ -160,7 +150,7 @@ class CacheCuratorFrameworkProvider(
                   client.getConnectionStateListenable
                     .removeListener(this)
 
-                  timeoutConnectionCancelable.cancel()
+                  connectionTimeoutJob.cancel()
                 }
             }
 
