@@ -177,20 +177,15 @@ class ZNodeController(
           .left
           .map(apiResponseFactory.fromThrowable)
       } yield {
-        paths.map { path =>
-          actionDispatcherProvider
-            .getDispatcher(curatorRequest.curatorFramework)
-            .dispatch(ForceDeleteZNodeRecursiveAction(path))
-        }
-      }
-
-      eitherResult.fold(Future.successful, { tasks =>
-        Task
-          .gatherUnordered(tasks)
+        actionDispatcherProvider
+          .getDispatcher(curatorRequest.curatorFramework)
+          .dispatch(ForceDeleteZNodeRecursiveAction(paths))
           .map(_ => apiResponseFactory.okEmpty)
           .onErrorHandle(apiResponseFactory.fromThrowable)
           .runAsync
-      })
+      }
+
+      eitherResult.fold(Future.successful, identity)
     }
 
   def updateAcl(): Action[JsValue] =
