@@ -17,7 +17,8 @@
 
 package com.elkozmon.zoonavigator.core.curator
 
-import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
+import org.apache.curator.framework.CuratorFramework
+import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.RetryOneTime
 import org.apache.curator.test.TestingServer
 
@@ -26,10 +27,8 @@ object TestingCuratorFrameworkProvider {
   private val testingServer = new TestingServer(true)
 
   private val curatorFramework = {
-    val curator = CuratorFrameworkFactory.newClient(
-      testingServer.getConnectString,
-      new RetryOneTime(1000)
-    )
+    val curator = CuratorFrameworkFactory
+      .newClient(testingServer.getConnectString, new RetryOneTime(1000))
 
     curator.start()
     curator

@@ -20,7 +20,13 @@ package com.elkozmon.zoonavigator.core.action.actions
 import com.elkozmon.zoonavigator.core.action.Action
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 
-final case class ForceDeleteZNodeRecursiveAction(paths: List[ZNodePath])
+final case class ForceDeleteZNodeRecursiveAction(paths: Seq[ZNodePath])
     extends Action {
   override type Out = Unit
+}
+
+object ForceDeleteZNodeRecursiveAction {
+
+  def apply(path: ZNodePath): ForceDeleteZNodeRecursiveAction =
+    ForceDeleteZNodeRecursiveAction(Seq(path))
 }

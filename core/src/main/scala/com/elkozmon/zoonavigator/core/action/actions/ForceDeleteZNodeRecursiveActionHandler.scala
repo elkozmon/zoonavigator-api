@@ -34,13 +34,13 @@ class ForceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
   override def handle(action: ForceDeleteZNodeRecursiveAction): Task[Unit] =
     Task
       .gatherUnordered(
-        action.paths.map(curatorFramework.getTreeBackground(Task.now))
+        action.paths.map(curatorFramework.walkTreeBackground(Task.now))
       )
       .flatMap(deleteTrees)
 
   private def deleteTrees(trees: List[Cofree[List, ZNodePath]]): Task[Unit] = {
     val ops: Seq[CuratorOp] = trees
-      .flatMap(_.reduceMap((path: ZNodePath) => List(deleteZNode(path))))
+      .flatMap(_.reduceMap(path => List(deleteZNode(path))))
       .reverse
 
     curatorFramework

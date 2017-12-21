@@ -17,6 +17,7 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
+import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
@@ -33,37 +34,15 @@ class UpdateZNodeAclListRecursiveActionHandler(
 
   override def handle(
       action: UpdateZNodeAclListRecursiveAction
-  ): Task[ZNodeMeta] = {
-    // set acl for the parent node
-    val taskMeta =
-      setNodeAcl(action.path, action.acl, Some(action.expectedAclVersion))
-
-    // set acl for children nodes recursively
-    val taskUnit = setChildrenAclRecursive(action.path, action.acl)
-
+  ): Task[ZNodeMeta] =
     for {
-      meta <- taskMeta
-      _ <- taskUnit
+      tree <- curatorFramework.walkTreeBackground(Task.now)(action.path)
+      meta <- setNodeAcl(tree.head, action.acl, Some(action.expectedAclVersion))
+      _ <- Task.gatherUnordered(
+        tree.forceTail
+          .reduceMap(path => List(setNodeAcl(path, action.acl, None)))
+      )
     } yield meta
-  }
-
-  private def setChildrenAclRecursive(
-      parent: ZNodePath,
-      acl: ZNodeAcl
-  ): Task[Unit] =
-    curatorFramework
-      .getChildrenBackground(parent)
-      .flatMap {
-        case ZNodeMetaWith(ZNodeChildren(paths), _) =>
-          val aclsFuture = Task.traverse(paths)(setNodeAcl(_, acl, None))
-          val childrenFuture =
-            Task.traverse(paths)(setChildrenAclRecursive(_, acl))
-
-          for {
-            _ <- aclsFuture
-            _ <- childrenFuture
-          } yield ()
-      }
 
   private def setNodeAcl(
       path: ZNodePath,

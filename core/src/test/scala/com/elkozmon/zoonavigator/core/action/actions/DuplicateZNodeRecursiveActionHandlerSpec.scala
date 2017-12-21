@@ -37,7 +37,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
   private val curatorFramework =
     TestingCuratorFrameworkProvider.getCuratorFramework(getClass.getName)
 
-  private val duplicateActionHandler = new DuplicateZNodeRecursiveActionHandler(
+  private val actionHandler = new DuplicateZNodeRecursiveActionHandler(
     curatorFramework
   )
 
@@ -66,7 +66,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
         ZNodePath.unsafe("/test1-copy")
       )
 
-    Await.result(duplicateActionHandler.handle(action).runAsync, Duration.Inf)
+    Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
     val bar = new String(curatorFramework.getData.forPath("/test1-copy/bar"))
     val baz = new String(curatorFramework.getData.forPath("/test1-copy/baz"))
@@ -92,7 +92,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
         ZNodePath.unsafe("/test2-copy")
       )
 
-    Await.result(duplicateActionHandler.handle(action).runAsync, Duration.Inf)
+    Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
     assert(
       curatorFramework.getACL

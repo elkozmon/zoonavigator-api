@@ -39,13 +39,13 @@ trait BackgroundReadOps extends BackgroundOps {
     /**
       * @param node path to the root node of the tree to be fetched
       */
-    def getTreeBackground[T](
+    def walkTreeBackground[T](
         fn: ZNodePath => Task[T]
     )(node: ZNodePath): Task[Cofree[List, T]] = {
       val taskT = fn(node)
       val taskChildren = getChildrenBackground(node)
         .map(_.data.children)
-        .flatMap(Task.traverse(_)(getTreeBackground(fn)))
+        .flatMap(Task.traverse(_)(walkTreeBackground(fn)))
         .map(Eval.now)
 
       Task.mapBoth(taskT, taskChildren)(Cofree(_, _))

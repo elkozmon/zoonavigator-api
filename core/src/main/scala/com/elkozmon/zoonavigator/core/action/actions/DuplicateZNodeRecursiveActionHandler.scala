@@ -37,7 +37,7 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
   override def handle(action: DuplicateZNodeRecursiveAction): Task[Unit] =
     for {
       tree <- curatorFramework
-        .getTreeBackground(curatorFramework.getZNodeBackground)(action.source)
+        .walkTreeBackground(curatorFramework.getZNodeBackground)(action.source)
         .map(rewritePaths(action.destination, _))
       unit <- createTree(tree)
     } yield unit
