@@ -15,19 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.elkozmon.zoonavigator.core.action.actions
+package com.elkozmon.zoonavigator.core.curator
 
-import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.Implicits._
-import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import monix.eval.Task
-import org.apache.curator.framework.CuratorFramework
+import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+import org.apache.curator.framework.api.BackgroundPathable
+import org.apache.curator.framework.api.CuratorEvent
 
-class GetZNodeChildrenActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[GetZNodeChildrenAction] {
+import scala.language.implicitConversions
 
-  override def handle(
-      action: GetZNodeChildrenAction
-  ): Task[ZNodeMetaWith[ZNodeChildren]] =
-    curatorFramework.getChildrenAsync(action.path)
+trait PathableOps {
+
+  implicit def toPathableAsync[T](bp: BackgroundPathable[T]): PathableAsync =
+    path =>
+      tryTaskCreate[CuratorEvent] { (scheduler, callback) =>
+        bp.inBackground(newEventCallback(callback), scheduler)
+          .withUnhandledErrorListener(newErrorListener(callback))
+          .forPath(path)
+          .asUnit()
+    }
 }

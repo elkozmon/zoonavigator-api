@@ -19,50 +19,48 @@ package com.elkozmon.zoonavigator.core.curator
 
 import cats.Eval
 import cats.free.Cofree
+import cats.implicits._
+import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
+import org.apache.curator.utils.ZKPaths
 
 import scala.collection.JavaConverters._
 import scala.util.Try
-import cats.implicits._
-import monix.eval.Task
-import org.apache.curator.utils.ZKPaths
 
-trait BackgroundReadOps extends BackgroundOps {
+trait CuratorOps {
 
-  implicit class CuratorBackgroundReadOps(curatorFramework: CuratorFramework) {
+  implicit class CuratorAsyncOps(curatorFramework: CuratorFramework) {
 
-    /**
-      * @param node path to the root node of the tree to be fetched
-      */
-    def walkTreeBackground[T](
+    def walkTreeAsync[T](
         fn: ZNodePath => Task[T]
     )(node: ZNodePath): Task[Cofree[List, T]] = {
       val taskT = fn(node)
-      val taskChildren = getChildrenBackground(node)
+      val taskChildren = getChildrenAsync(node)
         .map(_.data.children)
-        .flatMap(Task.traverse(_)(walkTreeBackground(fn)))
+        .flatMap(Task.traverse(_)(walkTreeAsync(fn)))
         .map(Eval.now)
 
       Task.mapBoth(taskT, taskChildren)(Cofree(_, _))
     }
 
-    def getZNodeBackground(node: ZNodePath): Task[ZNode] = {
-      val taskAcl = getAclBackground(node)
-      val taskData = getDataBackground(node)
+    def getZNodeAsync(node: ZNodePath): Task[ZNode] = {
+      val taskAcl = getAclAsync(node)
+      val taskData = getDataAsync(node)
 
       Task.mapBoth(taskAcl, taskData) { (acl, data) =>
         ZNode(acl.data, node, data.data, data.meta)
       }
     }
 
-    def getDataBackground(path: ZNodePath): Task[ZNodeMetaWith[ZNodeData]] =
+    def getDataAsync(path: ZNodePath): Task[ZNodeMetaWith[ZNodeData]] =
       curatorFramework.getData
-        .forPathBackground(path.path)
+        .forPathAsync(path.path)
         .map { event =>
           ZNodeMetaWith(
             ZNodeData(Option(event.getData).getOrElse(Array.empty)),
@@ -70,9 +68,9 @@ trait BackgroundReadOps extends BackgroundOps {
           )
         }
 
-    def getAclBackground(path: ZNodePath): Task[ZNodeMetaWith[ZNodeAcl]] =
+    def getAclAsync(path: ZNodePath): Task[ZNodeMetaWith[ZNodeAcl]] =
       curatorFramework.getACL
-        .forPathBackground(path.path)
+        .forPathAsync(path.path)
         .map { event =>
           val acl = ZNodeAcl(
             event.getACLList.asScala.toList
@@ -89,7 +87,7 @@ trait BackgroundReadOps extends BackgroundOps {
           ZNodeMetaWith(acl, meta)
         }
 
-    def getChildrenBackground(
+    def getChildrenAsync(
         path: ZNodePath
     ): Task[ZNodeMetaWith[ZNodeChildren]] = {
       def getChildrenFromEvent(event: CuratorEvent): Try[ZNodeChildren] =
@@ -104,7 +102,7 @@ trait BackgroundReadOps extends BackgroundOps {
           .map(ZNodeChildren)
 
       val taskEvent =
-        curatorFramework.getChildren.forPathBackground(path.path)
+        curatorFramework.getChildren.forPathAsync(path.path)
 
       val taskChildren =
         taskEvent.flatMap(event => Task.fromTry(getChildrenFromEvent(event)))

@@ -18,13 +18,12 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundOps
+import com.elkozmon.zoonavigator.core.curator.Implicits._
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
 class MoveZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[MoveZNodeRecursiveAction]
-    with BackgroundOps {
+    extends ActionHandler[MoveZNodeRecursiveAction] {
 
   override def handle(action: MoveZNodeRecursiveAction): Task[Unit] = ???
 }

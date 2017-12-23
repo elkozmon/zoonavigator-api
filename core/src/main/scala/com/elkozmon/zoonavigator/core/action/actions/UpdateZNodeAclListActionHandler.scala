@@ -18,7 +18,7 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundOps
+import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import monix.eval.Task
@@ -27,14 +27,13 @@ import org.apache.curator.framework.CuratorFramework
 import scala.collection.JavaConverters._
 
 class UpdateZNodeAclListActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[UpdateZNodeAclListAction]
-    with BackgroundOps {
+    extends ActionHandler[UpdateZNodeAclListAction] {
 
   override def handle(action: UpdateZNodeAclListAction): Task[ZNodeMeta] =
     curatorFramework
       .setACL()
       .withVersion(action.expectedAclVersion.version.toInt)
       .withACL(action.acl.aclList.map(Acl.toZookeeper).asJava)
-      .forPathBackground(action.path.path)
+      .forPathAsync(action.path.path)
       .map(event => ZNodeMeta.fromStat(event.getStat))
 }

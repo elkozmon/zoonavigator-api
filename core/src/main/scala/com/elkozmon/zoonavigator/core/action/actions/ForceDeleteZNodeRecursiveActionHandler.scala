@@ -20,7 +20,7 @@ package com.elkozmon.zoonavigator.core.action.actions
 import cats.free.Cofree
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
+import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import monix.eval.Task
@@ -28,13 +28,12 @@ import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.transaction.CuratorOp
 
 class ForceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[ForceDeleteZNodeRecursiveAction]
-    with BackgroundReadOps {
+    extends ActionHandler[ForceDeleteZNodeRecursiveAction] {
 
   override def handle(action: ForceDeleteZNodeRecursiveAction): Task[Unit] =
     Task
       .gatherUnordered(
-        action.paths.map(curatorFramework.walkTreeBackground(Task.now))
+        action.paths.map(curatorFramework.walkTreeAsync(Task.now))
       )
       .flatMap(deleteTrees)
 
@@ -45,7 +44,7 @@ class ForceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
 
     curatorFramework
       .transaction()
-      .forOperationsBackground(ops)
+      .forOperationsAsync(ops)
       .map(_.asUnit())
   }
 

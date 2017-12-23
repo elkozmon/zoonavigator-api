@@ -19,7 +19,7 @@ package com.elkozmon.zoonavigator.core.action.actions
 
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
+import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.eval.Task
@@ -29,14 +29,13 @@ import scala.collection.JavaConverters._
 
 class UpdateZNodeAclListRecursiveActionHandler(
     curatorFramework: CuratorFramework
-) extends ActionHandler[UpdateZNodeAclListRecursiveAction]
-    with BackgroundReadOps {
+) extends ActionHandler[UpdateZNodeAclListRecursiveAction] {
 
   override def handle(
       action: UpdateZNodeAclListRecursiveAction
   ): Task[ZNodeMeta] =
     for {
-      tree <- curatorFramework.walkTreeBackground(Task.now)(action.path)
+      tree <- curatorFramework.walkTreeAsync(Task.now)(action.path)
       meta <- setNodeAcl(tree.head, action.acl, Some(action.expectedAclVersion))
       _ <- Task.gatherUnordered(
         tree.forceTail
@@ -53,7 +52,7 @@ class UpdateZNodeAclListRecursiveActionHandler(
       .map(ver => curatorFramework.setACL().withVersion(ver.version.toInt))
       .getOrElse(curatorFramework.setACL())
       .withACL(acl.aclList.map(Acl.toZookeeper).asJava)
-      .forPathBackground(path.path)
+      .forPathAsync(path.path)
       .map(event => ZNodeMeta.fromStat(event.getStat))
 
 }

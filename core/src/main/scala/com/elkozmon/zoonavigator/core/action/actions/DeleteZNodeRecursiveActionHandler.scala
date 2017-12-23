@@ -18,20 +18,19 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundOps
+import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
 class DeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[DeleteZNodeRecursiveAction]
-    with BackgroundOps {
+    extends ActionHandler[DeleteZNodeRecursiveAction] {
 
   override def handle(action: DeleteZNodeRecursiveAction): Task[Unit] =
     curatorFramework
       .delete()
       .deletingChildrenIfNeeded()
       .withVersion(action.expectedDataVersion.version.toInt)
-      .forPathBackground(action.path.path)
+      .forPathAsync(action.path.path)
       .map(_.asUnit())
 }

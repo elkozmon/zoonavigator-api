@@ -15,19 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.elkozmon.zoonavigator.core.action.actions
+package com.elkozmon.zoonavigator.core.curator
 
-import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.Implicits._
-import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import monix.eval.Task
-import org.apache.curator.framework.CuratorFramework
-
-class GetZNodeChildrenActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[GetZNodeChildrenAction] {
-
-  override def handle(
-      action: GetZNodeChildrenAction
-  ): Task[ZNodeMetaWith[ZNodeChildren]] =
-    curatorFramework.getChildrenAsync(action.path)
-}
+object Implicits
+    extends CuratorOps
+    with PathableOps
+    with PathAndBytesableOps
+    with TransactionOps

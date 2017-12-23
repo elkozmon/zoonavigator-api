@@ -18,17 +18,16 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
+import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
 class GetZNodeAclActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[GetZNodeAclAction]
-    with BackgroundReadOps {
+    extends ActionHandler[GetZNodeAclAction] {
 
   override def handle(
       action: GetZNodeAclAction
   ): Task[ZNodeMetaWith[ZNodeAcl]] =
-    curatorFramework.getAclBackground(action.path)
+    curatorFramework.getAclAsync(action.path)
 }

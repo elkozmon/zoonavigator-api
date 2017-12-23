@@ -20,7 +20,7 @@ package com.elkozmon.zoonavigator.core.action.actions
 import cats.free.Cofree
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundReadOps
+import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
@@ -31,13 +31,12 @@ import org.apache.curator.framework.api.transaction._
 import scala.collection.JavaConverters._
 
 class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[DuplicateZNodeRecursiveAction]
-    with BackgroundReadOps {
+    extends ActionHandler[DuplicateZNodeRecursiveAction] {
 
   override def handle(action: DuplicateZNodeRecursiveAction): Task[Unit] =
     for {
       tree <- curatorFramework
-        .walkTreeBackground(curatorFramework.getZNodeBackground)(action.source)
+        .walkTreeAsync(curatorFramework.getZNodeAsync)(action.source)
         .map(rewritePaths(action.destination, _))
       unit <- createTree(tree)
     } yield unit
@@ -48,7 +47,7 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
 
     curatorFramework
       .transaction()
-      .forOperationsBackground(ops)
+      .forOperationsAsync(ops)
       .map(_.asUnit())
   }
 

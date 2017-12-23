@@ -18,18 +18,17 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.ActionHandler
-import com.elkozmon.zoonavigator.core.curator.BackgroundOps
+import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
 class CreateZNodeActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[CreateZNodeAction]
-    with BackgroundOps {
+    extends ActionHandler[CreateZNodeAction] {
 
   override def handle(action: CreateZNodeAction): Task[Unit] =
     curatorFramework
       .create()
-      .forPathBackground(action.path.path)
+      .forPathAsync(action.path.path)
       .map(_.asUnit())
 }
