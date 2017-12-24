@@ -26,6 +26,7 @@ import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.eval.Task
+import monix.cats._
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.utils.ZKPaths
@@ -41,10 +42,10 @@ trait CuratorOps {
         fn: ZNodePath => Task[T]
     )(node: ZNodePath): Task[Cofree[List, T]] = {
       val taskT = fn(node)
-      val taskChildren = getChildrenAsync(node)
-        .map(_.data.children)
-        .flatMap(Task.traverse(_)(walkTreeAsync(fn)))
-        .map(Eval.now)
+      val taskChildren = for {
+        paths <- getChildrenAsync(node).map(_.data.children)
+        trees <- Task.wanderUnordered(paths)(walkTreeAsync(fn)).map(Eval.now)
+      } yield trees
 
       Task.mapBoth(taskT, taskChildren)(Cofree(_, _))
     }
