@@ -32,7 +32,7 @@ import scala.util.Try
 
 package object curator {
 
-  private val logger = LoggerFactory.getLogger(getClass)
+  private val logger = LoggerFactory.getLogger("curator")
 
   private[curator] def tryTaskCreate[T](
       fn: (Scheduler, Callback[T]) => Unit
