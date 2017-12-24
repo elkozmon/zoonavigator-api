@@ -38,7 +38,7 @@ class GetZNodeDataActionHandlerSpec extends FlatSpec {
     curatorFramework
       .create()
       .forPath("/nullNode", null)
-      .asUnit()
+      .discard()
 
     val handler =
       new GetZNodeDataActionHandler(curatorFramework)

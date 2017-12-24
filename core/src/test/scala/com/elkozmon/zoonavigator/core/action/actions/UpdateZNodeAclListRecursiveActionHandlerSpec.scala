@@ -58,7 +58,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec {
           .withACL(initAcl)
           .forPath("/test1", "foo".getBytes)
       )
-      .asUnit()
+      .discard()
 
     val newAcl =
       ZNodeAcl(
@@ -73,7 +73,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec {
       ZNodeAclVersion(0L)
     )
 
-    Await.result(actionHandler.handle(action).runAsync, Duration.Inf).asUnit()
+    Await.result(actionHandler.handle(action).runAsync, Duration.Inf).discard()
 
     val currentAclList = curatorFramework.getACL
       .forPath("/test1")
@@ -104,7 +104,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec {
           .withACL(initAcl)
           .forPath("/test2/child", "bar".getBytes)
       )
-      .asUnit()
+      .discard()
 
     val newAcl =
       ZNodeAcl(
@@ -119,7 +119,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec {
       ZNodeAclVersion(0L)
     )
 
-    Await.result(actionHandler.handle(action).runAsync, Duration.Inf).asUnit()
+    Await.result(actionHandler.handle(action).runAsync, Duration.Inf).discard()
 
     val currentAclList = curatorFramework.getACL
       .forPath("/test2/child")

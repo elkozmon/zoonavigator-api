@@ -26,6 +26,7 @@ import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
+import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.framework.api.transaction._
 
 import scala.collection.JavaConverters._
@@ -48,7 +49,7 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
     curatorFramework
       .transaction()
       .forOperationsAsync(ops)
-      .map(_.asUnit())
+      .map(discard[CuratorEvent])
   }
 
   private def rewritePaths(

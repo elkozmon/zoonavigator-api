@@ -31,6 +31,6 @@ trait PathableOps {
         bp.inBackground(newEventCallback(callback), scheduler)
           .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path)
-          .asUnit()
+          .discard()
     }
 }

@@ -33,7 +33,7 @@ trait PathAndBytesableOps {
         bp.inBackground(newEventCallback(callback), scheduler)
           .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path)
-          .asUnit()
+          .discard()
     }
 
   implicit def toPathAndBytesableAsync[T](
@@ -44,6 +44,6 @@ trait PathAndBytesableOps {
         bp.inBackground(newEventCallback(callback), scheduler)
           .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path, bytes)
-          .asUnit()
+          .discard()
     }
 }

@@ -58,7 +58,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
           .create()
           .forPath("/test1/baz", "baz".getBytes)
       )
-      .asUnit()
+      .discard()
 
     val action =
       DuplicateZNodeRecursiveAction(
@@ -84,7 +84,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
       .create()
       .withACL(List(acl).asJava)
       .forPath("/test2", "foo".getBytes)
-      .asUnit()
+      .discard()
 
     val action =
       DuplicateZNodeRecursiveAction(

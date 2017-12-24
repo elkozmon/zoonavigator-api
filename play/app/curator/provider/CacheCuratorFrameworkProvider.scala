@@ -80,7 +80,7 @@ class CacheCuratorFrameworkProvider(
 
     notification.getValue
       .foreach(_.close())
-      .asUnit()
+      .discard()
   }
 
   override def getCuratorInstance(

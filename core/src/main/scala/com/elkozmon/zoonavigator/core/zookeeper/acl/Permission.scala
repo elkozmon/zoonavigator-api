@@ -56,23 +56,23 @@ object Permission {
       val mutableSet = mutable.Set.empty[Permission]
 
       if ((bitmask & Perms.CREATE) != 0) {
-        mutableSet.add(Permission.Create).asUnit()
+        mutableSet.add(Permission.Create).discard()
       }
 
       if ((bitmask & Perms.READ) != 0) {
-        mutableSet.add(Permission.Read).asUnit()
+        mutableSet.add(Permission.Read).discard()
       }
 
       if ((bitmask & Perms.WRITE) != 0) {
-        mutableSet.add(Permission.Write).asUnit()
+        mutableSet.add(Permission.Write).discard()
       }
 
       if ((bitmask & Perms.DELETE) != 0) {
-        mutableSet.add(Permission.Delete).asUnit()
+        mutableSet.add(Permission.Delete).discard()
       }
 
       if ((bitmask & Perms.ADMIN) != 0) {
-        mutableSet.add(Permission.Admin).asUnit()
+        mutableSet.add(Permission.Admin).discard()
       }
 
       mutableSet.toSet

@@ -25,6 +25,7 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
+import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.framework.api.transaction.CuratorOp
 
 class ForceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
@@ -45,7 +46,7 @@ class ForceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
     curatorFramework
       .transaction()
       .forOperationsAsync(ops)
-      .map(_.asUnit())
+      .map(discard[CuratorEvent])
   }
 
   private def deleteZNode(path: ZNodePath): CuratorOp =

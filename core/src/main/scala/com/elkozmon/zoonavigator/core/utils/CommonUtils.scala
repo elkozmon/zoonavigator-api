@@ -19,8 +19,13 @@ package com.elkozmon.zoonavigator.core.utils
 
 object CommonUtils {
 
-  implicit class UnitConvertible[T](any: T) {
-    def asUnit(): Unit = ()
+  def discard[A](any: A): Unit = {
+    val _: A = any
+    ()
+  }
+
+  implicit class Discardable[T](any: T) {
+    def discard(): Unit = CommonUtils.this.discard(any)
   }
 
 }

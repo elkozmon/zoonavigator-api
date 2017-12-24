@@ -59,7 +59,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec extends FlatSpec {
           .create()
           .forPath("/test3", "baz".getBytes)
       )
-      .asUnit()
+      .discard()
 
     val action =
       ForceDeleteZNodeRecursiveAction(
@@ -90,7 +90,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec extends FlatSpec {
           .create()
           .forPath("/test1/child2", "baz".getBytes)
       )
-      .asUnit()
+      .discard()
 
     val action =
       ForceDeleteZNodeRecursiveAction(ZNodePath.unsafe("/test1"))
@@ -115,7 +115,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec extends FlatSpec {
           .create()
           .forPath("/test2", "bar".getBytes)
       )
-      .asUnit()
+      .discard()
 
     val action =
       ForceDeleteZNodeRecursiveAction(

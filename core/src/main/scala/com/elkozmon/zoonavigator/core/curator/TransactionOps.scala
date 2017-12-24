@@ -32,6 +32,6 @@ trait TransactionOps {
         bp.inBackground(newEventCallback(callback), scheduler)
           .withUnhandledErrorListener(newErrorListener(callback))
           .forOperations(ops: _*)
-          .asUnit()
+          .discard()
     }
 }

@@ -56,7 +56,7 @@ class ZSessionController(
             // store connection params to session
             zookeeperSessionHelper
               .setConnectionParams(connectionParams)
-              .asUnit()
+              .discard()
 
             val sessionInfo =
               SessionInfo(sessionToken, connectionParams.connectionString)
