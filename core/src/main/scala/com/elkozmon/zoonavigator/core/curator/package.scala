@@ -34,7 +34,9 @@ package object curator {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def tryTaskCreate[T](fn: (Scheduler, Callback[T]) => Unit): Task[T] =
+  private[curator] def tryTaskCreate[T](
+      fn: (Scheduler, Callback[T]) => Unit
+  ): Task[T] =
     Task.create[T] { (scheduler, callback) =>
       Try(fn(scheduler, callback)).toEither.left
         .foreach(callback.onError)
@@ -42,7 +44,9 @@ package object curator {
       Cancelable.empty
     }
 
-  def newEventCallback(callback: Callback[CuratorEvent]): BackgroundCallback =
+  private[curator] def newEventCallback(
+      callback: Callback[CuratorEvent]
+  ): BackgroundCallback =
     (_, event: CuratorEvent) => {
       logger.debug(
         "{} event completed with result code {}",
@@ -60,7 +64,9 @@ package object curator {
       }
     }
 
-  def newErrorListener(callback: Callback[_]): UnhandledErrorListener =
+  private[curator] def newErrorListener(
+      callback: Callback[_]
+  ): UnhandledErrorListener =
     (message: String, e: Throwable) => {
       logger.error(message, e)
       callback.onError(e)
