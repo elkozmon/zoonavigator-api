@@ -21,6 +21,7 @@ import cats.free.Cofree
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.Implicits._
+import com.elkozmon.zoonavigator.core.utils.ZookeeperUtils
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
@@ -38,13 +39,13 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
     for {
       tree <- curatorFramework
         .walkTreeAsync(curatorFramework.getZNodeAsync)(action.source)
-        .map(rewritePaths(action.destination, _))
+        .map(ZookeeperUtils.rewriteZNodePaths(action.destination, _))
       unit <- createTree(tree)
     } yield unit
 
   private def createTree(tree: Cofree[List, ZNode]): Task[Unit] = {
     val ops: Seq[CuratorOp] =
-      tree.reduceMap((node: ZNode) => List(createZNode(node)))
+      tree.reduceMap((node: ZNode) => List(createZNodeOp(node)))
 
     curatorFramework
       .transaction()
@@ -52,16 +53,7 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
       .map(discard[CuratorEvent])
   }
 
-  private def rewritePaths(
-      path: ZNodePath,
-      tree: Cofree[List, ZNode]
-  ): Cofree[List, ZNode] =
-    Cofree(
-      tree.head.copy(path = path),
-      tree.tail.map(_.map(c => rewritePaths(path.down(c.head.path.name), c)))
-    )
-
-  private def createZNode(node: ZNode): CuratorOp =
+  private def createZNodeOp(node: ZNode): CuratorOp =
     curatorFramework
       .transactionOp()
       .create()

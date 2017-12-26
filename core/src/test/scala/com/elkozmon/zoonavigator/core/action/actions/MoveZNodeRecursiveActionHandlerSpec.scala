@@ -24,24 +24,28 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import monix.execution.Scheduler
 import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
+import org.apache.zookeeper.data.Stat
 import org.scalatest.FlatSpec
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
+class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec {
 
   import Scheduler.Implicits.global
 
   private val curatorFramework =
     TestingCuratorFrameworkProvider.getCuratorFramework(getClass.getName)
 
-  private val actionHandler = new DuplicateZNodeRecursiveActionHandler(
+  private val actionHandler = new MoveZNodeRecursiveActionHandler(
     curatorFramework
   )
 
-  "DuplicateZNodeRecursiveActionHandler" should "copy child nodes" in {
+  private def checkExists(path: String): Option[Stat] =
+    Option(curatorFramework.checkExists().forPath(path))
+
+  "MoveZNodeRecursiveActionHandler" should "copy child nodes" in {
     curatorFramework
       .transaction()
       .forOperations(
@@ -61,17 +65,49 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
       .discard()
 
     val action =
-      DuplicateZNodeRecursiveAction(
+      MoveZNodeRecursiveAction(
         ZNodePath.unsafe("/test1"),
-        ZNodePath.unsafe("/test1-copy")
+        ZNodePath.unsafe("/test1-move")
       )
 
     Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
-    val bar = new String(curatorFramework.getData.forPath("/test1-copy/bar"))
-    val baz = new String(curatorFramework.getData.forPath("/test1-copy/baz"))
+    val bar = new String(curatorFramework.getData.forPath("/test1-move/bar"))
+    val baz = new String(curatorFramework.getData.forPath("/test1-move/baz"))
 
     assertResult("barbaz")(bar + baz)
+  }
+
+  it should "remove old nodes" in {
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/test2", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/test2/bar", "bar".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/test2/baz", "baz".getBytes)
+      )
+      .discard()
+
+    val action =
+      MoveZNodeRecursiveAction(
+        ZNodePath.unsafe("/test2"),
+        ZNodePath.unsafe("/test2-move")
+      )
+
+    Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+
+    assert(checkExists("/test2").isEmpty).discard()
+    assert(checkExists("/test2/bar").isEmpty).discard()
+    assert(checkExists("/test2/baz").isEmpty).discard()
   }
 
   it should "copy ACLs" in {
@@ -83,20 +119,20 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
     curatorFramework
       .create()
       .withACL(List(acl).asJava)
-      .forPath("/test2", "foo".getBytes)
+      .forPath("/test3", "foo".getBytes)
       .discard()
 
     val action =
-      DuplicateZNodeRecursiveAction(
-        ZNodePath.unsafe("/test2"),
-        ZNodePath.unsafe("/test2-copy")
+      MoveZNodeRecursiveAction(
+        ZNodePath.unsafe("/test3"),
+        ZNodePath.unsafe("/test3-move")
       )
 
     Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
     assert(
       curatorFramework.getACL
-        .forPath("/test2-copy")
+        .forPath("/test3-move")
         .asScala
         .forall(_.equals(acl))
     )
