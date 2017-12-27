@@ -17,17 +17,19 @@
 
 package com.elkozmon.zoonavigator.core.utils
 
+import cats.Functor
 import cats.free.Cofree
-import cats.implicits._
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 
+import scala.language.higherKinds
+
 object ZookeeperUtils {
 
-  def rewriteZNodePaths(
+  def rewriteZNodePaths[S[_]: Functor](
       path: ZNodePath,
-      tree: Cofree[List, ZNode]
-  ): Cofree[List, ZNode] =
+      tree: Cofree[S, ZNode]
+  ): Cofree[S, ZNode] =
     tree.transform(
       head => head.copy(path = path),
       tail => rewriteZNodePaths(path.down(tail.head.path.name), tail)
