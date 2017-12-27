@@ -17,8 +17,8 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
+import com.elkozmon.zoonavigator.core.curator.CuratorSpec
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.curator.TestingCuratorFrameworkProvider
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
@@ -26,107 +26,118 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import monix.execution.Scheduler
+import org.apache.curator.framework.CuratorFramework
 import org.scalatest.FlatSpec
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
-class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec {
+class UpdateZNodeAclListRecursiveActionHandlerSpec
+    extends FlatSpec
+    with CuratorSpec {
 
   import Scheduler.Implicits.global
 
-  private val curatorFramework =
-    TestingCuratorFrameworkProvider.getCuratorFramework(getClass.getName)
+  private def actionHandler(implicit curatorFramework: CuratorFramework) =
+    new UpdateZNodeAclListRecursiveActionHandler(curatorFramework)
 
-  private val actionHandler = new UpdateZNodeAclListRecursiveActionHandler(
-    curatorFramework
-  )
+  "UpdateZNodeAclListRecursiveActionHandler" should "set root node ACLs" in withCurator {
+    implicit curatorFramework =>
+      val initAcl =
+        ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
+          .map(Acl.toZookeeper)
+          .asJava
 
-  "UpdateZNodeAclListRecursiveActionHandler" should "set root ZNode ACL" in {
-    val initAcl =
-      ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
-        .map(Acl.toZookeeper)
-        .asJava
-
-    curatorFramework
-      .transaction()
-      .forOperations(
-        curatorFramework
-          .transactionOp()
-          .create()
-          .withACL(initAcl)
-          .forPath("/test1", "foo".getBytes)
-      )
-      .discard()
-
-    val newAcl =
-      ZNodeAcl(
-        List(
-          Acl(AclId("world", "anyone"), Set(Permission.Admin, Permission.Read))
+      curatorFramework
+        .transaction()
+        .forOperations(
+          curatorFramework
+            .transactionOp()
+            .create()
+            .withACL(initAcl)
+            .forPath("/foo", "foo".getBytes)
         )
+        .discard()
+
+      val newAcl =
+        ZNodeAcl(
+          List(
+            Acl(
+              AclId("world", "anyone"),
+              Set(Permission.Admin, Permission.Read)
+            )
+          )
+        )
+
+      val action = UpdateZNodeAclListRecursiveAction(
+        ZNodePath.unsafe("/foo"),
+        newAcl,
+        ZNodeAclVersion(0L)
       )
 
-    val action = UpdateZNodeAclListRecursiveAction(
-      ZNodePath.unsafe("/test1"),
-      newAcl,
-      ZNodeAclVersion(0L)
-    )
+      Await
+        .result(actionHandler.handle(action).runAsync, Duration.Inf)
+        .discard()
 
-    Await.result(actionHandler.handle(action).runAsync, Duration.Inf).discard()
+      val currentAclList = curatorFramework.getACL
+        .forPath("/foo")
+        .asScala
+        .toList
+        .map(Acl.fromZookeeper)
 
-    val currentAclList = curatorFramework.getACL
-      .forPath("/test1")
-      .asScala
-      .toList
-      .map(Acl.fromZookeeper)
-
-    assertResult(newAcl.aclList)(currentAclList)
+      assertResult(newAcl.aclList)(currentAclList)
   }
 
-  it should "set children ZNode ACL" in {
-    val initAcl =
-      ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
-        .map(Acl.toZookeeper)
-        .asJava
+  it should "set children node ACLs" in withCurator {
+    implicit curatorFramework =>
+      val initAcl =
+        ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
+          .map(Acl.toZookeeper)
+          .asJava
 
-    curatorFramework
-      .transaction()
-      .forOperations(
-        curatorFramework
-          .transactionOp()
-          .create()
-          .withACL(initAcl)
-          .forPath("/test2", "foo".getBytes),
-        curatorFramework
-          .transactionOp()
-          .create()
-          .withACL(initAcl)
-          .forPath("/test2/child", "bar".getBytes)
-      )
-      .discard()
-
-    val newAcl =
-      ZNodeAcl(
-        List(
-          Acl(AclId("world", "anyone"), Set(Permission.Admin, Permission.Read))
+      curatorFramework
+        .transaction()
+        .forOperations(
+          curatorFramework
+            .transactionOp()
+            .create()
+            .withACL(initAcl)
+            .forPath("/foo", "foo".getBytes),
+          curatorFramework
+            .transactionOp()
+            .create()
+            .withACL(initAcl)
+            .forPath("/foo/bar", "bar".getBytes)
         )
+        .discard()
+
+      val newAcl =
+        ZNodeAcl(
+          List(
+            Acl(
+              AclId("world", "anyone"),
+              Set(Permission.Admin, Permission.Read)
+            )
+          )
+        )
+
+      val action = UpdateZNodeAclListRecursiveAction(
+        ZNodePath.unsafe("/foo"),
+        newAcl,
+        ZNodeAclVersion(0L)
       )
 
-    val action = UpdateZNodeAclListRecursiveAction(
-      ZNodePath.unsafe("/test2"),
-      newAcl,
-      ZNodeAclVersion(0L)
-    )
+      Await
+        .result(actionHandler.handle(action).runAsync, Duration.Inf)
+        .discard()
 
-    Await.result(actionHandler.handle(action).runAsync, Duration.Inf).discard()
+      val currentAclList = curatorFramework.getACL
+        .forPath("/foo/bar")
+        .asScala
+        .toList
+        .map(Acl.fromZookeeper)
 
-    val currentAclList = curatorFramework.getACL
-      .forPath("/test2/child")
-      .asScala
-      .toList
-      .map(Acl.fromZookeeper)
-
-    assertResult(newAcl.aclList)(currentAclList)
+      assertResult(newAcl.aclList)(currentAclList)
   }
 }

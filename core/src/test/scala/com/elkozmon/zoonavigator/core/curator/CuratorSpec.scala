@@ -17,12 +17,33 @@
 
 package com.elkozmon.zoonavigator.core.curator
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.RetryOneTime
 import org.apache.curator.test.TestingServer
+import org.apache.zookeeper.data.Stat
+import org.scalatest.FlatSpec
 
-object TestingCuratorFrameworkProvider {
+trait CuratorSpec extends FlatSpec {
+
+  import CuratorSpec._
+
+  def checkExists(path: String)(implicit cf: CuratorFramework): Option[Stat] =
+    Option(cf.checkExists().forPath(path))
+
+  def withCurator[T](fn: CuratorFramework => T): T = {
+    val id = atomicCounter.getAndIncrement().toString
+    val cf = curatorFramework.usingNamespace(id)
+
+    fn(cf)
+  }
+}
+
+object CuratorSpec {
+
+  private val atomicCounter = new AtomicInteger(0)
 
   private val testingServer = new TestingServer(true)
 
@@ -31,9 +52,6 @@ object TestingCuratorFrameworkProvider {
       .newClient(testingServer.getConnectString, new RetryOneTime(1000))
 
     curator.start()
-    curator
+    curator.usingNamespace("tests")
   }
-
-  def getCuratorFramework(namespace: String): CuratorFramework =
-    curatorFramework.usingNamespace(namespace)
 }

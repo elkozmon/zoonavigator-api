@@ -17,11 +17,12 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import com.elkozmon.zoonavigator.core.curator.TestingCuratorFrameworkProvider
+import com.elkozmon.zoonavigator.core.curator.CuratorSpec
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import monix.execution.Scheduler
+import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
 import org.scalatest.FlatSpec
@@ -30,51 +31,50 @@ import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
+class DuplicateZNodeRecursiveActionHandlerSpec
+    extends FlatSpec
+    with CuratorSpec {
 
   import Scheduler.Implicits.global
 
-  private val curatorFramework =
-    TestingCuratorFrameworkProvider.getCuratorFramework(getClass.getName)
+  private def actionHandler(implicit curatorFramework: CuratorFramework) =
+    new DuplicateZNodeRecursiveActionHandler(curatorFramework)
 
-  private val actionHandler = new DuplicateZNodeRecursiveActionHandler(
-    curatorFramework
-  )
+  "DuplicateZNodeRecursiveActionHandler" should "copy child nodes data" in withCurator {
+    implicit curatorFramework =>
+      curatorFramework
+        .transaction()
+        .forOperations(
+          curatorFramework
+            .transactionOp()
+            .create()
+            .forPath("/foo", "foo".getBytes),
+          curatorFramework
+            .transactionOp()
+            .create()
+            .forPath("/foo/bar", "bar".getBytes),
+          curatorFramework
+            .transactionOp()
+            .create()
+            .forPath("/foo/baz", "baz".getBytes)
+        )
+        .discard()
 
-  "DuplicateZNodeRecursiveActionHandler" should "copy child nodes" in {
-    curatorFramework
-      .transaction()
-      .forOperations(
-        curatorFramework
-          .transactionOp()
-          .create()
-          .forPath("/test1", "foo".getBytes),
-        curatorFramework
-          .transactionOp()
-          .create()
-          .forPath("/test1/bar", "bar".getBytes),
-        curatorFramework
-          .transactionOp()
-          .create()
-          .forPath("/test1/baz", "baz".getBytes)
-      )
-      .discard()
+      val action =
+        DuplicateZNodeRecursiveAction(
+          ZNodePath.unsafe("/foo"),
+          ZNodePath.unsafe("/foo-copy")
+        )
 
-    val action =
-      DuplicateZNodeRecursiveAction(
-        ZNodePath.unsafe("/test1"),
-        ZNodePath.unsafe("/test1-copy")
-      )
+      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
-    Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+      val bar = new String(curatorFramework.getData.forPath("/foo-copy/bar"))
+      val baz = new String(curatorFramework.getData.forPath("/foo-copy/baz"))
 
-    val bar = new String(curatorFramework.getData.forPath("/test1-copy/bar"))
-    val baz = new String(curatorFramework.getData.forPath("/test1-copy/baz"))
-
-    assertResult("barbaz")(bar + baz)
+      assertResult("barbaz")(bar + baz)
   }
 
-  it should "copy ACLs" in {
+  it should "copy ACLs" in withCurator { implicit curatorFramework =>
     val acl = new ACL(
       Permission.toZookeeperMask(Set(Permission.Admin, Permission.Read)),
       new Id("world", "anyone")
@@ -83,20 +83,20 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec {
     curatorFramework
       .create()
       .withACL(List(acl).asJava)
-      .forPath("/test2", "foo".getBytes)
+      .forPath("/foo", "foo".getBytes)
       .discard()
 
     val action =
       DuplicateZNodeRecursiveAction(
-        ZNodePath.unsafe("/test2"),
-        ZNodePath.unsafe("/test2-copy")
+        ZNodePath.unsafe("/foo"),
+        ZNodePath.unsafe("/foo-copy")
       )
 
     Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
     assert(
       curatorFramework.getACL
-        .forPath("/test2-copy")
+        .forPath("/foo-copy")
         .asScala
         .forall(_.equals(acl))
     )

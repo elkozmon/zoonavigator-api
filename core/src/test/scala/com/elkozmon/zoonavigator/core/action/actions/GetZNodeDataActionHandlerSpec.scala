@@ -17,36 +17,36 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import com.elkozmon.zoonavigator.core.curator.TestingCuratorFrameworkProvider
+import com.elkozmon.zoonavigator.core.curator.CuratorSpec
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import monix.execution.Scheduler
+import org.apache.curator.framework.CuratorFramework
 import org.scalatest.FlatSpec
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 @SuppressWarnings(Array("org.wartremover.warts.Null"))
-class GetZNodeDataActionHandlerSpec extends FlatSpec {
+class GetZNodeDataActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
 
-  private val curatorFramework =
-    TestingCuratorFrameworkProvider.getCuratorFramework(getClass.getName)
+  private def actionHandler(implicit curatorFramework: CuratorFramework) =
+    new GetZNodeDataActionHandler(curatorFramework)
 
-  "GetZNodeDataActionHandler" should "return empty byte array for ZNode with null data" in {
-    curatorFramework
-      .create()
-      .forPath("/nullNode", null)
-      .discard()
+  "GetZNodeDataActionHandler" should "return empty byte array for node with null data" in withCurator {
+    implicit curatorFramework =>
+      curatorFramework
+        .create()
+        .forPath("/null-node", null)
+        .discard()
 
-    val handler =
-      new GetZNodeDataActionHandler(curatorFramework)
+      val action = GetZNodeDataAction(ZNodePath.unsafe("/null-node"))
 
-    val action = GetZNodeDataAction(ZNodePath.unsafe("/nullNode"))
+      val metadata =
+        Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
-    val metadata = Await.result(handler.handle(action).runAsync, Duration.Inf)
-
-    assert(metadata.data.bytes.isEmpty)
+      assert(metadata.data.bytes.isEmpty)
   }
 }
