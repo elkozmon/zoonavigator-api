@@ -37,6 +37,14 @@ trait ActionModule {
       curatorFramework: CuratorFramework
   ): ActionHandler[ForceDeleteZNodeRecursiveAction]
 
+  def duplicateZNodeRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[DuplicateZNodeRecursiveAction]
+
+  def moveZNodeRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[MoveZNodeRecursiveAction]
+
   def getZNodeAclListActionHandler(
       curatorFramework: CuratorFramework
   ): ActionHandler[GetZNodeAclAction]
@@ -70,6 +78,8 @@ trait ActionModule {
       createZNodeActionHandler(curatorFramework) ::
         deleteZNodeRecursiveActionHandler(curatorFramework) ::
         forceDeleteZNodeRecursiveActionHandler(curatorFramework) ::
+        duplicateZNodeRecursiveActionHandler(curatorFramework) ::
+        moveZNodeRecursiveActionHandler(curatorFramework) ::
         getZNodeAclListActionHandler(curatorFramework) ::
         getZNodeDataActionHandler(curatorFramework) ::
         getZNodeMetaActionHandler(curatorFramework) ::

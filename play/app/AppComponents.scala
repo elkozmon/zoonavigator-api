@@ -173,6 +173,16 @@ class AppComponents(context: Context)
   ): ActionHandler[ForceDeleteZNodeRecursiveAction] =
     wire[ForceDeleteZNodeRecursiveActionHandler]
 
+  override def duplicateZNodeRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[DuplicateZNodeRecursiveAction] =
+    wire[DuplicateZNodeRecursiveActionHandler]
+
+  override def moveZNodeRecursiveActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[MoveZNodeRecursiveAction] =
+    wire[MoveZNodeRecursiveActionHandler]
+
   override def updateZNodeAclListActionHandler(
       curatorFramework: CuratorFramework
   ): ActionHandler[UpdateZNodeAclListAction] =

@@ -7,6 +7,8 @@ GET           /znode/children        controllers.ZNodeController.getChildren()
 
 POST          /znode                 controllers.ZNodeController.create()
 DELETE        /znode                 controllers.ZNodeController.delete()
+POST          /znode/duplicate       controllers.ZNodeController.duplicate()
+POST          /znode/move            controllers.ZNodeController.move()
 DELETE        /znode/children        controllers.ZNodeController.deleteChildren()
 PUT           /znode/acl             controllers.ZNodeController.updateAcl()
 PUT           /znode/data            controllers.ZNodeController.updateData()

@@ -145,9 +145,43 @@ class ZNodeController(
         )
     }
 
-  def duplicate(): Action[Unit] = ???
+  def duplicate(): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+      val eitherResult = for {
+        source <- getRequiredQueryParam("source")
+          .flatMap(parseZNodePath)
+        destination <- getRequiredQueryParam("destination")
+          .flatMap(parseZNodePath)
+      } yield {
+        actionDispatcherProvider
+          .getDispatcher(curatorRequest.curatorFramework)
+          .dispatch(DuplicateZNodeRecursiveAction(source, destination))
+          .map(_ => apiResponseFactory.okEmpty)
+          .onErrorHandle(apiResponseFactory.fromThrowable)
+          .runAsync
+      }
 
-  def move(): Action[Unit] = ???
+      eitherResult.fold(Future.successful, identity)
+    }
+
+  def move(): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+      val eitherResult = for {
+        source <- getRequiredQueryParam("source")
+          .flatMap(parseZNodePath)
+        destination <- getRequiredQueryParam("destination")
+          .flatMap(parseZNodePath)
+      } yield {
+        actionDispatcherProvider
+          .getDispatcher(curatorRequest.curatorFramework)
+          .dispatch(MoveZNodeRecursiveAction(source, destination))
+          .map(_ => apiResponseFactory.okEmpty)
+          .onErrorHandle(apiResponseFactory.fromThrowable)
+          .runAsync
+      }
+
+      eitherResult.fold(Future.successful, identity)
+    }
 
   def delete(): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
