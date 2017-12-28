@@ -3,8 +3,8 @@
 # Remove pid file
 rm -f "/app/RUNNING_PID"
 
-# Generate random crypto secret if not defined
-export CRYPTO_SECRET=${CRYPTO_SECRET:-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9~!@#$%^&*_-' | fold -w 64 | head -n 1)}
+# Generate random app secret if not defined
+export APP_SECRET=${APP_SECRET:-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9~!@#$%^&*_-' | fold -w 64 | head -n 1)}
 
 # JVM config
 JVM_CONFIG="-J-server"
