@@ -138,7 +138,12 @@ class AppComponents(context: Context)
   override lazy val zSessionController: ZSessionController =
     wire[ZSessionController]
 
-  override def getZNodeAclListActionHandler(
+  override def getZNodeWithChildrenActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[GetZNodeWithChildrenAction] =
+    wire[GetZNodeWithChildrenActionHandler]
+
+  override def getZNodeAclActionHandler(
       curatorFramework: CuratorFramework
   ): ActionHandler[GetZNodeAclAction] =
     wire[GetZNodeAclActionHandler]

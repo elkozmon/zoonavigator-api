@@ -50,12 +50,21 @@ trait CuratorOps {
       Task.mapBoth(taskT, taskChildren)(Cofree(_, _))
     }
 
-    def getZNodeAsync(node: ZNodePath): Task[ZNode] = {
-      val taskAcl = getAclAsync(node)
-      val taskData = getDataAsync(node)
+    def getZNodeAsync(path: ZNodePath): Task[ZNode] = {
+      val taskAcl = getAclAsync(path)
+      val taskData = getDataAsync(path)
 
       Task.mapBoth(taskAcl, taskData) { (acl, data) =>
-        ZNode(acl.data, node, data.data, data.meta)
+        ZNode(acl.data, path, data.data, data.meta)
+      }
+    }
+
+    def getZNodeWithChildrenAsync(path: ZNodePath): Task[ZNodeWithChildren] = {
+      val taskZNode = getZNodeAsync(path)
+      val taskZNodeChildren = getChildrenAsync(path).map(_.data)
+
+      Task.mapBoth(taskZNode, taskZNodeChildren) { (node, children) =>
+        ZNodeWithChildren(node, children)
       }
     }
 

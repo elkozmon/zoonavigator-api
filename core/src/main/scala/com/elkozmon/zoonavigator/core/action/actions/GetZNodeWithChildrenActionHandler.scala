@@ -15,18 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package json.zookeeper.znode
+package com.elkozmon.zoonavigator.core.action.actions
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
-import play.api.libs.json._
+import com.elkozmon.zoonavigator.core.action.ActionHandler
+import com.elkozmon.zoonavigator.core.curator.Implicits._
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import monix.eval.Task
+import org.apache.curator.framework.CuratorFramework
 
-final case class JsonZNodePath(underlying: ZNodePath)
+class GetZNodeWithChildrenActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[GetZNodeWithChildrenAction] {
 
-object JsonZNodePath {
-
-  implicit object ZNodePathWrites extends Writes[JsonZNodePath] {
-    override def writes(o: JsonZNodePath): JsValue =
-      JsString(o.underlying.path)
-  }
-
+  override def handle(
+      action: GetZNodeWithChildrenAction
+  ): Task[ZNodeWithChildren] =
+    curatorFramework.getZNodeWithChildrenAsync(action.path)
 }

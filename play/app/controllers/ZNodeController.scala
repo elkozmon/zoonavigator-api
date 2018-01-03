@@ -50,7 +50,7 @@ class ZNodeController(
 
   private val actionDispatcherProvider = actionModule.actionDispatcherProvider
 
-  def getAcl: Action[Unit] =
+  def get: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
         .flatMap(parseZNodePath)
@@ -58,50 +58,12 @@ class ZNodeController(
           Future.successful, { path =>
             actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(GetZNodeAclAction(path))
-              .map { metaWithAcl =>
-                val jsonMetaWithAcl =
-                  JsonZNodeMetaWith(metaWithAcl.map(JsonZNodeAcl(_)))
+              .dispatch(GetZNodeWithChildrenAction(path))
+              .map { node =>
+                val jsonNode = JsonZNodeWithChildren(node)
 
-                apiResponseFactory.okPayload(jsonMetaWithAcl)
+                apiResponseFactory.okPayload(jsonNode)
               }
-              .onErrorHandle(apiResponseFactory.fromThrowable)
-              .runAsync
-          }
-        )
-    }
-
-  def getData: Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
-      getRequiredQueryParam("path")
-        .flatMap(parseZNodePath)
-        .fold(
-          Future.successful, { path =>
-            actionDispatcherProvider
-              .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(GetZNodeDataAction(path))
-              .map { metaWithData =>
-                val jsonMetaWithData =
-                  JsonZNodeMetaWith(metaWithData.map(JsonZNodeData(_)))
-
-                apiResponseFactory.okPayload(jsonMetaWithData)
-              }
-              .onErrorHandle(apiResponseFactory.fromThrowable)
-              .runAsync
-          }
-        )
-    }
-
-  def getMeta: Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
-      getRequiredQueryParam("path")
-        .flatMap(parseZNodePath)
-        .fold(
-          Future.successful, { path =>
-            actionDispatcherProvider
-              .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(GetZNodeMetaAction(path))
-              .map(meta => apiResponseFactory.okPayload(JsonZNodeMeta(meta)))
               .onErrorHandle(apiResponseFactory.fromThrowable)
               .runAsync
           }

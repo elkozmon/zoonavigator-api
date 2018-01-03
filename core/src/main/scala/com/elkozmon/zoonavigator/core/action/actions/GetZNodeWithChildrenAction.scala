@@ -15,18 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package json.zookeeper.znode
+package com.elkozmon.zoonavigator.core.action.actions
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
-import play.api.libs.json._
+import com.elkozmon.zoonavigator.core.action.Action
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
 
-final case class JsonZNodePath(underlying: ZNodePath)
-
-object JsonZNodePath {
-
-  implicit object ZNodePathWrites extends Writes[JsonZNodePath] {
-    override def writes(o: JsonZNodePath): JsValue =
-      JsString(o.underlying.path)
-  }
-
+final case class GetZNodeWithChildrenAction(path: ZNodePath) extends Action {
+  override type Out = ZNodeWithChildren
 }

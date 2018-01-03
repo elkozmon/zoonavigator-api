@@ -17,16 +17,21 @@
 
 package json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
 import play.api.libs.json._
 
-final case class JsonZNodePath(underlying: ZNodePath)
+final case class JsonZNode(underlying: ZNode)
 
-object JsonZNodePath {
+object JsonZNode {
 
-  implicit object ZNodePathWrites extends Writes[JsonZNodePath] {
-    override def writes(o: JsonZNodePath): JsValue =
-      JsString(o.underlying.path)
+  implicit object ZNodeWrites extends OWrites[JsonZNode] {
+    override def writes(o: JsonZNode): JsObject =
+      Json.obj(
+        "acl" -> JsonZNodeAcl(o.underlying.acl),
+        "path" -> JsonZNodePath(o.underlying.path),
+        "data" -> JsonZNodeData(o.underlying.data),
+        "meta" -> JsonZNodeMeta(o.underlying.meta),
+      )
   }
 
 }
