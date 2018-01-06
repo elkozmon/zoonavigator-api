@@ -30,6 +30,7 @@ class CreateZNodeActionHandler(curatorFramework: CuratorFramework)
   override def handle(action: CreateZNodeAction): Task[Unit] =
     curatorFramework
       .create()
+      .creatingParentsIfNeeded()
       .forPathAsync(action.path.path)
       .map(discard[CuratorEvent])
 }
