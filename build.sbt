@@ -43,9 +43,9 @@ val core = project
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % "1.7.25",
       "joda-time" % "joda-time" % "2.9.9",
-      "org.apache.curator" % "curator-framework" % "4.0.0",
+      "org.apache.curator" % "curator-framework" % "4.0.0" exclude("org.apache.zookeeper", "zookeeper"),
       "org.apache.curator" % "curator-test" % "4.0.0" % Test,
-      "org.apache.zookeeper" % "zookeeper" % "3.4.11",
+      "org.apache.zookeeper" % "zookeeper" % "3.4.11" exclude("org.slf4j", "slf4j-log4j12"),
       "io.monix" %% "monix-eval" % "2.3.2",
       "io.monix" %% "monix-cats" % "2.3.2",
       "com.chuusai" %% "shapeless" % "2.3.2"
