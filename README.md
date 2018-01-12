@@ -2,6 +2,7 @@ ZooNavigator API
 ================
 
 [![Build Status](https://travis-ci.org/elkozmon/zoonavigator-api.svg)](https://travis-ci.org/elkozmon/zoonavigator-api)
+[![Docker Stars](https://img.shields.io/docker/pulls/elkozmon/zoonavigator-api.svg)]()
 
 API for ZooNavigator, web-based GUI for ZooKeeper. 
 
