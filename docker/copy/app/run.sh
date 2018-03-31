@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "Starting ZooNavigator API $ZOONAV_VERSION"
+
 # Remove pid file
 rm -f "/app/RUNNING_PID"
 
