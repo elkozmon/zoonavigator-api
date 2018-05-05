@@ -1,3 +1,7 @@
+Dockerfile*
+docker-compose*
+.scalafmt.conf
+
 ### IntelliJ
 
 .idea

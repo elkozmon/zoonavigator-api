@@ -1,15 +1,5 @@
-FROM hseeberger/scala-sbt:8u151-2.12.4-1.0.2 as sbt
+FROM openjdk:8u151-jdk-alpine3.7
 MAINTAINER Lubos Kozmon <lubosh91@gmail.com>
-
-# Make stage files
-WORKDIR /app
-COPY . .
-RUN sbt play/stage
-
-FROM openjdk:8
-
-ARG ZOONAV_VERSION
-ENV ZOONAV_VERSION=$ZOONAV_VERSION
 
 # Default config
 ENV SERVER_HTTP_PORT=9000 \
@@ -17,21 +7,34 @@ ENV SERVER_HTTP_PORT=9000 \
     ZK_CLIENT_TTL_MILLIS=5000 \
     ZK_CONNECT_TIMEOUT_MILLIS=5000
 
-# Server HTTP port
-EXPOSE 9000
-
 # Copy setup files
-COPY ./docker/copy /
+WORKDIR /setup
+COPY . .
 
-RUN chmod +x \
+# Build project
+RUN apk --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ add sbt=1.1.4-r0 \
+  && sbt play/stage \
+  # Copy app files
+  && cp -r docker/files/. / \
+  && cp -r play/target/universal/stage/. /app \
+  && echo $SOURCE_BRANCH > /app/.version \
+  # Make scripts executable
+  && chmod +x \
     /app/run.sh \
-    /app/healthcheck.sh
+    /app/healthcheck.sh \
+  # Clean up
+  && rm -rf \
+    /setup \
+    ~/.sbt \
+    ~/.ivy2
+
+WORKDIR /app
 
 # Add health check
 HEALTHCHECK --interval=5m --timeout=3s \
-    CMD /app/healthcheck.sh
+    CMD ./healthcheck.sh
 
-# Copy stage files
-COPY --from=sbt /app/play/target/universal/stage /app
+# Server HTTP port
+EXPOSE 9000
 
-CMD ["/app/run.sh"]
+CMD ["./run.sh"]

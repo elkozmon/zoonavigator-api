@@ -1,0 +1,11 @@
+FROM openjdk:8u151-jdk-alpine3.7
+MAINTAINER Lubos Kozmon <lubosh91@gmail.com>
+
+# Copy setup files
+WORKDIR /setup
+COPY . .
+
+# Install sbt
+RUN apk --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ add sbt=1.1.4-r0
+
+CMD ["sbt", "test"]
