@@ -1,26 +1,12 @@
 sudo: required
 
-language: scala
-
-services:
-  - docker
-
-addons:
-  apt:
-    packages:
-      - docker-ce
-
-scala:
-  - 2.12.2
-
-jdk:
-  - openjdk8
+dist: trusty
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION test
+  - docker-compose -f docker-compose.test.yml up --build --exit-code-from sut
 
 deploy:
   provider: script
-  script: docker/deploy.sh $TRAVIS_TAG
+  script: docker/deploy.sh $TRAVIS_BRANCH
   on:
     tags: true
