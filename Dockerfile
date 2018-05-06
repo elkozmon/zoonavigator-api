@@ -1,8 +1,6 @@
 FROM openjdk:8u151-jdk-alpine3.7
 MAINTAINER Lubos Kozmon <lubosh91@gmail.com>
 
-ARG ZOONAV_VERSION
-
 # Default config
 ENV SERVER_HTTP_PORT=9000 \
     SESSION_TTL_MILLIS=900000 \
@@ -19,7 +17,6 @@ RUN apk --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/
   # Copy app files
   && cp -r docker/files/. / \
   && cp -r play/target/universal/stage/. /app \
-  && echo $ZOONAV_VERSION > /app/.version \
   # Make scripts executable
   && chmod +x \
     /app/run.sh \
