@@ -1,3 +1,5 @@
+import ReleaseTransformations._
+
 scalafmtVersion in ThisBuild := "1.1.0"
 
 scalaVersion in ThisBuild := "2.12.4"
@@ -14,6 +16,25 @@ scalacOptions in ThisBuild ++= Seq(
   "-Ywarn-value-discard",
   "-Ywarn-inaccessible",
   "-Ywarn-dead-code"
+)
+
+enablePlugins(BuildInfoPlugin)
+
+releaseTagName := (version in ThisBuild).value
+
+releaseTagComment := s"Version ${(version in ThisBuild).value}"
+
+releaseCommitMessage := s"Set version to ${(version in ThisBuild).value}"
+
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  pushChanges
 )
 
 val commonSettings = Seq(
