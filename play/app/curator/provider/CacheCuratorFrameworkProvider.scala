@@ -143,15 +143,20 @@ class CacheCuratorFrameworkProvider(
               override def stateChanged(
                   client: CuratorFramework,
                   newState: ConnectionState
-              ): Unit =
-                if (newState.equals(ConnectionState.CONNECTED)) {
+              ): Unit = newState match {
+                case ConnectionState.CONNECTED =>
                   callback.onSuccess(client)
-
-                  client.getConnectionStateListenable
-                    .removeListener(this)
-
+                  client.getConnectionStateListenable.removeListener(this)
                   connectionTimeoutJob.cancel()
-                }
+
+                case ConnectionState.LOST =>
+                  logger.debug("Connection lost")
+
+                case ConnectionState.SUSPENDED =>
+                  logger.debug("Connection suspended")
+
+                case _ =>
+              }
             }
 
           curatorFramework.getConnectionStateListenable
