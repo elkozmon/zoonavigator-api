@@ -98,6 +98,8 @@ val play = project
       PlayWart.MessagesObject,
       PlayWart.SessionPartial,
       PlayWart.TypedMapPartial
-    )
+    ),
+    sources in (Compile, doc) := Seq.empty,
+    publishArtifact in (Compile, packageDoc) := false
   )
   .dependsOn(core)
