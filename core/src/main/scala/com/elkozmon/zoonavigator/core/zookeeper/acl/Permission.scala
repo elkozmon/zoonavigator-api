@@ -38,7 +38,7 @@ object Permission {
 
   case object Admin extends Permission
 
-  def toZookeeperMask(permissions: Set[Permission]): Int =
+  def toZooKeeperMask(permissions: Set[Permission]): Int =
     permissions
       .map {
         case Permission.Create => Perms.CREATE
@@ -49,7 +49,7 @@ object Permission {
       }
       .fold(0)(_ | _)
 
-  def fromZookeeperMask(bitmask: Int): Set[Permission] =
+  def fromZooKeeperMask(bitmask: Int): Set[Permission] =
     if (bitmask == Perms.ALL) {
       Permission.All
     } else {

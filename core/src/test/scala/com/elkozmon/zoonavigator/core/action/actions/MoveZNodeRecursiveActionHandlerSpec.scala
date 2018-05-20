@@ -106,7 +106,7 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   it should "copy ACLs" in withCurator { implicit curatorFramework =>
     val acl = new ACL(
-      Permission.toZookeeperMask(Set(Permission.Admin, Permission.Read)),
+      Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)),
       new Id("world", "anyone")
     )
 

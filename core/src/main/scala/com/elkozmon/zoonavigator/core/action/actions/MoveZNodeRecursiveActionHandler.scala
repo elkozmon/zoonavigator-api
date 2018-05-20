@@ -21,7 +21,7 @@ import cats.free.Cofree
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.Implicits._
-import com.elkozmon.zoonavigator.core.utils.ZookeeperUtils
+import com.elkozmon.zoonavigator.core.utils.ZooKeeperUtils
 import com.elkozmon.zoonavigator.core.utils.CommonUtils.discard
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
@@ -51,7 +51,7 @@ class MoveZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
       .reduceMap((node: ZNode) => List(deleteZNodeOp(node.path)))
       .reverse
 
-    val createOps: Seq[CuratorOp] = ZookeeperUtils
+    val createOps: Seq[CuratorOp] = ZooKeeperUtils
       .rewriteZNodePaths(dest, tree)
       .reduceMap((node: ZNode) => List(createZNodeOp(node)))
 
@@ -65,7 +65,7 @@ class MoveZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
     curatorFramework
       .transactionOp()
       .create()
-      .withACL(node.acl.aclList.map(Acl.toZookeeper).asJava)
+      .withACL(node.acl.aclList.map(Acl.toZooKeeper).asJava)
       .forPath(node.path.path, node.data.bytes)
 
   private def deleteZNodeOp(path: ZNodePath): CuratorOp =

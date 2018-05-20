@@ -24,13 +24,13 @@ import monix.execution.Scheduler
 import play.api.mvc._
 import session.action.SessionRequest
 import zookeeper.ConnectionParams
-import zookeeper.session.ZookeeperSessionHelper
+import zookeeper.session.ZooKeeperSessionHelper
 
 import scala.concurrent.Future
 
 class CuratorAction(
     apiResponseFactory: ApiResponseFactory,
-    zookeeperSessionHelper: ZookeeperSessionHelper,
+    zookeeperSessionHelper: ZooKeeperSessionHelper,
     curatorFrameworkProvider: CuratorFrameworkProvider
 )(implicit val executionContext: Scheduler)
     extends ActionRefiner[SessionRequest, CuratorRequest] {

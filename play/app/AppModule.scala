@@ -24,7 +24,7 @@ import filters.FiltersModule
 import play.api.BuiltInComponentsFromContext
 import session.action.SessionActionBuilder
 import session.manager.SessionManager
-import zookeeper.session.ZookeeperSessionHelper
+import zookeeper.session.ZooKeeperSessionHelper
 
 //noinspection ScalaUnusedSymbol
 trait AppModule extends ActionModule with FiltersModule {
@@ -38,7 +38,7 @@ trait AppModule extends ActionModule with FiltersModule {
 
   val curatorFrameworkProvider: CuratorFrameworkProvider
 
-  val zookeeperSessionHelper: ZookeeperSessionHelper
+  val zookeeperSessionHelper: ZooKeeperSessionHelper
 
   val curatorActionBuilder: CuratorActionBuilder
 

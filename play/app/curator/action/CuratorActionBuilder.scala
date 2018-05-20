@@ -20,11 +20,11 @@ package curator.action
 import api.ApiResponseFactory
 import curator.provider.CuratorFrameworkProvider
 import monix.execution.Scheduler
-import zookeeper.session.ZookeeperSessionHelper
+import zookeeper.session.ZooKeeperSessionHelper
 
 class CuratorActionBuilder(
     apiResponseFactory: ApiResponseFactory,
-    zookeeperSessionHelper: ZookeeperSessionHelper,
+    zookeeperSessionHelper: ZooKeeperSessionHelper,
     curatorFrameworkProvider: CuratorFrameworkProvider,
     scheduler: Scheduler
 ) {

@@ -15,21 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package zookeeper.session
+package com.elkozmon.zoonavigator.core.utils
 
-import session.SessionToken
-import session.manager.SessionManager
-import zookeeper.ConnectionParams
+import cats.Functor
+import cats.free.Cofree
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 
-trait ZookeeperSessionHelper {
+import scala.language.higherKinds
 
-  def setConnectionParams(params: ConnectionParams)(
-      implicit token: SessionToken,
-      manager: SessionManager
-  ): Option[ConnectionParams]
+object ZooKeeperUtils {
 
-  def getConnectionParams(
-      implicit token: SessionToken,
-      manager: SessionManager
-  ): Option[ConnectionParams]
+  def rewriteZNodePaths[S[_]: Functor](
+      path: ZNodePath,
+      tree: Cofree[S, ZNode]
+  ): Cofree[S, ZNode] =
+    tree.transform(
+      head => head.copy(path = path),
+      tail => rewriteZNodePaths(path.down(tail.head.path.name), tail)
+    )
 }

@@ -21,7 +21,7 @@ import cats.free.Cofree
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.Implicits._
-import com.elkozmon.zoonavigator.core.utils.ZookeeperUtils
+import com.elkozmon.zoonavigator.core.utils.ZooKeeperUtils
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
@@ -39,7 +39,7 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
     for {
       tree <- curatorFramework
         .walkTreeAsync(curatorFramework.getZNodeAsync)(action.source)
-        .map(ZookeeperUtils.rewriteZNodePaths(action.destination, _))
+        .map(ZooKeeperUtils.rewriteZNodePaths(action.destination, _))
       unit <- createTree(tree)
     } yield unit
 
@@ -57,6 +57,6 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
     curatorFramework
       .transactionOp()
       .create()
-      .withACL(node.acl.aclList.map(Acl.toZookeeper).asJava)
+      .withACL(node.acl.aclList.map(Acl.toZooKeeper).asJava)
       .forPath(node.path.path, node.data.bytes)
 }

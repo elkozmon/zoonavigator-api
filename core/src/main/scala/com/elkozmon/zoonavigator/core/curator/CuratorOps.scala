@@ -87,7 +87,7 @@ trait CuratorOps {
               .map { acl =>
                 Acl(
                   AclId(acl.getId.getScheme, acl.getId.getId),
-                  Permission.fromZookeeperMask(acl.getPerms)
+                  Permission.fromZooKeeperMask(acl.getPerms)
                 )
               }
           )

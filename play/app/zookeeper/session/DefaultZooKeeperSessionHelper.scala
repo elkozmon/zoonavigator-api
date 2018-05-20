@@ -21,7 +21,7 @@ import session.SessionToken
 import session.manager.SessionManager
 import zookeeper.ConnectionParams
 
-class DefaultZookeeperSessionHelper extends ZookeeperSessionHelper {
+class DefaultZooKeeperSessionHelper extends ZooKeeperSessionHelper {
 
   private final val ConnectionParamsKey = "zkConnectionParams"
 

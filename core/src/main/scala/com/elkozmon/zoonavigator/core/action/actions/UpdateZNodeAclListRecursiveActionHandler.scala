@@ -51,7 +51,7 @@ class UpdateZNodeAclListRecursiveActionHandler(
     aclVersionOpt
       .map(ver => curatorFramework.setACL().withVersion(ver.version.toInt))
       .getOrElse(curatorFramework.setACL())
-      .withACL(acl.aclList.map(Acl.toZookeeper).asJava)
+      .withACL(acl.aclList.map(Acl.toZooKeeper).asJava)
       .forPathAsync(path.path)
       .map(event => ZNodeMeta.fromStat(event.getStat))
 

@@ -28,13 +28,13 @@ import play.api.mvc._
 import session.SessionToken
 import session.manager.SessionManager
 import zookeeper.session.SessionInfo
-import zookeeper.session.ZookeeperSessionHelper
+import zookeeper.session.ZooKeeperSessionHelper
 
 import scala.concurrent.Future
 
 class ZSessionController(
     apiResponseFactory: ApiResponseFactory,
-    zookeeperSessionHelper: ZookeeperSessionHelper,
+    zookeeperSessionHelper: ZooKeeperSessionHelper,
     curatorFrameworkProvider: CuratorFrameworkProvider,
     val controllerComponents: ControllerComponents,
     implicit val scheduler: Scheduler,

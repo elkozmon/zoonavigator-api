@@ -46,7 +46,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec
     implicit curatorFramework =>
       val initAcl =
         ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
-          .map(Acl.toZookeeper)
+          .map(Acl.toZooKeeper)
           .asJava
 
       curatorFramework
@@ -84,7 +84,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec
         .forPath("/foo")
         .asScala
         .toList
-        .map(Acl.fromZookeeper)
+        .map(Acl.fromZooKeeper)
 
       assertResult(newAcl.aclList)(currentAclList)
   }
@@ -93,7 +93,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec
     implicit curatorFramework =>
       val initAcl =
         ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
-          .map(Acl.toZookeeper)
+          .map(Acl.toZooKeeper)
           .asJava
 
       curatorFramework
@@ -136,7 +136,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec
         .forPath("/foo/bar")
         .asScala
         .toList
-        .map(Acl.fromZookeeper)
+        .map(Acl.fromZooKeeper)
 
       assertResult(newAcl.aclList)(currentAclList)
   }

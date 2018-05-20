@@ -39,8 +39,8 @@ import session.SessionInactivityTimeout
 import session.action.SessionActionBuilder
 import session.manager.ExpiringSessionManager
 import session.manager.SessionManager
-import zookeeper.session.DefaultZookeeperSessionHelper
-import zookeeper.session.ZookeeperSessionHelper
+import zookeeper.session.DefaultZooKeeperSessionHelper
+import zookeeper.session.ZooKeeperSessionHelper
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -120,8 +120,8 @@ class AppComponents(context: Context)
   override val curatorFrameworkProvider: CuratorFrameworkProvider =
     wire[CacheCuratorFrameworkProvider]
 
-  override val zookeeperSessionHelper: ZookeeperSessionHelper =
-    wire[DefaultZookeeperSessionHelper]
+  override val zookeeperSessionHelper: ZooKeeperSessionHelper =
+    wire[DefaultZooKeeperSessionHelper]
 
   override lazy val curatorActionBuilder: CuratorActionBuilder =
     wire[CuratorActionBuilder]

@@ -33,7 +33,7 @@ class UpdateZNodeAclListActionHandler(curatorFramework: CuratorFramework)
     curatorFramework
       .setACL()
       .withVersion(action.expectedAclVersion.version.toInt)
-      .withACL(action.acl.aclList.map(Acl.toZookeeper).asJava)
+      .withACL(action.acl.aclList.map(Acl.toZooKeeper).asJava)
       .forPathAsync(action.path.path)
       .map(event => ZNodeMeta.fromStat(event.getStat))
 }
