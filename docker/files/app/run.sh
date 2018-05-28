@@ -23,8 +23,13 @@
 
 # TODO Remove in 1.0.0
 [ -n "$SESSION_TTL_MILLIS" ] \
-  && echo "'SESSION_TTL_MILLIS' configuration variable is deprecated. It will be removed in version 1.0.0. Use 'API_SESSION_TTL_MILLIS' instead." \
-  && API_SESSION_TTL_MILLIS=$SESSION_TTL_MILLIS
+  && echo "'SESSION_TTL_MILLIS' configuration variable is deprecated. It will be removed in version 1.0.0. Use 'API_SESSION_TIMEOUT_MILLIS' instead." \
+  && API_SESSION_TIMEOUT_MILLIS=$SESSION_TTL_MILLIS
+
+# TODO Remove in 1.0.0
+[ -n "$ZK_CLIENT_TTL_MILLIS" ] \
+  && echo "'ZK_CLIENT_TTL_MILLIS' configuration variable is deprecated. It will be removed in version 1.0.0. Use 'ZK_CLIENT_TIMEOUT_MILLIS' instead." \
+  && ZK_CLIENT_TIMEOUT_MILLIS=$ZK_CLIENT_TTL_MILLIS
 
 # Remove pid file
 rm -f ./RUNNING_PID
