@@ -19,7 +19,7 @@ import logging.AppLogger
 import play.api.Application
 import play.api.ApplicationLoader
 import play.api.ApplicationLoader.Context
-import shapeless.BuildInfo
+import build.BuildInfo
 
 class AppLoader extends ApplicationLoader with AppLogger {
 

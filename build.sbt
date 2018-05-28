@@ -18,8 +18,6 @@ scalacOptions in ThisBuild ++= Seq(
   "-Ywarn-dead-code"
 )
 
-enablePlugins(BuildInfoPlugin)
-
 releaseTagName := (version in ThisBuild).value
 
 releaseTagComment := s"Version ${(version in ThisBuild).value}"
@@ -74,7 +72,7 @@ val core = project
   )
 
 val play = project
-  .enablePlugins(PlayScala)
+  .enablePlugins(PlayScala, BuildInfoPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "zoonavigator-play",
@@ -84,6 +82,8 @@ val play = project
       "com.softwaremill.macwire" %% "macros" % "2.3.0" % Provided,
       "com.softwaremill.macwire" %% "util" % "2.3.0"
     ),
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "build",
     wartremoverExcluded ++= routes.in(Compile).value,
     wartremoverWarnings ++= Seq(
       PlayWart.AssetsObject,
