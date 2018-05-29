@@ -1,7 +1,7 @@
 ZooNavigator API
 ================
 
-[![Build Status](https://travis-ci.org/elkozmon/zoonavigator-api.svg)](https://travis-ci.org/elkozmon/zoonavigator-api) 
+[![Build Status](https://travis-ci.org/elkozmon/zoonavigator-api.svg?branch=master)](https://travis-ci.org/elkozmon/zoonavigator-api) 
 [![Docker image size](https://images.microbadger.com/badges/image/elkozmon/zoonavigator-api.svg)](https://hub.docker.com/r/elkozmon/zoonavigator-api)
 
 
