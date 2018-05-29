@@ -1,12 +1,15 @@
 ZooNavigator API
 ================
 
-[![Build Status](https://travis-ci.org/elkozmon/zoonavigator-api.svg)](https://travis-ci.org/elkozmon/zoonavigator-api)
-[![Docker Pulls](https://img.shields.io/docker/pulls/elkozmon/zoonavigator-api.svg)](https://hub.docker.com/r/elkozmon/zoonavigator-api)
+[![Build Status](https://travis-ci.org/elkozmon/zoonavigator-api.svg)](https://travis-ci.org/elkozmon/zoonavigator-api) 
+[![Docker image size](https://images.microbadger.com/badges/image/elkozmon/zoonavigator-api.svg)](https://hub.docker.com/r/elkozmon/zoonavigator-api)
 
-API for ZooNavigator, web-based GUI for ZooKeeper. 
 
-**For more info and instructions how to use ZooNavigator see [parent GitHub repository](https://github.com/elkozmon/zoonavigator).**
+API for ZooNavigator, web-based browser & editor for ZooKeeper. 
+
+
+**For more info and instructions how to use ZooNavigator read [official docs](http://www.elkozmon.com/zoonavigator).**
+
 
 License
 -------
