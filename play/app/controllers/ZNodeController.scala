@@ -91,7 +91,7 @@ class ZNodeController(
         )
     }
 
-  def createNode: Action[Unit] =
+  def createNode(): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
         .flatMap(parseZNodePath)
@@ -107,7 +107,7 @@ class ZNodeController(
         )
     }
 
-  def duplicateNode: Action[Unit] =
+  def duplicateNode(): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         source <- getRequiredQueryParam("source")
@@ -126,7 +126,7 @@ class ZNodeController(
       eitherResult.fold(Future.successful, identity)
     }
 
-  def moveNode: Action[Unit] =
+  def moveNode(): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         source <- getRequiredQueryParam("source")
@@ -145,7 +145,7 @@ class ZNodeController(
       eitherResult.fold(Future.successful, identity)
     }
 
-  def delete(): Action[Unit] =
+  def deleteNode(): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         path <- getRequiredQueryParam("path").flatMap(parseZNodePath)
@@ -162,7 +162,7 @@ class ZNodeController(
       eitherResult.fold(Future.successful, identity)
     }
 
-  def deleteChildrenNodes: Action[Unit] =
+  def deleteChildrenNodes(): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         path <- getRequiredQueryParam("path").flatMap(parseZNodePath)

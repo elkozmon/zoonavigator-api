@@ -4,7 +4,7 @@ GET           /znode                  controllers.ZNodeController.getNode()
 GET           /znode/children         controllers.ZNodeController.getChildrenNodes()
 
 POST          /znode                  controllers.ZNodeController.createNode()
-DELETE        /znode                  controllers.ZNodeController.delete()
+DELETE        /znode                  controllers.ZNodeController.deleteNode()
 POST          /znode/duplicate        controllers.ZNodeController.duplicateNode()
 POST          /znode/move             controllers.ZNodeController.moveNode()
 DELETE        /znode/children         controllers.ZNodeController.deleteChildrenNodes()
