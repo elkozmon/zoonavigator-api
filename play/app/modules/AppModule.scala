@@ -15,12 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import action.ActionModule
+package modules
+
 import api.ApiResponseFactory
-import controllers._
+import controllers.{HomeController, ZNodeController, ZSessionController}
 import curator.action.CuratorActionBuilder
 import curator.provider.CuratorFrameworkProvider
-import filters.FiltersModule
+import modules.action.ActionModule
+import modules.filters.FiltersModule
 import play.api.BuiltInComponentsFromContext
 import session.action.SessionActionBuilder
 import session.manager.SessionManager

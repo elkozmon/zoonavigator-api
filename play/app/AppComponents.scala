@@ -24,6 +24,7 @@ import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
 import curator.action.CuratorActionBuilder
 import curator.provider._
+import modules.AppModule
 import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
 import play.api.BuiltInComponentsFromContext

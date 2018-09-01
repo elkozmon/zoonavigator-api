@@ -19,8 +19,7 @@ package controllers
 
 import java.nio.charset.StandardCharsets
 
-import action.ActionModule
-import akka.stream.scaladsl.FileIO
+import modules.action.ActionModule
 import api.ApiResponseFactory
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
@@ -249,6 +248,10 @@ class ZNodeController(
 
       eitherResult.fold(Future.successful, identity)
     }
+
+  def exportNodes(): Action[String] = ???
+
+  def importNodes(): Action[String] = ???
 
   private def newCuratorAction[B](
       bodyParser: BodyParser[B]

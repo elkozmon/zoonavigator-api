@@ -15,15 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package action.dispatcher
+package modules.filters
 
-import com.elkozmon.zoonavigator.core.action.ActionDispatcher
-import org.apache.curator.framework.CuratorFramework
-import shapeless.HList
+import javax.inject.Inject
 
-trait ActionDispatcherProvider[L <: HList] {
+import play.api.http.HttpFilters
+import play.api.mvc.EssentialFilter
+import play.filters.cors.CORSFilter
 
-  type ActionHandlers = L
-
-  def getDispatcher(curatorFramework: CuratorFramework): ActionDispatcher[L]
+class Filters @Inject()(corsFilter: CORSFilter) extends HttpFilters {
+  override def filters: Seq[EssentialFilter] = Seq(corsFilter)
 }

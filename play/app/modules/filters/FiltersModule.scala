@@ -15,14 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package filters
+package modules.filters
 
-import javax.inject.Inject
-
-import play.api.http.HttpFilters
-import play.api.mvc.EssentialFilter
+import com.softwaremill.macwire._
 import play.filters.cors.CORSFilter
 
-class Filters @Inject()(corsFilter: CORSFilter) extends HttpFilters {
-  override def filters: Seq[EssentialFilter] = Seq(corsFilter)
+trait FiltersModule {
+
+  def corsFilter: CORSFilter
+
+  lazy val filters: Filters =
+    wire[Filters]
 }

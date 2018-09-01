@@ -15,15 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package filters
+package modules.action.dispatcher
 
-import com.softwaremill.macwire._
-import play.filters.cors.CORSFilter
+import com.elkozmon.zoonavigator.core.action.ActionDispatcher
+import org.apache.curator.framework.CuratorFramework
+import shapeless.HList
 
-trait FiltersModule {
+trait ActionDispatcherProvider[L <: HList] {
 
-  def corsFilter: CORSFilter
+  type ActionHandlers = L
 
-  lazy val filters: Filters =
-    wire[Filters]
+  def getDispatcher(curatorFramework: CuratorFramework): ActionDispatcher[L]
 }

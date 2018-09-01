@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package action
+package modules.action
 
-import action.dispatcher.DefaultActionDispatcherProvider
+import modules.action.dispatcher.DefaultActionDispatcherProvider
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
 import org.apache.curator.framework.CuratorFramework
