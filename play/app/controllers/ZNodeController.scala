@@ -20,6 +20,7 @@ package controllers
 import java.nio.charset.StandardCharsets
 
 import action.ActionModule
+import akka.stream.scaladsl.FileIO
 import api.ApiResponseFactory
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
@@ -50,7 +51,7 @@ class ZNodeController(
 
   private val actionDispatcherProvider = actionModule.actionDispatcherProvider
 
-  def get: Action[Unit] =
+  def getNode: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
         .flatMap(parseZNodePath)
@@ -70,7 +71,7 @@ class ZNodeController(
         )
     }
 
-  def getChildren: Action[Unit] =
+  def getChildrenNodes: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
         .flatMap(parseZNodePath)
@@ -91,7 +92,7 @@ class ZNodeController(
         )
     }
 
-  def create(): Action[Unit] =
+  def createNode: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
         .flatMap(parseZNodePath)
@@ -107,7 +108,7 @@ class ZNodeController(
         )
     }
 
-  def duplicate(): Action[Unit] =
+  def duplicateNode: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         source <- getRequiredQueryParam("source")
@@ -126,7 +127,7 @@ class ZNodeController(
       eitherResult.fold(Future.successful, identity)
     }
 
-  def move(): Action[Unit] =
+  def moveNode: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         source <- getRequiredQueryParam("source")
@@ -162,7 +163,7 @@ class ZNodeController(
       eitherResult.fold(Future.successful, identity)
     }
 
-  def deleteChildren(): Action[Unit] =
+  def deleteChildrenNodes: Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         path <- getRequiredQueryParam("path").flatMap(parseZNodePath)

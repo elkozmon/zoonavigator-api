@@ -1,15 +1,15 @@
 GET           /healthcheck            controllers.HomeController.getHealthCheck()
 
-GET           /znode                  controllers.ZNodeController.get()
-GET           /znode/children         controllers.ZNodeController.getChildren()
+GET           /znode                  controllers.ZNodeController.getNode()
+GET           /znode/children         controllers.ZNodeController.getChildrenNodes()
 
-POST          /znode                  controllers.ZNodeController.create()
+POST          /znode                  controllers.ZNodeController.createNode()
 DELETE        /znode                  controllers.ZNodeController.delete()
-POST          /znode/duplicate        controllers.ZNodeController.duplicate()
-POST          /znode/move             controllers.ZNodeController.move()
-DELETE        /znode/children         controllers.ZNodeController.deleteChildren()
+POST          /znode/duplicate        controllers.ZNodeController.duplicateNode()
+POST          /znode/move             controllers.ZNodeController.moveNode()
+DELETE        /znode/children         controllers.ZNodeController.deleteChildrenNodes()
 PUT           /znode/acl              controllers.ZNodeController.updateAcl()
 PUT           /znode/data             controllers.ZNodeController.updateData()
 
-POST          /zsession               controllers.ZSessionController.create()
-DELETE        /zsession               controllers.ZSessionController.delete()
+POST          /zsession               controllers.ZSessionController.createSession()
+DELETE        /zsession               controllers.ZSessionController.deleteSession()
