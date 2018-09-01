@@ -168,6 +168,7 @@ class ZNodeController(
         path <- getRequiredQueryParam("path").flatMap(parseZNodePath)
         names <- getRequiredQueryParam("names").map(_.split("/"))
         paths <- names.toList
+          .map(ZNodePathSegment)
           .traverseU(path.down)
           .toEither
           .left

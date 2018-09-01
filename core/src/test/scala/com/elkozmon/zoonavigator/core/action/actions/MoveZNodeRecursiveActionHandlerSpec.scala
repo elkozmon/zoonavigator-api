@@ -31,6 +31,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
+@SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
 class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
@@ -60,8 +61,8 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
 
       val action =
         MoveZNodeRecursiveAction(
-          ZNodePath.unsafe("/foo"),
-          ZNodePath.unsafe("/foo-move")
+          ZNodePath.parse("/foo").get,
+          ZNodePath.parse("/foo-move").get
         )
 
       Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
@@ -93,8 +94,8 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
 
     val action =
       MoveZNodeRecursiveAction(
-        ZNodePath.unsafe("/foo"),
-        ZNodePath.unsafe("/foo-move")
+        ZNodePath.parse("/foo").get,
+        ZNodePath.parse("/foo-move").get
       )
 
     Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
@@ -118,8 +119,8 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
 
     val action =
       MoveZNodeRecursiveAction(
-        ZNodePath.unsafe("/foo"),
-        ZNodePath.unsafe("/foo-move")
+        ZNodePath.parse("/foo").get,
+        ZNodePath.parse("/foo-move").get
       )
 
     Await.result(actionHandler.handle(action).runAsync, Duration.Inf)

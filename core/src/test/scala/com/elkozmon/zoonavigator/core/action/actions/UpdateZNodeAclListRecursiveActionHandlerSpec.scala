@@ -33,6 +33,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
+@SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
 class UpdateZNodeAclListRecursiveActionHandlerSpec
     extends FlatSpec
     with CuratorSpec {
@@ -71,7 +72,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec
         )
 
       val action = UpdateZNodeAclListRecursiveAction(
-        ZNodePath.unsafe("/foo"),
+        ZNodePath.parse("/foo").get,
         newAcl,
         ZNodeAclVersion(0L)
       )
@@ -123,7 +124,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec
         )
 
       val action = UpdateZNodeAclListRecursiveAction(
-        ZNodePath.unsafe("/foo"),
+        ZNodePath.parse("/foo").get,
         newAcl,
         ZNodeAclVersion(0L)
       )

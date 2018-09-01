@@ -15,27 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.elkozmon.zoonavigator.core.utils
+package com.elkozmon.zoonavigator.core.action.actions
 
-import cats.Functor
 import cats.free.Cofree
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePathLens
+import com.elkozmon.zoonavigator.core.action.Action
+import com.elkozmon.zoonavigator.core.zookeeper.znode.{ZNodeExport, ZNodePath}
 
-import scala.language.higherKinds
-import scala.util.Try
-
-object ZooKeeperUtils {
-
-  @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
-  def rewriteZNodePaths[S[_]: Functor, T](path: ZNodePath, tree: Cofree[S, T])(
-      implicit lens: ZNodePathLens[T]
-  ): Try[Cofree[S, T]] =
-    Try {
-      tree.transform(
-        head => lens.update(head, path),
-        tail =>
-          rewriteZNodePaths(path.down(lens.path(tail.head).name).get, tail).get
-      )
-    }
+final case class ExportZNodeAction(paths: Seq[ZNodePath]) extends Action {
+  override type Out = List[Cofree[List, ZNodeExport]]
 }

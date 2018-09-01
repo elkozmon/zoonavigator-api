@@ -15,27 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.elkozmon.zoonavigator.core.utils
+package com.elkozmon.zoonavigator.core.zookeeper.znode
 
-import cats.Functor
-import cats.free.Cofree
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePathLens
+trait ZNodePathLens[T] {
 
-import scala.language.higherKinds
-import scala.util.Try
+  def path(obj: T): ZNodePath
 
-object ZooKeeperUtils {
+  def update(obj: T, path: ZNodePath): T
+}
 
-  @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
-  def rewriteZNodePaths[S[_]: Functor, T](path: ZNodePath, tree: Cofree[S, T])(
-      implicit lens: ZNodePathLens[T]
-  ): Try[Cofree[S, T]] =
-    Try {
-      tree.transform(
-        head => lens.update(head, path),
-        tail =>
-          rewriteZNodePaths(path.down(lens.path(tail.head).name).get, tail).get
-      )
-    }
+object ZNodePathLens {
+
+  implicit object ZNodeExportPathLens extends ZNodePathLens[ZNodeExport] {
+    override def path(obj: ZNodeExport): ZNodePath = obj.path
+    override def update(obj: ZNodeExport, path: ZNodePath): ZNodeExport =
+      obj.copy(path = path)
+  }
+
+  implicit object ZNodePathLens extends ZNodePathLens[ZNode] {
+    override def path(obj: ZNode): ZNodePath = obj.path
+    override def update(obj: ZNode, path: ZNodePath): ZNode =
+      obj.copy(path = path)
+  }
 }

@@ -31,6 +31,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
+@SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
 class DuplicateZNodeRecursiveActionHandlerSpec
     extends FlatSpec
     with CuratorSpec {
@@ -62,8 +63,8 @@ class DuplicateZNodeRecursiveActionHandlerSpec
 
       val action =
         DuplicateZNodeRecursiveAction(
-          ZNodePath.unsafe("/foo"),
-          ZNodePath.unsafe("/foo-copy")
+          ZNodePath.parse("/foo").get,
+          ZNodePath.parse("/foo-copy").get
         )
 
       Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
@@ -88,8 +89,8 @@ class DuplicateZNodeRecursiveActionHandlerSpec
 
     val action =
       DuplicateZNodeRecursiveAction(
-        ZNodePath.unsafe("/foo"),
-        ZNodePath.unsafe("/foo-copy")
+        ZNodePath.parse("/foo").get,
+        ZNodePath.parse("/foo-copy").get
       )
 
     Await.result(actionHandler.handle(action).runAsync, Duration.Inf)

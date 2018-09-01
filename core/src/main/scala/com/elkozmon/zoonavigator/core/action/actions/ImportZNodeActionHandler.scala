@@ -17,15 +17,13 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import cats.free.Cofree
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.Implicits._
-import com.elkozmon.zoonavigator.core.utils.ZooKeeperUtils
 import com.elkozmon.zoonavigator.core.utils.CommonUtils.discard
+import com.elkozmon.zoonavigator.core.utils.ZooKeeperUtils
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
@@ -33,50 +31,33 @@ import org.apache.curator.framework.api.transaction.CuratorOp
 
 import scala.collection.JavaConverters._
 
-class MoveZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[MoveZNodeRecursiveAction] {
+class ImportZNodeActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[ImportZNodeAction] {
 
-  override def handle(action: MoveZNodeRecursiveAction): Task[Unit] =
+  override def handle(action: ImportZNodeAction): Task[Unit] =
     for {
-      tree <- curatorFramework
-        .walkTreeAsync(curatorFramework.getZNodeAsync)(action.source)
-      unit <- moveTree(action.destination, tree)
+      trees <- Task.wander(action.nodes) { tree =>
+        Task.fromTry(
+          action.path
+            .down(tree.head.path.name)
+            .flatMap(ZooKeeperUtils.rewriteZNodePaths(_, tree))
+        )
+      }
+      ops <- Task.now[List[CuratorOp]](
+        trees.flatMap(
+          _.reduceMap((node: ZNodeExport) => List(createZNodeOp(node)))
+        )
+      )
+      unit <- curatorFramework
+        .transaction()
+        .forOperationsAsync(ops)
+        .map(discard[CuratorEvent])
     } yield unit
 
-  private def moveTree(
-      dest: ZNodePath,
-      tree: Cofree[List, ZNode]
-  ): Task[Unit] = {
-    val deleteOps: Seq[CuratorOp] = tree
-      .reduceMap((node: ZNode) => List(deleteZNodeOp(node.path)))
-      .reverse
-
-    val createOps: Task[Seq[CuratorOp]] = Task.fromTry(
-      ZooKeeperUtils
-        .rewriteZNodePaths(dest, tree)
-        .map(_.reduceMap((node: ZNode) => List(createZNodeOp(node))))
-    )
-
-    Task
-      .mapBoth(Task.now(deleteOps), createOps)(_ ++ _)
-      .flatMap { allOps =>
-        curatorFramework
-          .transaction()
-          .forOperationsAsync(allOps)
-          .map(discard[CuratorEvent])
-      }
-  }
-
-  private def createZNodeOp(node: ZNode): CuratorOp =
+  private def createZNodeOp(node: ZNodeExport): CuratorOp =
     curatorFramework
       .transactionOp()
       .create()
       .withACL(node.acl.aclList.map(Acl.toZooKeeper).asJava)
       .forPath(node.path.path, node.data.bytes)
-
-  private def deleteZNodeOp(path: ZNodePath): CuratorOp =
-    curatorFramework
-      .transactionOp()
-      .delete()
-      .forPath(path.path)
 }
