@@ -25,7 +25,7 @@ import play.api.libs.json.Writes
 
 class JsonZNodeChildrenSpec extends FlatSpec {
 
-  "JsonZNodeChildren" should "be serialized as a JSON array" in {
+  "Serialized JsonZNodeChildren" should "be a JSON array" in {
     val jsonZNodeChildren =
       JsonZNodeChildren(ZNodeChildren(List.empty[ZNodePath]))
 

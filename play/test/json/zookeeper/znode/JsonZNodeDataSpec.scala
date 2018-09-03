@@ -17,16 +17,16 @@
 
 package json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
 import org.scalatest.FlatSpec
 import play.api.libs.json.{JsString, Writes}
 
-class JsonZNodePathSpec extends FlatSpec {
+class JsonZNodeDataSpec extends FlatSpec {
 
-  "JsonZNodePath" should "be serialized as a string" in {
-    val j = JsonZNodePath(ZNodePath.unsafe("/node0/node1"))
-    val s = implicitly[Writes[JsonZNodePath]].writes(j)
+  "JsonZNodeData" should "be serialized as a string" in {
+    val j = JsonZNodeData(ZNodeData("foo".getBytes))
+    val s = implicitly[Writes[JsonZNodeData]].writes(j)
 
-    assertResult(JsString("/node0/node1"))(s)
+    assertResult(JsString("foo"))(s)
   }
 }

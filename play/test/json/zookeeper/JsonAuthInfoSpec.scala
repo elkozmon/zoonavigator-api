@@ -15,18 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package json.zookeeper.znode
+package json.zookeeper
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import org.scalatest.FlatSpec
-import play.api.libs.json.{JsString, Writes}
+import play.api.libs.json._
 
-class JsonZNodePathSpec extends FlatSpec {
+class JsonAuthInfoSpec extends FlatSpec {
 
-  "JsonZNodePath" should "be serialized as a string" in {
-    val j = JsonZNodePath(ZNodePath.unsafe("/node0/node1"))
-    val s = implicitly[Writes[JsonZNodePath]].writes(j)
+  "JsonZNodeWithChildren" should "deserialize simple auth info" in {
+    val s = """{"scheme":"world","id":"anyone"}"""
+    val j = implicitly[Reads[JsonAuthInfo]].reads(Json.parse(s))
 
-    assertResult(JsString("/node0/node1"))(s)
+    assert(j.isSuccess)
   }
 }

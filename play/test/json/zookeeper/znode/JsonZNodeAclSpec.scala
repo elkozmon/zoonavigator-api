@@ -24,7 +24,7 @@ import play.api.libs.json.Writes
 
 class JsonZNodeAclSpec extends FlatSpec {
 
-  "JsonZNodeAcl" should "be serialized as a JSON array" in {
+  "Serialized JsonZNodeAcl" should "be a JSON array" in {
     val jsonZNodeAcl = JsonZNodeAcl(ZNodeAcl(List.empty))
 
     assert(

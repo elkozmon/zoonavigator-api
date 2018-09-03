@@ -15,18 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package json.zookeeper.znode
+package json.zookeeper
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import org.scalatest.FlatSpec
-import play.api.libs.json.{JsString, Writes}
+import play.api.libs.json._
+import session.SessionToken
 
-class JsonZNodePathSpec extends FlatSpec {
+class JsonSessionTokenSpec extends FlatSpec {
 
-  "JsonZNodePath" should "be serialized as a string" in {
-    val j = JsonZNodePath(ZNodePath.unsafe("/node0/node1"))
-    val s = implicitly[Writes[JsonZNodePath]].writes(j)
+  "Serialized JsonSessionToken" should "be a string" in {
+    val j = JsonSessionToken(SessionToken("token"))
+    val s = implicitly[Writes[JsonSessionToken]].writes(j)
 
-    assertResult(JsString("/node0/node1"))(s)
+    assertResult(JsString("token"))(s)
+  }
+
+  "JsonSessionToken" should "deserialize simple session token" in {
+    val s = """"token""""
+    val j = implicitly[Reads[JsonSessionToken]].reads(Json.parse(s))
+
+    assert(j.isSuccess)
   }
 }
