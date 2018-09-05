@@ -18,11 +18,9 @@
 package curator.provider
 
 import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-import java.security.SecureRandom
+import java.security.{MessageDigest, SecureRandom}
 
-import zookeeper.AuthInfo
-import zookeeper.ConnectionString
+import zookeeper.{AuthInfo, ConnectionString}
 
 final case class CuratorKey(
     connectionString: ConnectionString,

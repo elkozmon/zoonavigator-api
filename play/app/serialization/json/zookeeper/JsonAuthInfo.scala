@@ -15,10 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper
 
-import org.slf4j.{Logger, LoggerFactory}
+import java.nio.charset.StandardCharsets
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsPath, Reads}
+import zookeeper.AuthInfo
+
+trait JsonAuthInfo {
+
+  implicit val authInfoReads: Reads[AuthInfo] = (
+    (JsPath \ "scheme").read[String] and
+      (JsPath \ "id").read[String].map(_.getBytes(StandardCharsets.UTF_8))
+  )(AuthInfo.apply _)
 }

@@ -15,10 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.scalatest.FlatSpec
+import play.api.libs.json._
+import session.SessionToken
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+class JsonSessionTokenSpec extends FlatSpec with JsonSessionToken {
+
+  "Serialized JsonSessionToken" should "be a string" in {
+    val j = SessionToken("token")
+    val s = implicitly[Writes[j.type]].writes(j)
+
+    assertResult(JsString("token"))(s)
+  }
+
+  "JsonSessionToken" should "deserialize simple session token" in {
+    val s = """"token""""
+    val j = implicitly[Reads[SessionToken]].reads(Json.parse(s))
+
+    assert(j.isSuccess)
+  }
 }

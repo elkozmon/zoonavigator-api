@@ -15,10 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.scalatest.FlatSpec
+import play.api.libs.json._
+import zookeeper.ConnectionParams
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+class JsonConnectionParamsSpec extends FlatSpec with JsonConnectionParams {
+
+  "JsonConnectionParams" should "deserialize simple connection param" in {
+    val s = """{"connectionString":"localhost:2181","authInfo":[{"scheme":"world","id":"anyone"}]}"""
+    val j = implicitly[Reads[ConnectionParams]].reads(Json.parse(s))
+
+    assert(j.isSuccess)
+  }
 }

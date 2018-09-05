@@ -15,10 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper.znode
 
-import org.slf4j.{Logger, LoggerFactory}
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeWithChildren
+import play.api.libs.json.Json
+import play.api.libs.json.Writes
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+trait JsonZNodeWithChildren extends JsonZNode with JsonZNodeChildren {
+
+  implicit def zNodeMetaWithWrites[T]: Writes[ZNodeWithChildren] =
+    (o: ZNodeWithChildren) =>
+      Json.toJsObject(o.zNode) ++
+        Json.obj("children" -> Json.toJson(o.zNodeChildren))
+
 }

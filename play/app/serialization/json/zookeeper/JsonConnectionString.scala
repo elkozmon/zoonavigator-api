@@ -15,10 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper
 
-import org.slf4j.{Logger, LoggerFactory}
+import play.api.libs.json._
+import zookeeper.ConnectionString
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+trait JsonConnectionString {
+
+  implicit object ConnectionStringFormat extends Format[ConnectionString] {
+    override def reads(json: JsValue): JsResult[ConnectionString] =
+      json match {
+        case JsString(connectionString) =>
+          JsSuccess(ConnectionString(connectionString))
+        case _ =>
+          JsError("Invalid connection string format")
+      }
+
+    override def writes(o: ConnectionString): JsValue =
+      JsString(o.string)
+  }
+
 }

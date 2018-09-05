@@ -21,20 +21,17 @@ import java.nio.charset.StandardCharsets
 
 import action.ActionModule
 import api.ApiResponseFactory
-import com.elkozmon.zoonavigator.core.action.actions._
-import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import curator.action.CuratorActionBuilder
-import curator.action.CuratorRequest
-import json.zookeeper.acl.JsonAcl
-import json.zookeeper.znode._
-import json.zookeeper.znode.JsonZNodeChildren._
-import json.zookeeper.znode.JsonZNodePath._
-import play.api.libs.json._
-import play.api.mvc._
-import session.action.SessionActionBuilder
 import cats.implicits._
+import com.elkozmon.zoonavigator.core.action.actions._
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import curator.action.{CuratorActionBuilder, CuratorRequest}
 import monix.eval.Task
 import monix.execution.Scheduler
+import play.api.libs.json._
+import play.api.mvc._
+import serialization.Json._
+import session.action.SessionActionBuilder
 
 import scala.concurrent.Future
 
@@ -59,11 +56,7 @@ class ZNodeController(
             actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
               .dispatch(GetZNodeWithChildrenAction(path))
-              .map { node =>
-                val jsonNode = JsonZNodeWithChildren(node)
-
-                apiResponseFactory.okPayload(jsonNode)
-              }
+              .map(apiResponseFactory.okPayload[ZNodeWithChildren])
               .onErrorHandle(apiResponseFactory.fromThrowable)
               .runAsync
           }
@@ -79,12 +72,11 @@ class ZNodeController(
             actionDispatcherProvider
               .getDispatcher(curatorRequest.curatorFramework)
               .dispatch(GetZNodeChildrenAction(path))
-              .map { metaWithChildren =>
-                val jsonMetaWithChildren =
-                  JsonZNodeMetaWith(metaWithChildren.map(JsonZNodeChildren(_)))
-
-                apiResponseFactory.okPayload(jsonMetaWithChildren)
-              }
+              .map(
+                apiResponseFactory.okPayload[ZNodeMetaWith[ZNodeChildren]](_)(
+                  apiResponseWriteable(zNodeMetaWithWrites(zNodeChildrenWrites))
+                )
+              )
               .onErrorHandle(apiResponseFactory.fromThrowable)
               .runAsync
           }
@@ -189,7 +181,7 @@ class ZNodeController(
       val eitherResult = for {
         path <- getRequiredQueryParam("path").flatMap(parseZNodePath)
         version <- getRequiredQueryParam("version").map(_.toLong)
-        jsonAclList <- parseRequestBodyJson[List[JsonAcl]]
+        aclList <- parseRequestBodyJson[List[Acl]]
       } yield {
         val recursive = curatorRequest.getQueryString("recursive").isDefined
 
@@ -200,7 +192,7 @@ class ZNodeController(
               .dispatch(
                 UpdateZNodeAclListRecursiveAction(
                   path,
-                  ZNodeAcl(jsonAclList.map(_.underlying)),
+                  ZNodeAcl(aclList),
                   ZNodeAclVersion(version)
                 )
               )
@@ -210,14 +202,14 @@ class ZNodeController(
               .dispatch(
                 UpdateZNodeAclListAction(
                   path,
-                  ZNodeAcl(jsonAclList.map(_.underlying)),
+                  ZNodeAcl(aclList),
                   ZNodeAclVersion(version)
                 )
               )
           }
 
         taskMeta
-          .map(meta => apiResponseFactory.okPayload(JsonZNodeMeta(meta)))
+          .map(apiResponseFactory.okPayload[ZNodeMeta])
           .onErrorHandle(apiResponseFactory.fromThrowable)
           .runAsync
       }
@@ -240,7 +232,7 @@ class ZNodeController(
               ZNodeDataVersion(version)
             )
           )
-          .map(meta => apiResponseFactory.okPayload(JsonZNodeMeta(meta)))
+          .map(apiResponseFactory.okPayload[ZNodeMeta])
           .onErrorHandle(apiResponseFactory.fromThrowable)
           .runAsync
       }

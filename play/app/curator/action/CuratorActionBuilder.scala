@@ -17,9 +17,10 @@
 
 package curator.action
 
-import api.ApiResponseFactory
+import api.{ApiResponse, ApiResponseFactory}
 import curator.provider.CuratorFrameworkProvider
 import monix.execution.Scheduler
+import play.api.http.Writeable
 import zookeeper.session.ZooKeeperSessionHelper
 
 class CuratorActionBuilder(
@@ -29,10 +30,10 @@ class CuratorActionBuilder(
     scheduler: Scheduler
 ) {
 
-  def apply(): CuratorAction =
+  def apply()(implicit wrt: Writeable[ApiResponse[String]]): CuratorAction =
     new CuratorAction(
       apiResponseFactory,
       zookeeperSessionHelper,
       curatorFrameworkProvider
-    )(scheduler)
+    )(scheduler, wrt)
 }

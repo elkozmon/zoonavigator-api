@@ -15,10 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper.znode
 
-import org.slf4j.{Logger, LoggerFactory}
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
+import org.scalatest.FlatSpec
+import play.api.libs.json.JsString
+import play.api.libs.json.Writes
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+class JsonZNodeDataSpec extends FlatSpec with JsonZNodeData {
+
+  "JsonZNodeData" should "be serialized as a string" in {
+    val j = ZNodeData("foo".getBytes)
+    val s = implicitly[Writes[j.type]].writes(j)
+
+    assertResult(JsString("foo"))(s)
+  }
 }

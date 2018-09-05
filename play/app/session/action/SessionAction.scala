@@ -17,19 +17,21 @@
 
 package session.action
 
-import api.ApiResponseFactory
+import api.{ApiResponse, ApiResponseFactory}
+import play.api.http.Writeable
 import play.api.mvc._
 import session.manager.SessionManager
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class SessionAction[B](
     apiResponseFactory: ApiResponseFactory,
     sessionManager: SessionManager,
     val parser: BodyParser[B]
-)(implicit val executionContext: ExecutionContext)
-    extends ActionBuilder[SessionRequest, B]
+)(
+    implicit val executionContext: ExecutionContext,
+    apiResponseWriter: Writeable[ApiResponse[String]]
+) extends ActionBuilder[SessionRequest, B]
     with ActionRefiner[Request, SessionRequest] {
 
   override protected def refine[A](

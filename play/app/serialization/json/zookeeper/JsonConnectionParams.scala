@@ -15,10 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper
 
-import org.slf4j.{Logger, LoggerFactory}
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsPath, Reads}
+import zookeeper.{AuthInfo, ConnectionParams, ConnectionString}
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+trait JsonConnectionParams extends JsonConnectionString with JsonAuthInfo {
+
+  implicit val connectionParamsReads: Reads[ConnectionParams] = (
+    (JsPath \ "connectionString").read[ConnectionString]
+      and (JsPath \ "authInfo").read[List[AuthInfo]]
+  )(ConnectionParams.apply _)
 }

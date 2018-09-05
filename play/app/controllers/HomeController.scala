@@ -18,8 +18,8 @@
 package controllers
 
 import api.ApiResponseFactory
-import play.api.mvc.BaseController
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{BaseController, ControllerComponents}
+import serialization.Json._
 
 class HomeController(
     apiResponseFactory: ApiResponseFactory,

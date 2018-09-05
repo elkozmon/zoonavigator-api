@@ -15,10 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.api
 
-import org.slf4j.{Logger, LoggerFactory}
+import akka.http.scaladsl.model.MediaTypes
+import akka.util.ByteString
+import api.ApiResponse
+import play.api.http.Writeable
+import play.api.libs.json._
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+trait JsonApiResponse {
+
+  implicit def apiResponseWrites[T](
+      implicit wrt: Writes[T]
+  ): OWrites[ApiResponse[T]] =
+    o =>
+      Json.obj(
+        "success" -> o.success,
+        "message" -> o.message,
+        "payload" -> o.payload.map(wrt.writes)
+    )
+
+  implicit def apiResponseWriteable[T](
+      implicit wrt: Writes[T]
+  ): Writeable[ApiResponse[T]] =
+    new Writeable[ApiResponse[T]](
+      o => ByteString(Json.toBytes(Json.toJsObject(o))),
+      Some(MediaTypes.`application/json`.value)
+    )
 }

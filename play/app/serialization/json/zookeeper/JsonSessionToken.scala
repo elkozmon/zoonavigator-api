@@ -15,10 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper
 
-import org.slf4j.{Logger, LoggerFactory}
+import play.api.libs.json._
+import session.SessionToken
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+trait JsonSessionToken {
+
+  implicit object SessionTokenFormat extends Format[SessionToken] {
+    override def reads(json: JsValue): JsResult[SessionToken] =
+      json match {
+        case JsString(sessionToken) =>
+          JsSuccess(SessionToken(sessionToken))
+        case _ =>
+          JsError("Invalid session token format")
+      }
+
+    override def writes(o: SessionToken): JsValue =
+      JsString(o.token)
+  }
+
 }

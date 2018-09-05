@@ -15,14 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package session.action
+package serialization.json.zookeeper
 
-import play.api.mvc.{Request, WrappedRequest}
+import org.scalatest.FlatSpec
+import play.api.libs.json._
 import session.SessionToken
-import session.manager.SessionManager
+import zookeeper.ConnectionString
+import zookeeper.session.SessionInfo
 
-class SessionRequest[A](
-    val sessionToken: SessionToken,
-    val sessionManager: SessionManager,
-    request: Request[A]
-) extends WrappedRequest[A](request)
+class JsonSessionInfoSpec extends FlatSpec with JsonSessionInfo {
+
+  "Serialized JsonSessionInfo" should "be a JSON object with 'token' field" in {
+    val s = SessionInfo(SessionToken("token"), ConnectionString("localhost:2181"))
+    val j = implicitly[Writes[s.type]].writes(s)
+
+    assert(j \ "token" isDefined)
+  }
+
+  it should "be a JSON object with 'connectionString' field" in {
+    val s = SessionInfo(SessionToken("token"), ConnectionString("localhost:2181"))
+    val j = implicitly[Writes[SessionInfo]].writes(s)
+
+    assert(j \ "connectionString" isDefined)
+  }
+}

@@ -15,10 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper.znode
 
-import org.slf4j.{Logger, LoggerFactory}
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeChildren
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import org.scalatest.FlatSpec
+import play.api.libs.json.JsArray
+import play.api.libs.json.Writes
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+class JsonZNodeChildrenSpec extends FlatSpec with JsonZNodeChildren {
+
+  "Serialized JsonZNodeChildren" should "be a JSON array" in {
+    val zNodeChildren = ZNodeChildren(List.empty[ZNodePath])
+
+    assert(
+      implicitly[Writes[zNodeChildren.type]]
+        .writes(zNodeChildren)
+        .isInstanceOf[JsArray]
+    )
+  }
 }

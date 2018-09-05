@@ -15,10 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper
 
-import org.slf4j.{Logger, LoggerFactory}
+import play.api.libs.json._
+import zookeeper.session.SessionInfo
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+trait JsonSessionInfo extends JsonSessionToken with JsonConnectionString {
+
+  implicit object SessionInfoWrites extends Writes[SessionInfo] {
+    override def writes(sessionInfo: SessionInfo): JsValue =
+      Json.obj(
+        "token" -> sessionInfo.token,
+        "connectionString" -> sessionInfo.connectionString
+      )
+  }
 }

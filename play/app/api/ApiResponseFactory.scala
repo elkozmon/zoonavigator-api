@@ -17,24 +17,24 @@
 
 package api
 
-import play.api.libs.json.Writes
+import play.api.http.Writeable
 import play.api.mvc.Result
 
 trait ApiResponseFactory {
 
-  def okEmpty: Result
+  def okEmpty(implicit wrt: Writeable[ApiResponse[String]]): Result
 
-  def okPayload[T](payload: T)(implicit fmt: Writes[T]): Result
+  def okPayload[T](payload: T)(implicit wrt: Writeable[ApiResponse[T]]): Result
 
-  def notFound(message: Option[String]): Result
+  def notFound(message: Option[String])(implicit wrt: Writeable[ApiResponse[String]]): Result
 
-  def unauthorized(message: Option[String]): Result
+  def unauthorized(message: Option[String])(implicit wrt: Writeable[ApiResponse[String]]): Result
 
-  def forbidden(message: Option[String]): Result
+  def forbidden(message: Option[String])(implicit wrt: Writeable[ApiResponse[String]]): Result
 
-  def badRequest(message: Option[String]): Result
+  def badRequest(message: Option[String])(implicit wrt: Writeable[ApiResponse[String]]): Result
 
-  def internalServerError(message: Option[String]): Result
+  def internalServerError(message: Option[String])(implicit wrt: Writeable[ApiResponse[String]]): Result
 
-  def fromThrowable(throwable: Throwable): Result
+  def fromThrowable(throwable: Throwable)(implicit wrt: Writeable[ApiResponse[String]]): Result
 }

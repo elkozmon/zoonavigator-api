@@ -20,15 +20,14 @@ package controllers
 import api.ApiResponseFactory
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import curator.provider.CuratorFrameworkProvider
-import json.zookeeper.JsonConnectionParams
-import json.zookeeper.JsonSessionInfo
 import monix.execution.Scheduler
 import play.api.libs.json.JsSuccess
 import play.api.mvc._
+import serialization.Json._
 import session.SessionToken
 import session.manager.SessionManager
-import zookeeper.session.SessionInfo
-import zookeeper.session.ZooKeeperSessionHelper
+import zookeeper.ConnectionParams
+import zookeeper.session.{SessionInfo, ZooKeeperSessionHelper}
 
 import scala.concurrent.Future
 
@@ -42,8 +41,8 @@ class ZSessionController(
 ) extends BaseController {
 
   def create(): Action[AnyContent] = Action.async { request =>
-    request.body.asJson.map(_.validate[JsonConnectionParams]) match {
-      case Some(JsSuccess(JsonConnectionParams(connectionParams), _)) =>
+    request.body.asJson.map(_.validate[ConnectionParams]) match {
+      case Some(JsSuccess(connectionParams, _)) =>
         implicit val sessionToken: SessionToken = sessionManager.newSession()
 
         // create curator framework
@@ -61,7 +60,7 @@ class ZSessionController(
             val sessionInfo =
               SessionInfo(sessionToken, connectionParams.connectionString)
 
-            apiResponseFactory.okPayload(JsonSessionInfo(sessionInfo))
+            apiResponseFactory.okPayload(sessionInfo)
           }
           .onErrorHandle(apiResponseFactory.fromThrowable)
           .runAsync

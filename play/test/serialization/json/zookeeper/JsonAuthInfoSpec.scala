@@ -15,10 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization.json.zookeeper
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.scalatest.FlatSpec
+import play.api.libs.json._
+import zookeeper.AuthInfo
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
+class JsonAuthInfoSpec extends FlatSpec with JsonAuthInfo {
+
+  "JsonZNodeWithChildren" should "deserialize simple auth info" in {
+    val s = """{"scheme":"world","id":"anyone"}"""
+    val j = implicitly[Reads[AuthInfo]].reads(Json.parse(s))
+
+    assert(j.isSuccess)
+  }
 }

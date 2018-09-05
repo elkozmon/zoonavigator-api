@@ -15,10 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package logging
+package serialization
 
-import org.slf4j.{Logger, LoggerFactory}
+import serialization.json.api.JsonApiResponse
+import serialization.json.zookeeper.{JsonConnectionParams, JsonSessionInfo}
+import serialization.json.zookeeper.acl.JsonAcl
+import serialization.json.zookeeper.znode._
 
-trait AppLogger {
-  val logger: Logger = LoggerFactory.getLogger("application")
-}
+object Json
+    extends JsonApiResponse
+    with JsonZNodeWithChildren
+    with JsonZNodeMetaWith
+    with JsonZNodeMeta
+    with JsonZNodeChildren
+    with JsonZNode
+    with JsonSessionInfo
+    with JsonConnectionParams
+    with JsonAcl
