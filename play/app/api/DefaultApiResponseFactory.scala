@@ -22,8 +22,6 @@ import play.api.http.Writeable
 import play.api.mvc.Result
 import play.api.mvc.Results._
 
-import scala.language.implicitConversions
-
 class DefaultApiResponseFactory extends ApiResponseFactory {
 
   override def okEmpty(implicit wrt: Writeable[ApiResponse[String]]): Result =

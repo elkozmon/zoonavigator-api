@@ -41,6 +41,8 @@ class ZSessionController(
 ) extends BaseController {
 
   def create(): Action[AnyContent] = Action.async { request =>
+    import api.ApiResponse.writeJson
+
     request.body.asJson.map(_.validate[ConnectionParams]) match {
       case Some(JsSuccess(connectionParams, _)) =>
         implicit val sessionToken: SessionToken = sessionManager.newSession()
@@ -73,6 +75,8 @@ class ZSessionController(
   }
 
   def delete() = Action { request =>
+    import api.ApiResponse.writeJson
+
     sessionManager
       .getSession(request)
       .foreach(sessionManager.closeSession()(_))

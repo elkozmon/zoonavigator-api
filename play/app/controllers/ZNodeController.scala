@@ -20,14 +20,17 @@ package controllers
 import java.nio.charset.StandardCharsets
 
 import action.ActionModule
+import api.ApiResponse
 import api.ApiResponseFactory
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import curator.action.{CuratorActionBuilder, CuratorRequest}
+import curator.action.CuratorActionBuilder
+import curator.action.CuratorRequest
 import monix.eval.Task
 import monix.execution.Scheduler
+import play.api.http.Writeable
 import play.api.libs.json._
 import play.api.mvc._
 import serialization.Json._
@@ -47,7 +50,9 @@ class ZNodeController(
 
   private val actionDispatcherProvider = actionModule.actionDispatcherProvider
 
-  def get: Action[Unit] =
+  def get: Action[Unit] = {
+    import api.ApiResponse.writeJson
+
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
         .flatMap(parseZNodePath)
@@ -62,8 +67,11 @@ class ZNodeController(
           }
         )
     }
+  }
 
-  def getChildren: Action[Unit] =
+  def getChildren: Action[Unit] = {
+    import api.ApiResponse.writeJson
+
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
         .flatMap(parseZNodePath)
@@ -73,8 +81,10 @@ class ZNodeController(
               .getDispatcher(curatorRequest.curatorFramework)
               .dispatch(GetZNodeChildrenAction(path))
               .map(
-                apiResponseFactory.okPayload[ZNodeMetaWith[ZNodeChildren]](_)(
-                  apiResponseWriteable(zNodeMetaWithWrites(zNodeChildrenWrites))
+                apiResponseFactory.okPayload(_)(
+                  writeJson(
+                    apiResponseWrites(zNodeMetaWithWrites(zNodeChildrenWrites))
+                  )
                 )
               )
               .onErrorHandle(apiResponseFactory.fromThrowable)
@@ -82,8 +92,11 @@ class ZNodeController(
           }
         )
     }
+  }
 
-  def create(): Action[Unit] =
+  def create(): Action[Unit] = {
+    import api.ApiResponse.writeJson
+
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       getRequiredQueryParam("path")
         .flatMap(parseZNodePath)
@@ -98,8 +111,11 @@ class ZNodeController(
           }
         )
     }
+  }
 
-  def duplicate(): Action[Unit] =
+  def duplicate(): Action[Unit] = {
+    import api.ApiResponse.writeJson
+
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         source <- getRequiredQueryParam("source")
@@ -117,8 +133,11 @@ class ZNodeController(
 
       eitherResult.fold(Future.successful, identity)
     }
+  }
 
-  def move(): Action[Unit] =
+  def move(): Action[Unit] = {
+    import api.ApiResponse.writeJson
+
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         source <- getRequiredQueryParam("source")
@@ -136,8 +155,11 @@ class ZNodeController(
 
       eitherResult.fold(Future.successful, identity)
     }
+  }
 
-  def delete(): Action[Unit] =
+  def delete(): Action[Unit] = {
+    import api.ApiResponse.writeJson
+
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         path <- getRequiredQueryParam("path").flatMap(parseZNodePath)
@@ -153,8 +175,11 @@ class ZNodeController(
 
       eitherResult.fold(Future.successful, identity)
     }
+  }
 
-  def deleteChildren(): Action[Unit] =
+  def deleteChildren(): Action[Unit] = {
+    import api.ApiResponse.writeJson
+
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val eitherResult = for {
         path <- getRequiredQueryParam("path").flatMap(parseZNodePath)
@@ -175,8 +200,11 @@ class ZNodeController(
 
       eitherResult.fold(Future.successful, identity)
     }
+  }
 
-  def updateAcl(): Action[JsValue] =
+  def updateAcl(): Action[JsValue] = {
+    import api.ApiResponse.writeJson
+
     newCuratorAction(playBodyParsers.json).async { implicit curatorRequest =>
       val eitherResult = for {
         path <- getRequiredQueryParam("path").flatMap(parseZNodePath)
@@ -216,8 +244,11 @@ class ZNodeController(
 
       eitherResult.fold(Future.successful, identity)
     }
+  }
 
-  def updateData(): Action[String] =
+  def updateData(): Action[String] = {
+    import api.ApiResponse.writeJson
+
     newCuratorAction(playBodyParsers.text).async { implicit curatorRequest =>
       val eitherResult = for {
         path <- getRequiredQueryParam("path").flatMap(parseZNodePath)
@@ -239,9 +270,10 @@ class ZNodeController(
 
       eitherResult.fold(Future.successful, identity)
     }
+  }
 
-  private def newCuratorAction[B](
-      bodyParser: BodyParser[B]
+  private def newCuratorAction[B](bodyParser: BodyParser[B])(
+      implicit wrt: Writeable[ApiResponse[String]]
   ): ActionBuilder[CuratorRequest, B] =
     sessionActionBuilder(bodyParser) andThen curatorActionBuilder()
 

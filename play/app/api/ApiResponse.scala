@@ -16,9 +16,22 @@
  */
 
 package api
+import akka.http.scaladsl.model.MediaTypes
+import akka.util.ByteString
+import play.api.http.Writeable
+import play.api.libs.json.{Json, OWrites}
 
 final case class ApiResponse[T](
     success: Boolean,
     message: Option[String],
     payload: Option[T]
 )
+
+object ApiResponse {
+
+  implicit def writeJson[T](implicit wrt: OWrites[ApiResponse[T]]): Writeable[ApiResponse[T]] =
+    new Writeable[ApiResponse[T]](
+      o => ByteString(Json.toBytes(Json.toJsObject(o))),
+      Some(MediaTypes.`application/json`.value)
+    )
+}

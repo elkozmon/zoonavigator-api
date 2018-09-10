@@ -18,7 +18,7 @@
 package controllers
 
 import api.ApiResponseFactory
-import play.api.mvc.{BaseController, ControllerComponents}
+import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
 import serialization.Json._
 
 class HomeController(
@@ -26,5 +26,9 @@ class HomeController(
     val controllerComponents: ControllerComponents
 ) extends BaseController {
 
-  def getHealthCheck = Action(apiResponseFactory.okEmpty)
+  def getHealthCheck: Action[AnyContent] = {
+    import api.ApiResponse.writeJson
+
+    Action(apiResponseFactory.okEmpty)
+  }
 }
