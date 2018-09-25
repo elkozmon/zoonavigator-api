@@ -2,7 +2,7 @@ import ReleaseTransformations._
 
 scalafmtVersion in ThisBuild := "1.1.0"
 
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.6"
 
 scalacOptions in ThisBuild ++= Seq(
   "-target:jvm-1.8",
