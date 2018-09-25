@@ -15,29 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package api
+package api.exceptions
 
-import play.api.http.Writeable
-import play.api.mvc.Result
-import cats.data.Reader
-
-trait ApiResponseFactory {
-
-  type GenericResult[T] = Reader[Writeable[ApiResponse[T]], Result]
-
-  def okEmpty[T]: GenericResult[T]
-
-  def okPayload[T](payload: T): GenericResult[T]
-
-  def notFound[T](message: Option[String]): GenericResult[T]
-
-  def unauthorized[T](message: Option[String]): GenericResult[T]
-
-  def forbidden[T](message: Option[String]): GenericResult[T]
-
-  def badRequest[T](message: Option[String]): GenericResult[T]
-
-  def internalServerError[T](message: Option[String]): GenericResult[T]
-
-  def fromThrowable[T](throwable: Throwable): GenericResult[T]
-}
+/**
+  * @author Lubos Kozmon <lubosh91@gmail.com>
+  */
+class BadRequestException(message: String) extends Exception(message)

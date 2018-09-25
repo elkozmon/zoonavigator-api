@@ -19,7 +19,9 @@ package api
 import akka.http.scaladsl.model.MediaTypes
 import akka.util.ByteString
 import play.api.http.Writeable
-import play.api.libs.json.{Json, OWrites}
+import play.api.libs.json.Json
+import play.api.libs.json.OWrites
+import play.api.libs.json.Writes
 
 final case class ApiResponse[T](
     success: Boolean,
@@ -28,6 +30,19 @@ final case class ApiResponse[T](
 )
 
 object ApiResponse {
+
+  implicit def apiResponseWrites[T](implicit wrt: Writes[T]): OWrites[ApiResponse[T]] =
+    o => Json.obj(
+      "success" -> o.success,
+      "message" -> o.message,
+      "payload" -> o.payload.map(wrt.writes)
+    )
+
+  implicit def apiResponseWritesNothing: OWrites[ApiResponse[Nothing]] =
+    o => Json.obj(
+      "success" -> o.success,
+      "message" -> o.message
+    )
 
   implicit def writeJson[T](implicit wrt: OWrites[ApiResponse[T]]): Writeable[ApiResponse[T]] =
     new Writeable[ApiResponse[T]](

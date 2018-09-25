@@ -17,7 +17,8 @@
 
 package curator.action
 
-import api.{ApiResponse, ApiResponseFactory}
+import api.ApiResponse
+import api.ApiResponseFactory
 import cats.implicits._
 import curator.provider.CuratorFrameworkProvider
 import monix.execution.Scheduler
@@ -46,7 +47,9 @@ class CuratorAction(
         .getConnectionParams(request.sessionToken, request.sessionManager)
         .toRight(
           Future.successful(
-            apiResponseFactory.unauthorized(Some("Session was lost."))
+            apiResponseFactory
+              .unauthorized(Some("Session was lost."))
+              .apply(ApiResponse.writeJson[Nothing])
           )
         )
         .right

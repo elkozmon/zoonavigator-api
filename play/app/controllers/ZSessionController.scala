@@ -17,9 +17,11 @@
 
 package controllers
 
-import api.ApiResponseFactory
+import api.{ApiResponse, ApiResponseFactory}
+import api.exceptions.BadRequestException
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import curator.provider.CuratorFrameworkProvider
+import monix.eval.Task
 import monix.execution.Scheduler
 import play.api.libs.json.JsSuccess
 import play.api.mvc._
@@ -40,47 +42,55 @@ class ZSessionController(
     implicit val sessionManager: SessionManager
 ) extends BaseController {
 
-  def create(): Action[AnyContent] = Action.async { request =>
-    import api.ApiResponse.writeJson
+  def create(): Action[AnyContent] = Action.async { implicit request =>
+    val actionTask: Task[SessionInfo] =
+      request.body.asJson.map(_.validate[ConnectionParams]) match {
+        case Some(JsSuccess(connectionParams, _)) =>
+          implicit val sessionToken: SessionToken =
+            sessionManager.newSession()
 
-    request.body.asJson.map(_.validate[ConnectionParams]) match {
-      case Some(JsSuccess(connectionParams, _)) =>
-        implicit val sessionToken: SessionToken = sessionManager.newSession()
+          // create curator framework
+          curatorFrameworkProvider
+            .getCuratorInstance(
+              connectionParams.connectionString,
+              connectionParams.authInfoList
+            )
+            .map { _ =>
+              // store connection params to session
+              zookeeperSessionHelper
+                .setConnectionParams(connectionParams)
+                .discard()
 
-        // create curator framework
-        curatorFrameworkProvider
-          .getCuratorInstance(
-            connectionParams.connectionString,
-            connectionParams.authInfoList
-          )
-          .map { _ =>
-            // store connection params to session
-            zookeeperSessionHelper
-              .setConnectionParams(connectionParams)
-              .discard()
-
-            val sessionInfo =
               SessionInfo(sessionToken, connectionParams.connectionString)
+            }
+        case _ =>
+          Task.raiseError(
+            new BadRequestException("Invalid request. Session info is missing.")
+          )
+      }
 
-            apiResponseFactory.okPayload(sessionInfo)
-          }
-          .onErrorHandle(apiResponseFactory.fromThrowable)
-          .runAsync
-      case _ =>
-        Future.successful(
-          apiResponseFactory
-            .badRequest(Some("Invalid request. Session info is missing."))
-        )
+    val futureResultReader = actionTask
+      .map(apiResponseFactory.okPayload)
+      .onErrorHandle(apiResponseFactory.fromThrowable[SessionInfo])
+      .runAsync
+
+    render.async {
+      case Accepts.Json =>
+        futureResultReader.map(_(ApiResponse.writeJson))
     }
   }
 
-  def delete() = Action { request =>
-    import api.ApiResponse.writeJson
-
+  def delete() = Action { implicit request =>
     sessionManager
       .getSession(request)
       .foreach(sessionManager.closeSession()(_))
 
-    apiResponseFactory.okEmpty
+    val resultReader =
+      apiResponseFactory.okEmpty
+
+    render {
+      case Accepts.Json =>
+        resultReader(ApiResponse.writeJson[Nothing])
+    }
   }
 }

@@ -17,60 +17,47 @@
 
 package api
 
+import api.exceptions.BadRequestException
+import cats.data.Reader
 import org.apache.zookeeper.KeeperException.NoAuthException
-import play.api.http.Writeable
-import play.api.mvc.Result
 import play.api.mvc.Results._
 
 class DefaultApiResponseFactory extends ApiResponseFactory {
 
-  override def okEmpty(implicit wrt: Writeable[ApiResponse[String]]): Result =
-    Ok(ApiResponse(success = true, message = None, Option.empty[String]))
+  override def okEmpty[T]: GenericResult[T] =
+    Reader(Ok(ApiResponse(success = true, message = None, Option.empty[T]))(_))
 
-  override def okPayload[T](
-      payload: T
-  )(implicit wrt: Writeable[ApiResponse[T]]): Result =
-    Ok(ApiResponse(success = true, message = None, Some(payload)))
+  override def okPayload[T](payload: T): GenericResult[T] =
+    Reader(Ok(ApiResponse(success = true, message = None, Some(payload)))(_))
 
-  override def notFound(
-      message: Option[String]
-  )(implicit wrt: Writeable[ApiResponse[String]]): Result =
-    NotFound(failureResponse(message))
+  override def notFound[T](message: Option[String]): GenericResult[T] =
+    Reader(NotFound(failureResponse[T](message))(_))
 
-  override def unauthorized(
-      message: Option[String]
-  )(implicit wrt: Writeable[ApiResponse[String]]): Result =
-    Unauthorized(failureResponse(message))
-      .withHeaders(("WWW-Authenticate", "Digest"))
+  override def unauthorized[T](message: Option[String]): GenericResult[T] =
+    Reader(Unauthorized(failureResponse[T](message))(_).withHeaders(("WWW-Authenticate", "Digest")))
 
-  override def forbidden(
-      message: Option[String]
-  )(implicit wrt: Writeable[ApiResponse[String]]): Result =
-    Forbidden(failureResponse(message))
+  override def forbidden[T](message: Option[String]): GenericResult[T] =
+    Reader(Forbidden(failureResponse[T](message))(_))
 
-  override def badRequest(
-      message: Option[String]
-  )(implicit wrt: Writeable[ApiResponse[String]]): Result =
-    BadRequest(failureResponse(message))
+  override def badRequest[T](message: Option[String]): GenericResult[T] =
+    Reader(BadRequest(failureResponse[T](message))(_))
 
-  override def internalServerError(
-      message: Option[String]
-  )(implicit wrt: Writeable[ApiResponse[String]]): Result =
-    InternalServerError(failureResponse(message))
+  override def internalServerError[T](message: Option[String]): GenericResult[T] =
+    Reader(InternalServerError(failureResponse[T](message))(_))
 
-  override def fromThrowable(
-      throwable: Throwable
-  )(implicit wrt: Writeable[ApiResponse[String]]): Result = {
-    val apiResponse = failureResponse(Some(throwable.getMessage))
+  override def fromThrowable[T](throwable: Throwable): GenericResult[T] = {
+    val apiResponse = failureResponse[T](Some(throwable.getMessage))
 
     throwable match {
       case _: NoAuthException =>
-        Forbidden(apiResponse)
+        Reader(Forbidden(apiResponse)(_))
+      case _: BadRequestException =>
+        Reader(BadRequest(apiResponse)(_))
       case _ =>
-        InternalServerError(apiResponse)
+        Reader(InternalServerError(apiResponse)(_))
     }
   }
 
-  private def failureResponse(message: Option[String]): ApiResponse[String] =
-    ApiResponse(success = false, message = message, Option.empty[String])
+  private def failureResponse[T](message: Option[String]): ApiResponse[T] =
+    ApiResponse(success = false, message = message, None)
 }

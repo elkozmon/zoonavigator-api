@@ -17,12 +17,14 @@
 
 package session.action
 
-import api.{ApiResponse, ApiResponseFactory}
+import api.ApiResponse
+import api.ApiResponseFactory
 import play.api.http.Writeable
 import play.api.mvc._
 import session.manager.SessionManager
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 class SessionAction[B](
     apiResponseFactory: ApiResponseFactory,
@@ -40,7 +42,11 @@ class SessionAction[B](
     Future.successful[Either[Result, SessionRequest[A]]](
       sessionManager
         .getSession(request)
-        .toRight(apiResponseFactory.unauthorized(Some("Session has expired.")))
+        .toRight(
+          apiResponseFactory
+            .unauthorized(Some("Session has expired."))
+            .apply(ApiResponse.writeJson[Nothing])
+        )
         .right
         .map(new SessionRequest(_, sessionManager, request))
     )
