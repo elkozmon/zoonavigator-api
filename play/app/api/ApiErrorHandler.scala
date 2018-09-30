@@ -22,6 +22,7 @@ import play.api.http.DefaultHttpErrorHandler
 import play.api.mvc._
 import play.api.routing.Router
 import play.core.SourceMapper
+import serialization.Json._
 
 import scala.concurrent._
 
@@ -38,9 +39,9 @@ class ApiErrorHandler(
       exception: UsefulException
   ): Future[Result] =
     Future.successful(
-      apiResponseFactory.internalServerError(
-        Some("A server error occurred: " + exception.getMessage)
-      )
+      apiResponseFactory
+        .internalServerError(Some("A server error occurred: " + exception.getMessage))
+        .apply(ApiResponse.writeJson[Nothing])
     )
 
   override protected def onNotFound(
@@ -48,6 +49,8 @@ class ApiErrorHandler(
       message: String
   ): Future[Result] =
     Future.successful(
-      apiResponseFactory.notFound(Some("Requested resource does not exist"))
+      apiResponseFactory
+        .notFound(Some("Requested resource does not exist"))
+        .apply(ApiResponse.writeJson[Nothing])
     )
 }

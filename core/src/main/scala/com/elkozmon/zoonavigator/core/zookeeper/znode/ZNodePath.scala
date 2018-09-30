@@ -35,9 +35,14 @@ final case class ZNodePath private (path: String) {
         .stripSuffix(ZKPaths.PATH_SEPARATOR)
         .concat(ZKPaths.PATH_SEPARATOR + name.string)
     )
+
+  def down(name: String): Try[ZNodePath] =
+    down(ZNodePathSegment(name))
 }
 
 object ZNodePath {
+
+  val Separator: String = ZKPaths.PATH_SEPARATOR
 
   def parse(path: String): Try[ZNodePath] = Try(unsafe(path))
 

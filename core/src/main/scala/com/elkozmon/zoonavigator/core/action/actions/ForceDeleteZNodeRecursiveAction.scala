@@ -24,9 +24,3 @@ final case class ForceDeleteZNodeRecursiveAction(paths: Seq[ZNodePath])
     extends Action {
   override type Out = Unit
 }
-
-object ForceDeleteZNodeRecursiveAction {
-
-  def apply(path: ZNodePath): ForceDeleteZNodeRecursiveAction =
-    ForceDeleteZNodeRecursiveAction(Seq(path))
-}

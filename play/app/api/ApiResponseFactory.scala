@@ -17,24 +17,27 @@
 
 package api
 
-import play.api.libs.json.Writes
+import play.api.http.Writeable
 import play.api.mvc.Result
+import cats.data.Reader
 
 trait ApiResponseFactory {
 
-  def okEmpty: Result
+  type GenericResult[T] = Reader[Writeable[ApiResponse[T]], Result]
 
-  def okPayload[T](payload: T)(implicit fmt: Writes[T]): Result
+  def okEmpty[T]: GenericResult[T]
 
-  def notFound(message: Option[String]): Result
+  def okPayload[T](payload: T): GenericResult[T]
 
-  def unauthorized(message: Option[String]): Result
+  def notFound[T](message: Option[String]): GenericResult[T]
 
-  def forbidden(message: Option[String]): Result
+  def unauthorized[T](message: Option[String]): GenericResult[T]
 
-  def badRequest(message: Option[String]): Result
+  def forbidden[T](message: Option[String]): GenericResult[T]
 
-  def internalServerError(message: Option[String]): Result
+  def badRequest[T](message: Option[String]): GenericResult[T]
 
-  def fromThrowable(throwable: Throwable): Result
+  def internalServerError[T](message: Option[String]): GenericResult[T]
+
+  def fromThrowable[T](throwable: Throwable): GenericResult[T]
 }

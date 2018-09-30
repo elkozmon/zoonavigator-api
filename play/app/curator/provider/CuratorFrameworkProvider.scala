@@ -19,8 +19,7 @@ package curator.provider
 
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
-import zookeeper.AuthInfo
-import zookeeper.ConnectionString
+import zookeeper.{AuthInfo, ConnectionString}
 
 trait CuratorFrameworkProvider {
 
