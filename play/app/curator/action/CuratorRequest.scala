@@ -18,8 +18,7 @@
 package curator.action
 
 import org.apache.curator.framework.CuratorFramework
-import play.api.mvc.Request
-import play.api.mvc.WrappedRequest
+import play.api.mvc.{Request, WrappedRequest}
 
 class CuratorRequest[A](
     val curatorFramework: CuratorFramework,

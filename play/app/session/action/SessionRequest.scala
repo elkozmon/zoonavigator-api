@@ -17,8 +17,7 @@
 
 package session.action
 
-import play.api.mvc.Request
-import play.api.mvc.WrappedRequest
+import play.api.mvc.{Request, WrappedRequest}
 import session.SessionToken
 import session.manager.SessionManager
 

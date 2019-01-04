@@ -17,4 +17,28 @@
 
 package zookeeper
 
-final case class AuthInfo(scheme: String, auth: Array[Byte])
+import java.nio.charset.StandardCharsets
+import java.util
+
+@SuppressWarnings(Array("org.wartremover.warts.IsInstanceOf"))
+final case class AuthInfo(scheme: String, auth: Array[Byte]) {
+
+  override def hashCode(): Int =
+    41 * (scheme.hashCode + 41) + util.Arrays.hashCode(auth)
+
+  override def equals(obj: Any): Boolean =
+    obj match {
+      case that: AuthInfo =>
+        (that canEqual this) &&
+          that.scheme == scheme &&
+          util.Arrays.equals(auth, that.auth)
+      case _ =>
+        false
+    }
+
+  override def canEqual(that: Any): Boolean =
+    that.isInstanceOf[AuthInfo]
+
+  override def toString: String =
+    s"AuthInfo($scheme, ${new String(auth, StandardCharsets.UTF_8)})"
+}

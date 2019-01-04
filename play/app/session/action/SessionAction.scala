@@ -17,7 +17,9 @@
 
 package session.action
 
+import api.ApiResponse
 import api.ApiResponseFactory
+import play.api.http.Writeable
 import play.api.mvc._
 import session.manager.SessionManager
 
@@ -28,8 +30,10 @@ class SessionAction[B](
     apiResponseFactory: ApiResponseFactory,
     sessionManager: SessionManager,
     val parser: BodyParser[B]
-)(implicit val executionContext: ExecutionContext)
-    extends ActionBuilder[SessionRequest, B]
+)(
+    implicit val executionContext: ExecutionContext,
+    apiResponseWriter: Writeable[ApiResponse[String]]
+) extends ActionBuilder[SessionRequest, B]
     with ActionRefiner[Request, SessionRequest] {
 
   override protected def refine[A](
@@ -38,7 +42,11 @@ class SessionAction[B](
     Future.successful[Either[Result, SessionRequest[A]]](
       sessionManager
         .getSession(request)
-        .toRight(apiResponseFactory.unauthorized(Some("Session has expired.")))
+        .toRight(
+          apiResponseFactory
+            .unauthorized(Some("Session has expired."))
+            .apply(ApiResponse.writeJson[Nothing])
+        )
         .right
         .map(new SessionRequest(_, sessionManager, request))
     )

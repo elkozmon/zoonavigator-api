@@ -25,11 +25,10 @@ import api.ApiResponseFactory
 import com.google.common.cache.CacheBuilder
 import play.api.http.HeaderNames
 import play.api.mvc.RequestHeader
-import session.SessionInactivityTimeout
-import session.SessionToken
+import session.{SessionInactivityTimeout, SessionToken}
 
-import scala.collection.mutable
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 class ExpiringSessionManager(
     apiResponseFactory: ApiResponseFactory,
