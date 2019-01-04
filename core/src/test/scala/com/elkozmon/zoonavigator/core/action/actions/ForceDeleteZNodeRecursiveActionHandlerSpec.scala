@@ -90,7 +90,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec
         .discard()
 
       val action =
-        ForceDeleteZNodeRecursiveAction(ZNodePath.parse("/foo").get)
+        ForceDeleteZNodeRecursiveAction(Seq(ZNodePath.parse("/foo").get))
 
       Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
