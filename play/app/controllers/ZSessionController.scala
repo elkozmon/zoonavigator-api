@@ -17,7 +17,8 @@
 
 package controllers
 
-import api.{ApiResponse, ApiResponseFactory}
+import api.ApiResponse
+import api.ApiResponseFactory
 import api.exceptions.BadRequestException
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import curator.provider.CuratorFrameworkProvider
@@ -29,9 +30,8 @@ import serialization.Json._
 import session.SessionToken
 import session.manager.SessionManager
 import zookeeper.ConnectionParams
-import zookeeper.session.{SessionInfo, ZooKeeperSessionHelper}
-
-import scala.concurrent.Future
+import zookeeper.session.SessionInfo
+import zookeeper.session.ZooKeeperSessionHelper
 
 class ZSessionController(
     apiResponseFactory: ApiResponseFactory,

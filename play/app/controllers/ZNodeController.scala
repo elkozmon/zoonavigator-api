@@ -19,16 +19,14 @@ package controllers
 
 import java.nio.charset.StandardCharsets
 
-import modules.action.ActionModule
-import api.ApiResponse
+import api.{ApiResponse, ApiResponseFactory}
+import api.exceptions.BadRequestException
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
-import api.ApiResponseFactory
-import api.exceptions.BadRequestException
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import curator.action.CuratorActionBuilder
-import curator.action.CuratorRequest
+import curator.action.{CuratorActionBuilder, CuratorRequest}
+import modules.action.ActionModule
 import monix.eval.Task
 import monix.execution.Scheduler
 import play.api.http.Writeable
@@ -36,6 +34,8 @@ import play.api.libs.json._
 import play.api.mvc._
 import serialization.Json._
 import session.action.SessionActionBuilder
+
+import scala.concurrent.Future
 
 class ZNodeController(
     apiResponseFactory: ApiResponseFactory,
@@ -49,191 +49,13 @@ class ZNodeController(
 
   private val actionDispatcherProvider = actionModule.actionDispatcherProvider
 
-  def getNode: Action[Unit] =
+  def getNode(path: ZNodePath): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
-      val futureResultReader =
-        getRequiredQueryParam("path")
-          .flatMap(parseZNodePath)
-          .flatMap { path =>
-            actionDispatcherProvider
-              .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(GetZNodeWithChildrenAction(path))
-          }
-          .map(apiResponseFactory.okPayload)
-          .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeWithChildren])
-          .runAsync
-
-      render.async {
-        case Accepts.Json =>
-          futureResultReader.map(_(ApiResponse.writeJson))
-      }
-    }
-
-  def getChildrenNodes: Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
-      val futureResultReader =
-        getRequiredQueryParam("path")
-          .flatMap(parseZNodePath)
-          .flatMap { path =>
-            actionDispatcherProvider
-              .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(GetZNodeChildrenAction(path))
-          }
-          .map(apiResponseFactory.okPayload)
-          .onErrorHandle(
-            apiResponseFactory.fromThrowable[ZNodeMetaWith[ZNodeChildren]]
-          )
-          .runAsync
-
-      render.async {
-        case Accepts.Json =>
-          futureResultReader.map(
-            _(
-              ApiResponse.writeJson(
-                apiResponseWrites(zNodeMetaWithWrites(zNodeChildrenWrites))
-              )
-            )
-          )
-      }
-    }
-
-  def createNode(): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
-      val futureResultReader = getRequiredQueryParam("path")
-        .flatMap(parseZNodePath)
-        .flatMap { path =>
-          actionDispatcherProvider
-            .getDispatcher(curatorRequest.curatorFramework)
-            .dispatch(CreateZNodeAction(path))
-        }
-        .map(_ => apiResponseFactory.okEmpty)
-        .onErrorHandle(apiResponseFactory.fromThrowable)
-        .runAsync
-
-      render.async {
-        case Accepts.Json =>
-          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
-      }
-    }
-
-  def duplicateNode(): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
-      val actionTask = for {
-        source <- getRequiredQueryParam("source").flatMap(parseZNodePath)
-        destin <- getRequiredQueryParam("destination").flatMap(parseZNodePath)
-        action <- actionDispatcherProvider
-          .getDispatcher(curatorRequest.curatorFramework)
-          .dispatch(DuplicateZNodeRecursiveAction(source, destin))
-      } yield action
-
-      val futureResultReader = actionTask
-        .map(_ => apiResponseFactory.okEmpty)
-        .onErrorHandle(apiResponseFactory.fromThrowable)
-        .runAsync
-
-      render.async {
-        case Accepts.Json =>
-          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
-      }
-    }
-
-  def moveNode(): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
-      val actionTask = for {
-        source <- getRequiredQueryParam("source").flatMap(parseZNodePath)
-        destin <- getRequiredQueryParam("destination").flatMap(parseZNodePath)
-        action <- actionDispatcherProvider
-          .getDispatcher(curatorRequest.curatorFramework)
-          .dispatch(MoveZNodeRecursiveAction(source, destin))
-      } yield action
-
-      val futureResultReader = actionTask
-        .map(_ => apiResponseFactory.okEmpty)
-        .onErrorHandle(apiResponseFactory.fromThrowable)
-        .runAsync
-
-      render.async {
-        case Accepts.Json =>
-          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
-      }
-    }
-
-  def deleteNode(): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
-      val actionTask = for {
-        path    <- getRequiredQueryParam("path").flatMap(parseZNodePath)
-        version <- getRequiredQueryParam("version").map(_.toLong)
-        action <- actionDispatcherProvider
-          .getDispatcher(curatorRequest.curatorFramework)
-          .dispatch(DeleteZNodeRecursiveAction(path, ZNodeDataVersion(version)))
-      } yield action
-
-      val futureResultReader = actionTask
-        .map(_ => apiResponseFactory.okEmpty)
-        .onErrorHandle(apiResponseFactory.fromThrowable)
-        .runAsync
-
-      render.async {
-        case Accepts.Json =>
-          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
-      }
-    }
-
-  def deleteChildrenNodes(): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
-      val actionTask = for {
-        path  <- getRequiredQueryParam("path").flatMap(parseZNodePath)
-        names <- getRequiredQueryParam("names").map(_.split("/"))
-        paths <- Task.fromTry(names.toList.traverseU(path.down))
-        action <- actionDispatcherProvider
-          .getDispatcher(curatorRequest.curatorFramework)
-          .dispatch(ForceDeleteZNodeRecursiveAction(paths))
-      } yield action
-
-      val futureResultReader = actionTask
-        .map(_ => apiResponseFactory.okEmpty)
-        .onErrorHandle(apiResponseFactory.fromThrowable)
-        .runAsync
-
-      render.async {
-        case Accepts.Json =>
-          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
-      }
-    }
-
-  def updateAcl(): Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async { implicit curatorRequest =>
-      val actionTask = for {
-        path    <- getRequiredQueryParam("path").flatMap(parseZNodePath)
-        version <- getRequiredQueryParam("version").map(_.toLong)
-        aclList <- parseRequestBodyJson[List[Acl]]
-        recursive = curatorRequest.getQueryString("recursive").isDefined
-        action <- if (recursive) {
-          actionDispatcherProvider
-            .getDispatcher(curatorRequest.curatorFramework)
-            .dispatch(
-              UpdateZNodeAclListRecursiveAction(
-                path,
-                ZNodeAcl(aclList),
-                ZNodeAclVersion(version)
-              )
-            )
-        } else {
-          actionDispatcherProvider
-            .getDispatcher(curatorRequest.curatorFramework)
-            .dispatch(
-              UpdateZNodeAclListAction(
-                path,
-                ZNodeAcl(aclList),
-                ZNodeAclVersion(version)
-              )
-            )
-        }
-      } yield action
-
-      val futureResultReader = actionTask
+      val futureResultReader = actionDispatcherProvider
+        .getDispatcher(curatorRequest.curatorFramework)
+        .dispatch(GetZNodeWithChildrenAction(path))
         .map(apiResponseFactory.okPayload)
-        .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeMeta])
+        .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeWithChildren])
         .runAsync
 
       render.async {
@@ -242,23 +64,155 @@ class ZNodeController(
       }
     }
 
-  def updateData(): Action[String] =
-    newCuratorAction(playBodyParsers.text).async { implicit curatorRequest =>
-      val actionTask = for {
-        path    <- getRequiredQueryParam("path").flatMap(parseZNodePath)
-        version <- getRequiredQueryParam("version").map(_.toLong)
-        action <- actionDispatcherProvider
-          .getDispatcher(curatorRequest.curatorFramework)
-          .dispatch(
-            UpdateZNodeDataAction(
-              path,
-              ZNodeData(curatorRequest.body.getBytes(StandardCharsets.UTF_8)),
-              ZNodeDataVersion(version)
-            )
-          )
-      } yield action
+  def getChildrenNodes(path: ZNodePath): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+      val futureResultReader = actionDispatcherProvider
+        .getDispatcher(curatorRequest.curatorFramework)
+        .dispatch(GetZNodeChildrenAction(path))
+        .map(apiResponseFactory.okPayload)
+        .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeMetaWith[ZNodeChildren]])
+        .runAsync
 
-      val futureResultReader = actionTask
+      render.async {
+        case Accepts.Json =>
+          futureResultReader.map(_(ApiResponse.writeJson(apiResponseWrites(zNodeMetaWithWrites(zNodeChildrenWrites)))))
+      }
+    }
+
+  def createNode(path: ZNodePath): Action[Unit] =
+
+    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+      val futureResultReader = actionDispatcherProvider
+        .getDispatcher(curatorRequest.curatorFramework)
+        .dispatch(CreateZNodeAction(path))
+        .map(_ => apiResponseFactory.okEmpty)
+        .onErrorHandle(apiResponseFactory.fromThrowable)
+        .runAsync
+
+      render.async {
+        case Accepts.Json =>
+          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
+      }
+    }
+
+  def duplicateNode(source: ZNodePath, destination: ZNodePath): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+      val futureResultReader = actionDispatcherProvider
+        .getDispatcher(curatorRequest.curatorFramework)
+        .dispatch(DuplicateZNodeRecursiveAction(source, destination))
+        .map(_ => apiResponseFactory.okEmpty)
+        .onErrorHandle(apiResponseFactory.fromThrowable)
+        .runAsync
+
+      render.async {
+        case Accepts.Json =>
+          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
+      }
+    }
+
+  def moveNode(source: ZNodePath, destination: ZNodePath): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+      val futureResultReader = actionDispatcherProvider
+        .getDispatcher(curatorRequest.curatorFramework)
+        .dispatch(MoveZNodeRecursiveAction(source, destination))
+        .map(_ => apiResponseFactory.okEmpty)
+        .onErrorHandle(apiResponseFactory.fromThrowable)
+        .runAsync
+
+      render.async {
+        case Accepts.Json =>
+          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
+      }
+    }
+
+  def deleteNode(path: ZNodePath, version: ZNodeDataVersion): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+      val futureResultReader = actionDispatcherProvider
+        .getDispatcher(curatorRequest.curatorFramework)
+        .dispatch(DeleteZNodeRecursiveAction(path, version))
+        .map(_ => apiResponseFactory.okEmpty)
+        .onErrorHandle(apiResponseFactory.fromThrowable)
+        .runAsync
+
+      render.async {
+        case Accepts.Json =>
+          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
+      }
+    }
+
+  def deleteChildrenNodes(path: ZNodePath, names: List[String]): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+      val futureResultReader = names
+        .traverseU(path.down)
+        .toEither
+        .left
+        .map(apiResponseFactory.fromThrowable)
+        .fold(
+          Future.successful, { paths =>
+            actionDispatcherProvider
+              .getDispatcher(curatorRequest.curatorFramework)
+              .dispatch(ForceDeleteZNodeRecursiveAction(paths))
+              .map(_ => apiResponseFactory.okEmpty)
+              .onErrorHandle(apiResponseFactory.fromThrowable)
+              .runAsync
+          }
+        )
+
+      render.async {
+        case Accepts.Json =>
+          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
+      }
+    }
+
+  def updateAcl(
+      path: ZNodePath,
+      version: ZNodeAclVersion,
+      recursive: Option[Boolean]
+  ): Action[JsValue] =
+    newCuratorAction(playBodyParsers.json).async { implicit curatorRequest =>
+      val futureResultReader = parseRequestBodyJson[List[Acl]].flatMap {
+        jsonAclList =>
+          val taskMeta: Task[ZNodeMeta] =
+            if (recursive.contains(true)) {
+              actionDispatcherProvider
+                .getDispatcher(curatorRequest.curatorFramework)
+                .dispatch(
+                  UpdateZNodeAclListRecursiveAction(
+                    path,
+                    ZNodeAcl(jsonAclList),
+                    version
+                  )
+                )
+            } else {
+              actionDispatcherProvider
+                .getDispatcher(curatorRequest.curatorFramework)
+                .dispatch(
+                  UpdateZNodeAclListAction(path, ZNodeAcl(jsonAclList), version)
+                )
+            }
+
+          taskMeta
+            .map(apiResponseFactory.okPayload)
+            .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeMeta])
+      }.runAsync
+
+      render.async {
+        case Accepts.Json =>
+          futureResultReader.map(_(ApiResponse.writeJson))
+      }
+    }
+
+  def updateData(path: ZNodePath, version: ZNodeDataVersion): Action[String] =
+    newCuratorAction(playBodyParsers.text).async { implicit curatorRequest =>
+      val futureResultReader = actionDispatcherProvider
+        .getDispatcher(curatorRequest.curatorFramework)
+        .dispatch(
+          UpdateZNodeDataAction(
+            path,
+            ZNodeData(curatorRequest.body.getBytes(StandardCharsets.UTF_8)),
+            version
+          )
+        )
         .map(apiResponseFactory.okPayload)
         .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeMeta])
         .runAsync
@@ -277,21 +231,6 @@ class ZNodeController(
       implicit wrt: Writeable[ApiResponse[String]]
   ): ActionBuilder[CuratorRequest, B] =
     sessionActionBuilder(bodyParser) andThen curatorActionBuilder()
-
-  private def getRequiredQueryParam(
-      name: String
-  )(implicit request: Request[_]): Task[String] =
-    Task.fromTry(
-      request
-        .getQueryString(name)
-        .toRight(
-          new BadRequestException(s"Missing '$name' query string parameter")
-        )
-        .toTry
-    )
-
-  private def parseZNodePath(path: String): Task[ZNodePath] =
-    Task.fromTry(ZNodePath.parse(path))
 
   private def parseRequestBodyJson[T](
       implicit request: Request[JsValue],
