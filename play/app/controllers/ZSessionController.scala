@@ -73,7 +73,7 @@ class ZSessionController(
     }
   }
 
-  def delete() = Action { request =>
+  def delete(): Action[AnyContent] = Action { request =>
     sessionManager
       .getSession(request)
       .foreach(sessionManager.closeSession()(_))
