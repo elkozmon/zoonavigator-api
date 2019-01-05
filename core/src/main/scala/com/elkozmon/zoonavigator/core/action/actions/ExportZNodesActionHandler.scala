@@ -28,11 +28,11 @@ import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.utils.ZKPaths
 
-class ExportZNodeActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[ExportZNodeAction] {
+class ExportZNodesActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[ExportZNodesAction] {
 
   override def handle(
-      action: ExportZNodeAction
+      action: ExportZNodesAction
   ): Task[List[Cofree[List, ZNodeExport]]] =
     Task.wander(action.paths.toList) { path =>
       curatorFramework

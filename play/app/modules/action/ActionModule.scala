@@ -77,6 +77,14 @@ trait ActionModule {
       curatorFramework: CuratorFramework
   ): ActionHandler[UpdateZNodeDataAction]
 
+  def exportZNodesActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[ExportZNodesAction]
+
+  def importZNodesActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[ImportZNodesAction]
+
   val actionDispatcherProvider = new DefaultActionDispatcherProvider(
     curatorFramework =>
       createZNodeActionHandler(curatorFramework) ::
@@ -92,6 +100,8 @@ trait ActionModule {
         updateZNodeAclListActionHandler(curatorFramework) ::
         updateZNodeAclListRecursiveActionHandler(curatorFramework) ::
         updateZNodeDataActionHandler(curatorFramework) ::
+        exportZNodesActionHandler(curatorFramework) ::
+        importZNodesActionHandler(curatorFramework) ::
       HNil
   )
 }

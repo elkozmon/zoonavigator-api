@@ -18,6 +18,7 @@
 package serialization
 
 import serialization.json.api.JsonApiResponse
+import serialization.json.cats.JsonCofree
 import serialization.json.zookeeper.{JsonConnectionParams, JsonSessionInfo}
 import serialization.json.zookeeper.acl.JsonAcl
 import serialization.json.zookeeper.znode._
@@ -32,3 +33,5 @@ object Json
     with JsonSessionInfo
     with JsonConnectionParams
     with JsonAcl
+    with JsonZNodeExport
+    with JsonCofree

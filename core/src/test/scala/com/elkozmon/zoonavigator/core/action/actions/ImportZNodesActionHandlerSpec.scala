@@ -43,12 +43,12 @@ import scala.concurrent.duration.Duration
     "org.wartremover.warts.TraversableOps"
   )
 )
-class ImportZNodeActionHandlerSpec extends FlatSpec with CuratorSpec {
+class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
 
   private def actionHandler(implicit curatorFramework: CuratorFramework) =
-    new ImportZNodeActionHandler(curatorFramework)
+    new ImportZNodesActionHandler(curatorFramework)
 
   private def getExportNode(
       path: String,
@@ -81,7 +81,7 @@ class ImportZNodeActionHandlerSpec extends FlatSpec with CuratorSpec {
         )
 
       val action =
-        ImportZNodeAction(ZNodePath.parse("/").get, exported)
+        ImportZNodesAction(ZNodePath.parse("/").get, exported)
 
       Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
@@ -127,7 +127,7 @@ class ImportZNodeActionHandlerSpec extends FlatSpec with CuratorSpec {
         )
 
       val action =
-        ImportZNodeAction(ZNodePath.parse("/").get, exported)
+        ImportZNodesAction(ZNodePath.parse("/").get, exported)
 
       Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
@@ -182,7 +182,7 @@ class ImportZNodeActionHandlerSpec extends FlatSpec with CuratorSpec {
       curatorFramework.createContainers("/import")
 
       val action =
-        ImportZNodeAction(ZNodePath.parse("/import").get, exported)
+        ImportZNodesAction(ZNodePath.parse("/import").get, exported)
 
       Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 

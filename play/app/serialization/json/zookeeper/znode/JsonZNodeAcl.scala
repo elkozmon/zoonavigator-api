@@ -17,15 +17,18 @@
 
 package serialization.json.zookeeper.znode
 
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
 import serialization.json.zookeeper.acl.JsonAcl
 import play.api.libs.json._
 
 trait JsonZNodeAcl extends JsonAcl {
 
-  implicit object ZNodeAclWrites extends Writes[ZNodeAcl] {
+  implicit object ZNodeAclFormat extends Format[ZNodeAcl] {
     override def writes(o: ZNodeAcl): JsValue =
       Json.toJson(o.aclList)
+    override def reads(json: JsValue): JsResult[ZNodeAcl] =
+      json.validate[List[Acl]].map(ZNodeAcl.apply)
   }
 
 }

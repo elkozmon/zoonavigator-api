@@ -19,13 +19,16 @@ package controllers
 
 import java.nio.charset.StandardCharsets
 
-import api.{ApiResponse, ApiResponseFactory}
+import api.ApiResponse
+import api.ApiResponseFactory
 import api.exceptions.BadRequestException
+import cats.free.Cofree
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import curator.action.{CuratorActionBuilder, CuratorRequest}
+import curator.action.CuratorActionBuilder
+import curator.action.CuratorRequest
 import modules.action.ActionModule
 import monix.eval.Task
 import monix.execution.Scheduler
@@ -70,17 +73,24 @@ class ZNodeController(
         .getDispatcher(curatorRequest.curatorFramework)
         .dispatch(GetZNodeChildrenAction(path))
         .map(apiResponseFactory.okPayload)
-        .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeMetaWith[ZNodeChildren]])
+        .onErrorHandle(
+          apiResponseFactory.fromThrowable[ZNodeMetaWith[ZNodeChildren]]
+        )
         .runAsync
 
       render.async {
         case Accepts.Json =>
-          futureResultReader.map(_(ApiResponse.writeJson(apiResponseWrites(zNodeMetaWithWrites(zNodeChildrenWrites)))))
+          futureResultReader.map(
+            _(
+              ApiResponse.writeJson(
+                apiResponseWrites(zNodeMetaWithWrites(zNodeChildrenWrites))
+              )
+            )
+          )
       }
     }
 
   def createNode(path: ZNodePath): Action[Unit] =
-
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val futureResultReader = actionDispatcherProvider
         .getDispatcher(curatorRequest.curatorFramework)
@@ -223,9 +233,38 @@ class ZNodeController(
       }
     }
 
-  def exportNodes(): Action[String] = ???
+  def getExportNodes(paths: List[ZNodePath]): Action[Unit] =
+    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+      val futureResultReader = actionDispatcherProvider
+        .getDispatcher(curatorRequest.curatorFramework)
+        .dispatch(ExportZNodesAction(paths))
+        .map(apiResponseFactory.okPayload)
+        .onErrorHandle(apiResponseFactory.fromThrowable[List[Cofree[List, ZNodeExport]]])
+        .runAsync
 
-  def importNodes(): Action[String] = ???
+      render.async {
+        case Accepts.Json =>
+          futureResultReader.map(_(ApiResponse.writeJson))
+      }
+    }
+
+  def importNodes(path: ZNodePath): Action[JsValue] =
+    newCuratorAction(playBodyParsers.json).async { implicit curatorRequest =>
+      val futureResultReader =
+        parseRequestBodyJson[List[Cofree[List, ZNodeExport]]].flatMap {
+          exportZNodes =>
+            actionDispatcherProvider
+              .getDispatcher(curatorRequest.curatorFramework)
+              .dispatch(ImportZNodesAction(path, exportZNodes))
+              .map(_ => apiResponseFactory.okEmpty)
+              .onErrorHandle(apiResponseFactory.fromThrowable)
+        }.runAsync
+
+      render.async {
+        case Accepts.Json =>
+          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
+      }
+    }
 
   private def newCuratorAction[B](bodyParser: BodyParser[B])(
       implicit wrt: Writeable[ApiResponse[String]]

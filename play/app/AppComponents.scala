@@ -199,4 +199,14 @@ class AppComponents(context: Context)
       curatorFramework: CuratorFramework
   ): ActionHandler[UpdateZNodeDataAction] =
     wire[UpdateZNodeDataActionHandler]
+
+  override def exportZNodesActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[ExportZNodesAction] =
+    wire[ExportZNodesActionHandler]
+
+  override def importZNodesActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[ImportZNodesAction] =
+    wire[ImportZNodesActionHandler]
 }

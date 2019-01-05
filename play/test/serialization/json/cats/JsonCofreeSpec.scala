@@ -38,4 +38,12 @@ class JsonCofreeSpec extends FlatSpec with JsonCofree {
 
     assertResult(expected = e)(c.get)
   }
+
+  it should "deserialize list of integer trees" in {
+    val s = """[{"h":1,"t":[]}, {"h":2,"t":[]}]"""
+    val c = implicitly[Reads[List[Cofree[List, Int]]]].reads(Json.parse(s))
+    val e = List(Cofree(1, Eval.now(List.empty[Cofree[List, Int]])), Cofree(2, Eval.now(List.empty[Cofree[List, Int]])))
+
+    assertResult(expected = e)(c.get)
+  }
 }

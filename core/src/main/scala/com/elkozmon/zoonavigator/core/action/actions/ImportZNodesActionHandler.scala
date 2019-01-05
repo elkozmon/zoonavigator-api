@@ -31,10 +31,10 @@ import org.apache.curator.framework.api.transaction.CuratorOp
 
 import scala.collection.JavaConverters._
 
-class ImportZNodeActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[ImportZNodeAction] {
+class ImportZNodesActionHandler(curatorFramework: CuratorFramework)
+    extends ActionHandler[ImportZNodesAction] {
 
-  override def handle(action: ImportZNodeAction): Task[Unit] =
+  override def handle(action: ImportZNodesAction): Task[Unit] =
     for {
       trees <- Task.wander(action.nodes) { tree =>
         Task.fromTry(

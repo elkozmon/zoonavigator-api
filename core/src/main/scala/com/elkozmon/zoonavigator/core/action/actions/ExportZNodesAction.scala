@@ -21,6 +21,6 @@ import cats.free.Cofree
 import com.elkozmon.zoonavigator.core.action.Action
 import com.elkozmon.zoonavigator.core.zookeeper.znode.{ZNodeExport, ZNodePath}
 
-final case class ImportZNodeAction(path: ZNodePath, nodes: List[Cofree[List, ZNodeExport]]) extends Action {
-  override type Out = Unit
+final case class ExportZNodesAction(paths: Seq[ZNodePath]) extends Action {
+  override type Out = List[Cofree[List, ZNodeExport]]
 }

@@ -20,8 +20,8 @@ trait JsonCofree extends DefaultReads with DefaultWrites {
       implicit writesA: Writes[A]
   ): Writes[Cofree[S, A]] =
     (
-        (JsPath \ "h").write[A] and
-        (JsPath \ "t").lazyWrite[Eval[S[Cofree[S, A]]]](cofreeEvalSWrites[S, A])
+      (JsPath \ "h").write[A] and
+      (JsPath \ "t").lazyWrite[Eval[S[Cofree[S, A]]]](cofreeEvalSWrites[S, A])
     )(unlift(Cofree.unapply[S, A]))
 
   implicit def cofreeEvalSReads[S[_], A](
@@ -35,7 +35,7 @@ trait JsonCofree extends DefaultReads with DefaultWrites {
       cbf: CanBuildFrom[S[_], Cofree[S, A], S[Cofree[S, A]]]
   ): Reads[Cofree[S, A]] =
     (
-        (JsPath \ "h").read[A] and
-        (JsPath \ "t").lazyRead[Eval[S[Cofree[S, A]]]](cofreeEvalSReads)
+      (JsPath \ "h").read[A] and
+      (JsPath \ "t").lazyRead[Eval[S[Cofree[S, A]]]](cofreeEvalSReads)
     ).apply((f1, f2) => Cofree(f1, f2))
 }
