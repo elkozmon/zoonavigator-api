@@ -18,6 +18,7 @@
 package controllers
 
 import java.nio.charset.StandardCharsets
+import java.util.Base64
 
 import api.ApiResponse
 import api.ApiResponseFactory
@@ -212,6 +213,7 @@ class ZNodeController(
       }
     }
 
+  // TODO use json in body to reuse json znode data reader
   def updateData(path: ZNodePath, version: ZNodeDataVersion): Action[String] =
     newCuratorAction(playBodyParsers.text).async { implicit curatorRequest =>
       val futureResultReader = actionDispatcherProvider
@@ -219,7 +221,7 @@ class ZNodeController(
         .dispatch(
           UpdateZNodeDataAction(
             path,
-            ZNodeData(curatorRequest.body.getBytes(StandardCharsets.UTF_8)),
+            ZNodeData(Base64.getDecoder.decode(curatorRequest.body)),
             version
           )
         )

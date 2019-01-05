@@ -17,7 +17,7 @@
 
 package serialization.json.zookeeper.znode
 
-import java.nio.charset.StandardCharsets
+import java.util.Base64
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
 import play.api.libs.json._
@@ -26,11 +26,12 @@ trait JsonZNodeData {
 
   implicit object ZNodeDataFormat extends Format[ZNodeData] {
     override def writes(o: ZNodeData): JsValue =
-      JsString(new String(o.bytes, StandardCharsets.UTF_8))
+      JsString(Base64.getEncoder.encodeToString(o.bytes))
     override def reads(json: JsValue): JsResult[ZNodeData] =
       json
         .validate[String]
-        .map(s => ZNodeData(s.getBytes(StandardCharsets.UTF_8)))
+        .map(Base64.getDecoder.decode)
+        .map(ZNodeData)
   }
 
 }
