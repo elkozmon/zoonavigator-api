@@ -17,6 +17,8 @@
 
 package serialization.json.zookeeper.znode
 
+import java.util.Base64
+
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
 import org.scalatest.FlatSpec
 import play.api.libs.json.JsString
@@ -24,10 +26,12 @@ import play.api.libs.json.Writes
 
 class JsonZNodeDataSpec extends FlatSpec with JsonZNodeData {
 
-  "JsonZNodeData" should "be serialized as a string" in {
-    val j = ZNodeData("foo".getBytes)
+  "JsonZNodeData" should "be serialized as a base64 string" in {
+    val fooBytes = "foo".getBytes
+
+    val j = ZNodeData(fooBytes)
     val s = implicitly[Writes[j.type]].writes(j)
 
-    assertResult(JsString("foo"))(s)
+    assertResult(JsString(Base64.getEncoder.encodeToString(fooBytes)))(s)
   }
 }
