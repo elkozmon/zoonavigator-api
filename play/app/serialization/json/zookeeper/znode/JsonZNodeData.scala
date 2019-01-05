@@ -26,7 +26,7 @@ trait JsonZNodeData {
 
   implicit object ZNodeDataFormat extends Format[ZNodeData] {
     override def writes(o: ZNodeData): JsValue =
-      JsString(new String(o.bytes))
+      JsString(new String(o.bytes, StandardCharsets.UTF_8))
     override def reads(json: JsValue): JsResult[ZNodeData] =
       json
         .validate[String]
