@@ -75,7 +75,7 @@ class ZSessionController(
       .runAsync
 
     render.async {
-      case Accepts.Json =>
+      case Accepts.Json() =>
         futureResultReader.map(_(ApiResponse.writeJson))
     }
   }
@@ -89,7 +89,7 @@ class ZSessionController(
       apiResponseFactory.okEmpty
 
     render {
-      case Accepts.Json =>
+      case Accepts.Json() =>
         resultReader(ApiResponse.writeJson[Nothing])
     }
   }

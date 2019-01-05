@@ -62,7 +62,7 @@ class ZNodeController(
         .runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson))
       }
     }
@@ -79,7 +79,7 @@ class ZNodeController(
         .runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(
             _(
               ApiResponse.writeJson(
@@ -100,7 +100,7 @@ class ZNodeController(
         .runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
       }
     }
@@ -115,7 +115,7 @@ class ZNodeController(
         .runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
       }
     }
@@ -130,7 +130,7 @@ class ZNodeController(
         .runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
       }
     }
@@ -145,7 +145,7 @@ class ZNodeController(
         .runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
       }
     }
@@ -169,7 +169,7 @@ class ZNodeController(
         )
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
       }
     }
@@ -207,7 +207,7 @@ class ZNodeController(
       }.runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson))
       }
     }
@@ -228,7 +228,7 @@ class ZNodeController(
         .runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson))
       }
     }
@@ -243,7 +243,7 @@ class ZNodeController(
         .runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson))
       }
     }
@@ -261,7 +261,7 @@ class ZNodeController(
         }.runAsync
 
       render.async {
-        case Accepts.Json =>
+        case Accepts.Json() =>
           futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
       }
     }

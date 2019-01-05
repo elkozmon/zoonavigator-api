@@ -30,5 +30,12 @@ class HomeController(
 ) extends BaseController {
 
   def getHealthCheck: Action[AnyContent] =
-    Action(apiResponseFactory.okEmpty(ApiResponse.writeJson[Nothing]))
+    Action { implicit request =>
+      val resultReader = apiResponseFactory.okEmpty
+
+      render {
+        case Accepts.Json() =>
+          resultReader(ApiResponse.writeJson[Nothing])
+      }
+    }
 }
