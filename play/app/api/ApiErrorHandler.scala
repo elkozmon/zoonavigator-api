@@ -44,13 +44,44 @@ class ApiErrorHandler(
         .apply(ApiResponse.writeJson[Nothing])
     )
 
+  override protected def onBadRequest(
+    request: RequestHeader,
+    message: String
+  ): Future[Result] =
+    Future.successful(
+      apiResponseFactory
+        .badRequest(Some(message))
+        .apply(ApiResponse.writeJson[Nothing])
+    )
+
+  override protected def onForbidden(
+    request: RequestHeader,
+    message: String
+  ): Future[Result] =
+    Future.successful(
+      apiResponseFactory
+        .forbidden(Some(message))
+        .apply(ApiResponse.writeJson[Nothing])
+    )
+
   override protected def onNotFound(
       request: RequestHeader,
       message: String
   ): Future[Result] =
     Future.successful(
       apiResponseFactory
-        .notFound(Some("Requested resource does not exist"))
+        .notFound(Some(message))
+        .apply(ApiResponse.writeJson[Nothing])
+    )
+
+  override protected def onOtherClientError(
+    request: RequestHeader,
+    statusCode: Int,
+    message: String
+  ): Future[Result] =
+    Future.successful(
+      apiResponseFactory
+        .badRequest(Some(message))
         .apply(ApiResponse.writeJson[Nothing])
     )
 }
