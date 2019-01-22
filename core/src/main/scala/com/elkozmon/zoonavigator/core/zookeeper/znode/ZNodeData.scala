@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,4 +17,26 @@
 
 package com.elkozmon.zoonavigator.core.zookeeper.znode
 
-final case class ZNodeData(bytes: Array[Byte])
+import java.nio.charset.StandardCharsets
+import java.util
+
+final case class ZNodeData(bytes: Array[Byte]) {
+
+  override def hashCode(): Int =
+    util.Arrays.hashCode(bytes)
+
+  override def equals(other: scala.Any): Boolean =
+    other match {
+      case that: ZNodeData =>
+        (that canEqual this) && bytes.sameElements(that.bytes)
+      case _ =>
+        false
+    }
+
+  @SuppressWarnings(Array("org.wartremover.warts.IsInstanceOf"))
+  override def canEqual(that: Any): Boolean =
+    that.isInstanceOf[ZNodeData]
+
+  override def toString: String =
+    s"ZNodeData(${new String(bytes, StandardCharsets.UTF_8)})"
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -25,11 +25,10 @@ import api.ApiResponseFactory
 import com.google.common.cache.CacheBuilder
 import play.api.http.HeaderNames
 import play.api.mvc.RequestHeader
-import session.SessionInactivityTimeout
-import session.SessionToken
+import session.{SessionInactivityTimeout, SessionToken}
 
-import scala.collection.mutable
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 class ExpiringSessionManager(
     apiResponseFactory: ApiResponseFactory,

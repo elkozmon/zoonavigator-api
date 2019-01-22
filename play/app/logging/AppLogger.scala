@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,8 +17,7 @@
 
 package logging
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 trait AppLogger {
   val logger: Logger = LoggerFactory.getLogger("application")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,20 +17,21 @@
 
 package controllers
 
+import api.ApiResponse
 import api.ApiResponseFactory
+import api.exceptions.BadRequestException
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import curator.provider.CuratorFrameworkProvider
-import json.zookeeper.JsonConnectionParams
-import json.zookeeper.JsonSessionInfo
+import monix.eval.Task
 import monix.execution.Scheduler
 import play.api.libs.json.JsSuccess
 import play.api.mvc._
+import serialization.Json._
 import session.SessionToken
 import session.manager.SessionManager
+import zookeeper.ConnectionParams
 import zookeeper.session.SessionInfo
 import zookeeper.session.ZooKeeperSessionHelper
-
-import scala.concurrent.Future
 
 class ZSessionController(
     apiResponseFactory: ApiResponseFactory,
@@ -41,43 +42,55 @@ class ZSessionController(
     implicit val sessionManager: SessionManager
 ) extends BaseController {
 
-  def create(): Action[AnyContent] = Action.async { request =>
-    request.body.asJson.map(_.validate[JsonConnectionParams]) match {
-      case Some(JsSuccess(JsonConnectionParams(connectionParams), _)) =>
-        implicit val sessionToken: SessionToken = sessionManager.newSession()
+  def createSession(): Action[AnyContent] = Action.async { implicit request =>
+    val actionTask: Task[SessionInfo] =
+      request.body.asJson.map(_.validate[ConnectionParams]) match {
+        case Some(JsSuccess(connectionParams, _)) =>
+          implicit val sessionToken: SessionToken =
+            sessionManager.newSession()
 
-        // create curator framework
-        curatorFrameworkProvider
-          .getCuratorInstance(
-            connectionParams.connectionString,
-            connectionParams.authInfoList
-          )
-          .map { _ =>
-            // store connection params to session
-            zookeeperSessionHelper
-              .setConnectionParams(connectionParams)
-              .discard()
+          // create curator framework
+          curatorFrameworkProvider
+            .getCuratorInstance(
+              connectionParams.connectionString,
+              connectionParams.authInfoList
+            )
+            .map { _ =>
+              // store connection params to session
+              zookeeperSessionHelper
+                .setConnectionParams(connectionParams)
+                .discard()
 
-            val sessionInfo =
               SessionInfo(sessionToken, connectionParams.connectionString)
+            }
+        case _ =>
+          Task.raiseError(
+            new BadRequestException("Invalid request. Session info is missing.")
+          )
+      }
 
-            apiResponseFactory.okPayload(JsonSessionInfo(sessionInfo))
-          }
-          .onErrorHandle(apiResponseFactory.fromThrowable)
-          .runAsync
-      case _ =>
-        Future.successful(
-          apiResponseFactory
-            .badRequest(Some("Invalid request. Session info is missing."))
-        )
+    val futureResultReader = actionTask
+      .map(apiResponseFactory.okPayload)
+      .onErrorHandle(apiResponseFactory.fromThrowable[SessionInfo])
+      .runAsync
+
+    render.async {
+      case Accepts.Json() =>
+        futureResultReader.map(_(ApiResponse.writeJson))
     }
   }
 
-  def delete() = Action { request =>
+  def deleteSession(): Action[AnyContent] = Action { implicit request =>
     sessionManager
       .getSession(request)
       .foreach(sessionManager.closeSession()(_))
 
-    apiResponseFactory.okEmpty
+    val resultReader =
+      apiResponseFactory.okEmpty
+
+    render {
+      case Accepts.Json() =>
+        resultReader(ApiResponse.writeJson[Nothing])
+    }
   }
 }

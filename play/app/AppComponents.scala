@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,29 +18,26 @@
 import java.util.concurrent.TimeUnit
 
 import api._
-import controllers._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
+import controllers._
 import curator.action.CuratorActionBuilder
 import curator.provider._
+import modules.AppModule
 import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
-import play.api.BuiltInComponentsFromContext
-import play.api.LoggerConfigurator
 import play.api.ApplicationLoader.Context
+import play.api.{BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
-import play.filters.cors.CORSConfig
-import play.filters.cors.CORSFilter
+import play.filters.cors.{CORSConfig, CORSFilter}
 import router.Routes
 import session.SessionInactivityTimeout
 import session.action.SessionActionBuilder
-import session.manager.ExpiringSessionManager
-import session.manager.SessionManager
-import zookeeper.session.DefaultZooKeeperSessionHelper
-import zookeeper.session.ZooKeeperSessionHelper
+import session.manager.{ExpiringSessionManager, SessionManager}
+import zookeeper.session.{DefaultZooKeeperSessionHelper, ZooKeeperSessionHelper}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -112,7 +109,7 @@ class AppComponents(context: Context)
     )
 
   override val apiResponseFactory: ApiResponseFactory =
-    wire[JsonApiResponseFactory]
+    wire[DefaultApiResponseFactory]
 
   override val sessionManager: SessionManager =
     wire[ExpiringSessionManager]
@@ -202,4 +199,14 @@ class AppComponents(context: Context)
       curatorFramework: CuratorFramework
   ): ActionHandler[UpdateZNodeDataAction] =
     wire[UpdateZNodeDataActionHandler]
+
+  override def exportZNodesActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[ExportZNodesAction] =
+    wire[ExportZNodesActionHandler]
+
+  override def importZNodesActionHandler(
+      curatorFramework: CuratorFramework
+  ): ActionHandler[ImportZNodesAction] =
+    wire[ImportZNodesActionHandler]
 }

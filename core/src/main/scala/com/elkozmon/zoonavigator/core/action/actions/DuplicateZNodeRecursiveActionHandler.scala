@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -39,7 +39,7 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
     for {
       tree <- curatorFramework
         .walkTreeAsync(curatorFramework.getZNodeAsync)(action.source)
-        .map(ZooKeeperUtils.rewriteZNodePaths(action.destination, _))
+        .flatMap(t => Task.fromTry(ZooKeeperUtils.rewriteZNodePaths(action.destination, t)))
       unit <- createTree(tree)
     } yield unit
 

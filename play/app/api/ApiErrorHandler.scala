@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -22,6 +22,7 @@ import play.api.http.DefaultHttpErrorHandler
 import play.api.mvc._
 import play.api.routing.Router
 import play.core.SourceMapper
+import serialization.Json._
 
 import scala.concurrent._
 
@@ -38,9 +39,29 @@ class ApiErrorHandler(
       exception: UsefulException
   ): Future[Result] =
     Future.successful(
-      apiResponseFactory.internalServerError(
-        Some("A server error occurred: " + exception.getMessage)
-      )
+      apiResponseFactory
+        .internalServerError(Some("A server error occurred: " + exception.getMessage))
+        .apply(ApiResponse.writeJson[Nothing])
+    )
+
+  override protected def onBadRequest(
+    request: RequestHeader,
+    message: String
+  ): Future[Result] =
+    Future.successful(
+      apiResponseFactory
+        .badRequest(Some(message))
+        .apply(ApiResponse.writeJson[Nothing])
+    )
+
+  override protected def onForbidden(
+    request: RequestHeader,
+    message: String
+  ): Future[Result] =
+    Future.successful(
+      apiResponseFactory
+        .forbidden(Some(message))
+        .apply(ApiResponse.writeJson[Nothing])
     )
 
   override protected def onNotFound(
@@ -48,6 +69,19 @@ class ApiErrorHandler(
       message: String
   ): Future[Result] =
     Future.successful(
-      apiResponseFactory.notFound(Some("Requested resource does not exist"))
+      apiResponseFactory
+        .notFound(Some(message))
+        .apply(ApiResponse.writeJson[Nothing])
+    )
+
+  override protected def onOtherClientError(
+    request: RequestHeader,
+    statusCode: Int,
+    message: String
+  ): Future[Result] =
+    Future.successful(
+      apiResponseFactory
+        .badRequest(Some(message))
+        .apply(ApiResponse.writeJson[Nothing])
     )
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,19 +19,23 @@ package com.elkozmon.zoonavigator.core.utils
 
 import cats.Functor
 import cats.free.Cofree
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePathLens
 
 import scala.language.higherKinds
+import scala.util.Try
 
 object ZooKeeperUtils {
 
-  def rewriteZNodePaths[S[_]: Functor](
-      path: ZNodePath,
-      tree: Cofree[S, ZNode]
-  ): Cofree[S, ZNode] =
-    tree.transform(
-      head => head.copy(path = path),
-      tail => rewriteZNodePaths(path.down(tail.head.path.name), tail)
-    )
+  @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
+  def rewriteZNodePaths[S[_]: Functor, T](path: ZNodePath, tree: Cofree[S, T])(
+      implicit lens: ZNodePathLens[T]
+  ): Try[Cofree[S, T]] =
+    Try {
+      tree.transform(
+        head => lens.update(head, path),
+        tail =>
+          rewriteZNodePaths(path.down(lens.path(tail.head).name).get, tail).get
+      )
+    }
 }

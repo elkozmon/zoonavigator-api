@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,7 +17,8 @@
 
 package session.action
 
-import api.ApiResponseFactory
+import api.{ApiResponse, ApiResponseFactory}
+import play.api.http.Writeable
 import play.api.mvc.BodyParser
 import session.manager.SessionManager
 
@@ -29,8 +30,11 @@ class SessionActionBuilder(
     executionContext: ExecutionContext
 ) {
 
-  def apply[B](bodyParser: BodyParser[B]): SessionAction[B] =
+  def apply[B](
+      bodyParser: BodyParser[B]
+  )(implicit wrt: Writeable[ApiResponse[String]]): SessionAction[B] =
     new SessionAction(apiResponseFactory, sessionManager, bodyParser)(
-      executionContext
+      executionContext,
+      wrt
     )
 }

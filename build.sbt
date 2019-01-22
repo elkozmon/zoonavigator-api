@@ -2,7 +2,7 @@ import ReleaseTransformations._
 
 scalafmtVersion in ThisBuild := "1.1.0"
 
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.6"
 
 scalacOptions in ThisBuild ++= Seq(
   "-target:jvm-1.8",
@@ -84,8 +84,19 @@ val play = project
       "com.softwaremill.macwire" %% "macros" % "2.3.0" % Provided,
       "com.softwaremill.macwire" %% "util" % "2.3.0"
     ),
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoKeys := Seq[BuildInfoKey](
+      name,
+      version,
+      scalaVersion,
+      sbtVersion
+    ),
     buildInfoPackage := "build",
+    routesImport ++= Seq(
+      "binders._",
+      "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath",
+      "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion",
+      "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion"
+    ),
     wartremoverExcluded ++= routes.in(Compile).value,
     wartremoverWarnings ++= Seq(
       PlayWart.AssetsObject,

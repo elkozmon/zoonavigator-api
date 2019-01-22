@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,10 +23,4 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 final case class ForceDeleteZNodeRecursiveAction(paths: Seq[ZNodePath])
     extends Action {
   override type Out = Unit
-}
-
-object ForceDeleteZNodeRecursiveAction {
-
-  def apply(path: ZNodePath): ForceDeleteZNodeRecursiveAction =
-    ForceDeleteZNodeRecursiveAction(Seq(path))
 }

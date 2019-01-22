@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,8 +19,7 @@ package curator.provider
 
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
-import zookeeper.AuthInfo
-import zookeeper.ConnectionString
+import zookeeper.{AuthInfo, ConnectionString}
 
 trait CuratorFrameworkProvider {
 

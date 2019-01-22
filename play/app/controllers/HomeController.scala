@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,7 +17,10 @@
 
 package controllers
 
+import api.ApiResponse
 import api.ApiResponseFactory
+import play.api.mvc.Action
+import play.api.mvc.AnyContent
 import play.api.mvc.BaseController
 import play.api.mvc.ControllerComponents
 
@@ -26,5 +29,13 @@ class HomeController(
     val controllerComponents: ControllerComponents
 ) extends BaseController {
 
-  def getHealthCheck = Action(apiResponseFactory.okEmpty)
+  def getHealthCheck: Action[AnyContent] =
+    Action { implicit request =>
+      val resultReader = apiResponseFactory.okEmpty
+
+      render {
+        case Accepts.Json() =>
+          resultReader(ApiResponse.writeJson[Nothing])
+      }
+    }
 }

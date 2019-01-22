@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -51,14 +51,20 @@ class MoveZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
       .reduceMap((node: ZNode) => List(deleteZNodeOp(node.path)))
       .reverse
 
-    val createOps: Seq[CuratorOp] = ZooKeeperUtils
-      .rewriteZNodePaths(dest, tree)
-      .reduceMap((node: ZNode) => List(createZNodeOp(node)))
+    val createOps: Task[Seq[CuratorOp]] = Task.fromTry(
+      ZooKeeperUtils
+        .rewriteZNodePaths(dest, tree)
+        .map(_.reduceMap((node: ZNode) => List(createZNodeOp(node))))
+    )
 
-    curatorFramework
-      .transaction()
-      .forOperationsAsync(deleteOps ++ createOps)
-      .map(discard[CuratorEvent])
+    Task
+      .mapBoth(Task.now(deleteOps), createOps)(_ ++ _)
+      .flatMap { allOps =>
+        curatorFramework
+          .transaction()
+          .forOperationsAsync(allOps)
+          .map(discard[CuratorEvent])
+      }
   }
 
   private def createZNodeOp(node: ZNode): CuratorOp =

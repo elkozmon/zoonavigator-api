@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,11 +18,9 @@
 package curator.provider
 
 import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-import java.security.SecureRandom
+import java.security.{MessageDigest, SecureRandom}
 
-import zookeeper.AuthInfo
-import zookeeper.ConnectionString
+import zookeeper.{AuthInfo, ConnectionString}
 
 final case class CuratorKey(
     connectionString: ConnectionString,

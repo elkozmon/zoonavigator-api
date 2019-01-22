@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -27,7 +27,7 @@ import org.scalatest.FlatSpec
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-@SuppressWarnings(Array("org.wartremover.warts.NonUnitStatements"))
+@SuppressWarnings(Array("org.wartremover.warts.NonUnitStatements", "org.wartremover.warts.TryPartial"))
 class ForceDeleteZNodeRecursiveActionHandlerSpec
     extends FlatSpec
     with CuratorSpec {
@@ -59,7 +59,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec
 
       val action =
         ForceDeleteZNodeRecursiveAction(
-          Seq("/foo", "/bar").map(ZNodePath.unsafe)
+          Seq("/foo", "/bar").map(ZNodePath.parse _ andThen(_.get))
         )
 
       Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
@@ -90,7 +90,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec
         .discard()
 
       val action =
-        ForceDeleteZNodeRecursiveAction(ZNodePath.unsafe("/foo"))
+        ForceDeleteZNodeRecursiveAction(Seq(ZNodePath.parse("/foo").get))
 
       Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
 
@@ -117,7 +117,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec
 
       val action =
         ForceDeleteZNodeRecursiveAction(
-          Seq("/foo", "/bar", "/nonexistent").map(ZNodePath.unsafe)
+          Seq("/foo", "/bar", "/nonexistent").map(ZNodePath.parse _ andThen(_.get))
         )
 
       Await.ready(actionHandler.handle(action).runAsync, Duration.Inf)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,17 +23,13 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.google.common.cache._
 import logging.AppLogger
 import monix.eval.Task
-import monix.execution.Cancelable
-import monix.execution.Scheduler
+import monix.execution.{Cancelable, Scheduler}
 import org.apache.curator.framework
-import org.apache.curator.framework.CuratorFramework
-import org.apache.curator.framework.CuratorFrameworkFactory
+import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.framework.api.UnhandledErrorListener
-import org.apache.curator.framework.state.ConnectionState
-import org.apache.curator.framework.state.ConnectionStateListener
+import org.apache.curator.framework.state.{ConnectionState, ConnectionStateListener}
 import org.apache.curator.retry.ExponentialBackoffRetry
-import zookeeper.AuthInfo
-import zookeeper.ConnectionString
+import zookeeper.{AuthInfo, ConnectionString}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._

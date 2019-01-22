@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -27,7 +27,7 @@ import org.scalatest.FlatSpec
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-@SuppressWarnings(Array("org.wartremover.warts.Null"))
+@SuppressWarnings(Array("org.wartremover.warts.Null", "org.wartremover.warts.TryPartial"))
 class GetZNodeDataActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
@@ -42,7 +42,7 @@ class GetZNodeDataActionHandlerSpec extends FlatSpec with CuratorSpec {
         .forPath("/null-node", null)
         .discard()
 
-      val action = GetZNodeDataAction(ZNodePath.unsafe("/null-node"))
+      val action = GetZNodeDataAction(ZNodePath.parse("/null-node").get)
 
       val metadata =
         Await.result(actionHandler.handle(action).runAsync, Duration.Inf)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018  Ľuboš Kozmon
+ * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,8 +17,37 @@
 
 package api
 
+import akka.http.scaladsl.model.MediaTypes
+import akka.util.ByteString
+import play.api.http.Writeable
+import play.api.libs.json.Json
+import play.api.libs.json.OWrites
+import play.api.libs.json.Writes
+
 final case class ApiResponse[T](
     success: Boolean,
     message: Option[String],
     payload: Option[T]
 )
+
+object ApiResponse {
+
+  implicit def apiResponseWrites[T](implicit wrt: Writes[T]): OWrites[ApiResponse[T]] =
+    o => Json.obj(
+      "success" -> o.success,
+      "message" -> o.message,
+      "payload" -> o.payload.map(wrt.writes)
+    )
+
+  implicit def apiResponseWritesNothing: OWrites[ApiResponse[Nothing]] =
+    o => Json.obj(
+      "success" -> o.success,
+      "message" -> o.message
+    )
+
+  implicit def writeJson[T](implicit wrt: OWrites[ApiResponse[T]]): Writeable[ApiResponse[T]] =
+    new Writeable[ApiResponse[T]](
+      o => ByteString(Json.toBytes(Json.toJsObject(o))),
+      Some(MediaTypes.`application/json`.value)
+    )
+}
