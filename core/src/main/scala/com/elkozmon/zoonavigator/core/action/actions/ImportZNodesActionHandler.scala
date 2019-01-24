@@ -28,6 +28,8 @@ import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.framework.api.transaction.CuratorOp
+import org.apache.zookeeper.KeeperException
+import org.apache.zookeeper.KeeperException.Code
 
 import scala.collection.JavaConverters._
 
@@ -36,6 +38,18 @@ class ImportZNodesActionHandler(curatorFramework: CuratorFramework)
 
   override def handle(action: ImportZNodesAction): Task[Unit] =
     for {
+      _ <- curatorFramework
+        .checkExists()
+        .forPathAsync(action.path.path)
+        .map(discard[CuratorEvent])
+        .onErrorRecoverWith {
+          case e: KeeperException if e.code() == Code.NONODE =>
+            curatorFramework
+              .create()
+              .creatingParentContainersIfNeeded()
+              .forPathAsync(action.path.path)
+              .map(discard[CuratorEvent])
+        }
       trees <- Task.wander(action.nodes) { tree =>
         Task.fromTry(
           action.path
@@ -44,9 +58,10 @@ class ImportZNodesActionHandler(curatorFramework: CuratorFramework)
         )
       }
       ops <- Task.now[List[CuratorOp]](
-        trees.flatMap(
-          _.reduceMap((node: ZNodeExport) => List(createZNodeOp(node)))
-        )
+        trees
+          .flatMap(
+            _.reduceMap((node: ZNodeExport) => List(createZNodeOp(node)))
+          )
       )
       unit <- curatorFramework
         .transaction()

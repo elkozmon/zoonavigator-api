@@ -214,4 +214,27 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       assertResult("baz")(bazData)
       assertResult(bazAclDefault)(bazAcl)
   }
+
+  it should "import node creating its non-existent target parent" in withCurator {
+    implicit curatorFramework =>
+      val fooAclDefault =
+        List(Acl(AclId("world", "anyone"), Set(Read, Create)))
+
+      val exported =
+        List(
+          Cofree(
+            getExportNode("/foo", "foo", fooAclDefault),
+            Now(List.empty[Cofree[List, ZNodeExport]])
+          )
+        )
+
+      val action =
+        ImportZNodesAction(ZNodePath.parse("/non-existent-parent").get, exported)
+
+      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+
+      val fooData = new String(curatorFramework.getData.forPath("/non-existent-parent/foo"))
+
+      assertResult("foo")(fooData)
+  }
 }
