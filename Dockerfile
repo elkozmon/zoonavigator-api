@@ -48,11 +48,21 @@ WORKDIR /app
 # Install dependencies
 RUN apk --no-cache add curl krb5 bash
 
+# Create non-root user
+RUN addgroup -g 1000 zoonavigator-api && \
+    adduser -D -u 1000 zoonavigator-api -G zoonavigator-api
+
 # Add health check
 HEALTHCHECK --interval=30s --timeout=3s \
     CMD ./healthcheck.sh
 
 # Expose default HTTP port
 EXPOSE 9000
+
+# Ensure that our user can access /app
+RUN chown -R zoonavigator-api:zoonavigator-api /app
+
+# Cause our command to be executed as our user
+USER zoonavigator-api:zoonavigator-api
 
 CMD ["./run.sh"]
