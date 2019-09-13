@@ -17,25 +17,25 @@
 
 package controllers
 
-import api.ApiResponse
-import api.ApiResponseFactory
-import play.api.mvc.Action
-import play.api.mvc.AnyContent
-import play.api.mvc.BaseController
-import play.api.mvc.ControllerComponents
+import play.api.http.HttpErrorHandler
+import play.api.mvc._
 
-class HomeController(
-    apiResponseFactory: ApiResponseFactory,
+class FrontendController(
+    assets: Assets,
+    errorHandler: HttpErrorHandler,
     val controllerComponents: ControllerComponents
 ) extends BaseController {
 
-  def getHealthCheck: Action[AnyContent] =
-    Action { implicit request =>
-      val resultReader = apiResponseFactory.okEmpty
+  def index: Action[AnyContent] = assets.at("index.html")
 
-      render {
-        case Accepts.Json() =>
-          resultReader(ApiResponse.writeJson[Nothing])
+  def assetOrDefault(resource: String): Action[AnyContent] =
+    if (resource.startsWith("/api/") || resource.equals("/api")) {
+      Action.async { request =>
+        errorHandler.onClientError(request, NOT_FOUND, "Not found")
       }
+    } else if (resource.contains(".")) {
+      assets.at(resource)
+    } else {
+      index
     }
 }

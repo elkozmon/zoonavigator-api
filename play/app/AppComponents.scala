@@ -27,8 +27,8 @@ import curator.provider._
 import modules.AppModule
 import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
-import play.api.ApplicationLoader.Context
 import play.api.{BuiltInComponentsFromContext, LoggerConfigurator}
+import play.api.ApplicationLoader.Context
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
@@ -43,6 +43,7 @@ import scala.concurrent.duration.FiniteDuration
 
 class AppComponents(context: Context)
     extends BuiltInComponentsFromContext(context)
+    with AssetsComponents
     with AppModule {
 
   LoggerConfigurator(context.environment.classLoader)
@@ -126,8 +127,8 @@ class AppComponents(context: Context)
   override lazy val sessionActionBuilder: SessionActionBuilder =
     wire[SessionActionBuilder]
 
-  override lazy val homeController: HomeController =
-    wire[HomeController]
+  override lazy val frontendController: FrontendController =
+    wire[FrontendController]
 
   override lazy val zNodeController: ZNodeController =
     wire[ZNodeController]

@@ -18,7 +18,7 @@
 package modules
 
 import api.ApiResponseFactory
-import controllers.{HomeController, ZNodeController, ZSessionController}
+import controllers.{FrontendController, ZNodeController, ZSessionController}
 import curator.action.CuratorActionBuilder
 import curator.provider.CuratorFrameworkProvider
 import modules.action.ActionModule
@@ -46,7 +46,7 @@ trait AppModule extends ActionModule with FiltersModule {
 
   val sessionActionBuilder: SessionActionBuilder
 
-  val homeController: HomeController
+  val frontendController: FrontendController
 
   val zNodeController: ZNodeController
 
