@@ -15,6 +15,3 @@ addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.10")
 
 // Release
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.8")
-
-// Build info
-addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")

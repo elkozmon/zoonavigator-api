@@ -15,16 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import build.BuildInfo
 import logging.AppLogger
 import play.api.{Application, ApplicationLoader}
 import play.api.ApplicationLoader.Context
 
 class AppLoader extends ApplicationLoader with AppLogger {
 
-  override def load(context: Context): Application = {
-    logger.info("Starting ZooNavigator API " + BuildInfo.version)
-    
+  override def load(context: Context): Application =
     new AppComponents(context).application
-  }
 }
