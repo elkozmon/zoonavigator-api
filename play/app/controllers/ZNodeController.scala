@@ -17,7 +17,6 @@
 
 package controllers
 
-import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import api.ApiResponse

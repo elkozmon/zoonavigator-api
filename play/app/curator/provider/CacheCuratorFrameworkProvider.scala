@@ -59,9 +59,10 @@ class CacheCuratorFrameworkProvider(
       .asMap()
       .asScala
 
-  //noinspection ScalaUnusedSymbol
-  private val sessionCacheCleanUpJob =
-    scheduler.scheduleWithFixedDelay(1 second, 1 second)(sessionCache.cleanUp())
+  // start clean up job
+  scheduler
+    .scheduleWithFixedDelay(1 second, 1 second)(sessionCache.cleanUp())
+    .discard()
 
   override def onRemoval(
       notification: RemovalNotification[CuratorKey, Task[CuratorFramework]]

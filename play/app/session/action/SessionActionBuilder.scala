@@ -30,11 +30,6 @@ class SessionActionBuilder(
     executionContext: ExecutionContext
 ) {
 
-  def apply[B](
-      bodyParser: BodyParser[B]
-  )(implicit wrt: Writeable[ApiResponse[String]]): SessionAction[B] =
-    new SessionAction(apiResponseFactory, sessionManager, bodyParser)(
-      executionContext,
-      wrt
-    )
+  def apply[B](bodyParser: BodyParser[B]): SessionAction[B] =
+    new SessionAction(apiResponseFactory, sessionManager, bodyParser)(executionContext)
 }

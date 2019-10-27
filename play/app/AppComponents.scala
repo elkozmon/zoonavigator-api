@@ -32,6 +32,7 @@ import play.api.ApplicationLoader.Context
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
+import play.core.SourceMapper
 import play.filters.cors.{CORSConfig, CORSFilter}
 import router.Routes
 import session.SessionInactivityTimeout
@@ -57,18 +58,21 @@ class AppComponents(context: Context)
     //noinspection ScalaUnusedSymbol
     def routerProvider: Option[Router] = Option(router)
 
+    //noinspection ScalaUnusedSymbol
+    def sourceMapper: Option[SourceMapper] = devContext.map(_.sourceMapper)
+
     wire[ApiErrorHandler]
   }
 
   override lazy val router: Router =
     wire[Routes].withPrefix(httpContext)
 
-  lazy val corsConfig: CORSConfig =
-    CORSConfig.fromConfiguration(configuration)
-
   override def corsFilter: CORSFilter = {
     //noinspection ScalaUnusedSymbol
     val prefixes: Seq[String] = Seq(httpContext)
+
+    //noinspection ScalaUnusedSymbol
+    val corsConfig: CORSConfig = CORSConfig.fromConfiguration(configuration)
 
     wire[CORSFilter]
   }

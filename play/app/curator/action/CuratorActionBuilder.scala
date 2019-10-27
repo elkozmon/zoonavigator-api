@@ -30,10 +30,10 @@ class CuratorActionBuilder(
     scheduler: Scheduler
 ) {
 
-  def apply()(implicit wrt: Writeable[ApiResponse[String]]): CuratorAction =
+  def apply(): CuratorAction =
     new CuratorAction(
       apiResponseFactory,
       zookeeperSessionHelper,
       curatorFrameworkProvider
-    )(scheduler, wrt)
+    )(scheduler)
 }

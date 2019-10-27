@@ -30,10 +30,8 @@ class SessionAction[B](
     apiResponseFactory: ApiResponseFactory,
     sessionManager: SessionManager,
     val parser: BodyParser[B]
-)(
-    implicit val executionContext: ExecutionContext,
-    apiResponseWriter: Writeable[ApiResponse[String]]
-) extends ActionBuilder[SessionRequest, B]
+)(implicit val executionContext: ExecutionContext)
+  extends ActionBuilder[SessionRequest, B]
     with ActionRefiner[Request, SessionRequest] {
 
   override protected def refine[A](

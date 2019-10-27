@@ -34,10 +34,8 @@ class CuratorAction(
     apiResponseFactory: ApiResponseFactory,
     zookeeperSessionHelper: ZooKeeperSessionHelper,
     curatorFrameworkProvider: CuratorFrameworkProvider,
-)(
-    implicit val executionContext: Scheduler,
-    apiResponseWriter: Writeable[ApiResponse[String]]
-) extends ActionRefiner[SessionRequest, CuratorRequest] {
+)(implicit val executionContext: Scheduler)
+  extends ActionRefiner[SessionRequest, CuratorRequest] {
 
   override protected def refine[A](
       request: SessionRequest[A]

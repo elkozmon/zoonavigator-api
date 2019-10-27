@@ -91,20 +91,6 @@ val play = project
       "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion"
     ),
     wartremoverExcluded ++= routes.in(Compile).value,
-    wartremoverWarnings ++= Seq(
-      PlayWart.AssetsObject,
-      PlayWart.CookiesPartial,
-      PlayWart.FlashPartial,
-      PlayWart.FormPartial,
-      PlayWart.HeadersPartial,
-      PlayWart.JavaApi,
-      PlayWart.JsLookupResultPartial,
-      PlayWart.JsReadablePartial,
-      PlayWart.LangObject,
-      PlayWart.MessagesObject,
-      PlayWart.SessionPartial,
-      PlayWart.TypedMapPartial
-    ),
     sources in (Compile, doc) := Seq.empty,
     publishArtifact in (Compile, packageDoc) := false
   )

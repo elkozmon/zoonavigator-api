@@ -20,8 +20,6 @@ package serialization.json.zookeeper.acl
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import play.api.libs.json._
 
-import scala.language.implicitConversions
-
 trait JsonPermission {
 
   private final val Create = "create"
