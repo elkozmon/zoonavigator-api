@@ -62,7 +62,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec
           Seq("/foo", "/bar").map(ZNodePath.parse _ andThen(_.get))
         )
 
-      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       assert(checkExists("/foo").isEmpty)
       assert(checkExists("/bar").isEmpty)
@@ -92,7 +92,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec
       val action =
         ForceDeleteZNodeRecursiveAction(Seq(ZNodePath.parse("/foo").get))
 
-      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       assert(checkExists("/foo").isEmpty)
       assert(checkExists("/foo/bar").isEmpty)
@@ -120,7 +120,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec
           Seq("/foo", "/bar", "/nonexistent").map(ZNodePath.parse _ andThen(_.get))
         )
 
-      Await.ready(actionHandler.handle(action).runAsync, Duration.Inf)
+      Await.ready(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       assert(checkExists("/foo").isDefined)
       assert(checkExists("/bar").isDefined)

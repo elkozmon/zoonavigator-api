@@ -38,7 +38,6 @@ import scala.concurrent.duration.Duration
 
 @SuppressWarnings(
   Array(
-    "org.wartremover.warts.Any",
     "org.wartremover.warts.TryPartial",
     "org.wartremover.warts.NonUnitStatements",
     "org.wartremover.warts.TraversableOps"
@@ -80,7 +79,7 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
         )
 
       val exported =
-        Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+        Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       assertResult {
         List(
@@ -116,7 +115,7 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
         ExportZNodesAction(Seq(ZNodePath.parse("/foo").get))
 
       val exported =
-        Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+        Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       assertResult {
         List(
@@ -168,7 +167,7 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
         )
 
       val exported =
-        Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+        Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       assertResult {
         List(

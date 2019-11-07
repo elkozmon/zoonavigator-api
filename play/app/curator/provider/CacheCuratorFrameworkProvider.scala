@@ -31,7 +31,7 @@ import org.apache.curator.framework.state.{ConnectionState, ConnectionStateListe
 import org.apache.curator.retry.ExponentialBackoffRetry
 import zookeeper.{AuthInfo, ConnectionString}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Try
@@ -72,7 +72,7 @@ class CacheCuratorFrameworkProvider(
 
     logger.debug(
       s"Closing connection to ${curatorKey.connectionString.string}. " +
-        s"Cause: $removalCause"
+        s"Cause: ${removalCause.name()}"
     )
 
     notification.getValue

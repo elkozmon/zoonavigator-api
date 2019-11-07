@@ -25,7 +25,7 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class UpdateZNodeAclListRecursiveActionHandler(
     curatorFramework: CuratorFramework

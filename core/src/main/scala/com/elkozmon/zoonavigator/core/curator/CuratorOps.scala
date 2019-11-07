@@ -19,19 +19,20 @@ package com.elkozmon.zoonavigator.core.curator
 
 import cats.Eval
 import cats.free.Cofree
-import cats.implicits._
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.try_._
 import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.eval.Task
-import monix.cats._
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.utils.ZKPaths
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 trait CuratorOps {
@@ -102,7 +103,7 @@ trait CuratorOps {
     ): Task[ZNodeMetaWith[ZNodeChildren]] = {
       def getChildrenFromEvent(event: CuratorEvent): Try[ZNodeChildren] =
         event.getChildren.asScala.toList
-          .traverseU { name =>
+          .traverse { name =>
             val path = event.getPath
               .stripSuffix(ZKPaths.PATH_SEPARATOR)
               .concat(ZKPaths.PATH_SEPARATOR + name)

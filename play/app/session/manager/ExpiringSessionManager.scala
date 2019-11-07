@@ -27,7 +27,7 @@ import play.api.http.HeaderNames
 import play.api.mvc.RequestHeader
 import session.{SessionInactivityTimeout, SessionToken}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 class ExpiringSessionManager(

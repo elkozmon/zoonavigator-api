@@ -30,7 +30,7 @@ import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.framework.api.transaction._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
     extends ActionHandler[DuplicateZNodeRecursiveAction] {

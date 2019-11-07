@@ -31,7 +31,7 @@ import org.apache.curator.framework.api.transaction.CuratorOp
 import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.KeeperException.Code
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class ImportZNodesActionHandler(curatorFramework: CuratorFramework)
     extends ActionHandler[ImportZNodesAction] {

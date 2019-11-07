@@ -19,21 +19,20 @@ package serialization.json.cats
 
 import cats.free.Cofree
 import cats.Eval
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
-import scala.collection.Traversable
-import scala.collection.generic.CanBuildFrom
+import scala.collection.Factory
 import scala.language.higherKinds
 
 trait JsonCofree extends DefaultReads with DefaultWrites {
 
-  implicit def cofreeEvalSWrites[S[M] <: Traversable[M], A](
+  implicit def cofreeEvalSWrites[S[M] <: Iterable[M], A](
       implicit writesA: Writes[A]
   ): Writes[Eval[S[Cofree[S, A]]]] =
     s => traversableWrites[Cofree[S, A]].writes(s.value)
 
-  implicit def cofreeWrites[S[M] <: Traversable[M], A](
+  implicit def cofreeWrites[S[M] <: Iterable[M], A](
       implicit writesA: Writes[A]
   ): Writes[Cofree[S, A]] =
     (
@@ -43,13 +42,13 @@ trait JsonCofree extends DefaultReads with DefaultWrites {
 
   implicit def cofreeEvalSReads[S[_], A](
       implicit readsA: Reads[A],
-      cbf: CanBuildFrom[S[_], Cofree[S, A], S[Cofree[S, A]]]
+      f: Factory[Cofree[S, A], S[Cofree[S, A]]]
   ): Reads[Eval[S[Cofree[S, A]]]] =
     traversableReads[S, Cofree[S, A]].map(Eval.now)
 
   implicit def cofreeReads[S[_], A](
       implicit readsA: Reads[A],
-      cbf: CanBuildFrom[S[_], Cofree[S, A], S[Cofree[S, A]]]
+      f: Factory[Cofree[S, A], S[Cofree[S, A]]]
   ): Reads[Cofree[S, A]] =
     (
       (JsPath \ "h").read[A] and

@@ -27,7 +27,7 @@ import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
 import org.scalatest.FlatSpec
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -67,7 +67,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec
           ZNodePath.parse("/foo-copy").get
         )
 
-      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       val bar = new String(curatorFramework.getData.forPath("/foo-copy/bar"))
       val baz = new String(curatorFramework.getData.forPath("/foo-copy/baz"))
@@ -93,7 +93,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec
         ZNodePath.parse("/foo-copy").get
       )
 
-    Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
     assert(
       curatorFramework.getACL

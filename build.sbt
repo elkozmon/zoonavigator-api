@@ -1,41 +1,18 @@
-import ReleaseTransformations._
-
-scalafmtVersion in ThisBuild := "1.1.0"
-
-scalaVersion in ThisBuild := "2.12.6"
+scalaVersion in ThisBuild := "2.13.0"
 
 scalacOptions in ThisBuild ++= Seq(
-  "-target:jvm-1.8",
-  "-encoding",
-  "UTF-8",
+  "-encoding", "UTF-8",
   "-deprecation",
   "-feature",
   "-unchecked",
-  "-Xlint",
-  "-Ywarn-adapted-args",
-  "-Ywarn-value-discard",
-  "-Ywarn-inaccessible",
-  "-Ywarn-dead-code"
+  "-Xlint:adapted-args,inaccessible",
+  "-Wvalue-discard",
+  "-Wdead-code"
 )
 
-releaseTagName := (version in ThisBuild).value
-
-releaseTagComment := s"Version ${(version in ThisBuild).value}"
-
-releaseCommitMessage := s"Set version to ${(version in ThisBuild).value}"
-
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  runTest,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  setNextVersion,
-  commitNextVersion,
-  pushChanges
-)
+val catsVersion = "2.0.0"
+val curatorVersion = "4.0.0"
+val macwireVersion = "2.3.3"
 
 val commonSettings = Seq(
   organization := "com.elkozmon",
@@ -51,10 +28,11 @@ val commonSettings = Seq(
     )
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats" % "0.9.0",
-    "org.scalatest" %% "scalatest" % "3.0.4" % Test
+    "org.typelevel" %% "cats-core" % catsVersion,
+    "org.typelevel" %% "cats-free" % catsVersion,
+    "org.scalatest" %% "scalatest" % "3.0.8" % Test
   ),
-  wartremoverErrors ++= Warts.unsafe
+  wartremoverErrors := Warts.unsafe.filterNot(_.eq(Wart.Any))
 )
 
 val core = project
@@ -64,12 +42,11 @@ val core = project
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % "1.7.25",
       "joda-time" % "joda-time" % "2.9.9",
-      "org.apache.curator" % "curator-framework" % "4.0.0" exclude("org.apache.zookeeper", "zookeeper"),
-      "org.apache.curator" % "curator-test" % "4.0.0" % Test,
+      "org.apache.curator" % "curator-framework" % curatorVersion exclude("org.apache.zookeeper", "zookeeper"),
+      "org.apache.curator" % "curator-test" % curatorVersion % Test,
       "org.apache.zookeeper" % "zookeeper" % "3.4.11" exclude("org.slf4j", "slf4j-log4j12"),
-      "io.monix" %% "monix-eval" % "2.3.2",
-      "io.monix" %% "monix-cats" % "2.3.2",
-      "com.chuusai" %% "shapeless" % "2.3.2"
+      "io.monix" %% "monix-eval" % "3.0.0",
+      "com.chuusai" %% "shapeless" % "2.3.3"
     )
   )
 
@@ -81,8 +58,8 @@ val play = project
     libraryDependencies ++= Seq(
       filters,
       "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "com.softwaremill.macwire" %% "macros" % "2.3.0" % Provided,
-      "com.softwaremill.macwire" %% "util" % "2.3.0"
+      "com.softwaremill.macwire" %% "macros" % macwireVersion % Provided,
+      "com.softwaremill.macwire" %% "util" % macwireVersion
     ),
     routesImport ++= Seq(
       "binders._",

@@ -45,7 +45,6 @@ class SessionAction[B](
             .unauthorized(Some("Session has expired."))
             .apply(ApiResponse.writeJson[Nothing])
         )
-        .right
         .map(new SessionRequest(_, sessionManager, request))
     )
 }

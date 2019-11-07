@@ -72,7 +72,7 @@ class ZSessionController(
     val futureResultReader = actionTask
       .map(apiResponseFactory.okPayload)
       .onErrorHandle(apiResponseFactory.fromThrowable[SessionInfo])
-      .runAsync
+      .runToFuture
 
     render.async {
       case Accepts.Json() =>

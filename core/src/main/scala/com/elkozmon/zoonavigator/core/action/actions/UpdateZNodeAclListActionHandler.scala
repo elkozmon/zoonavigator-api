@@ -24,7 +24,7 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class UpdateZNodeAclListActionHandler(curatorFramework: CuratorFramework)
     extends ActionHandler[UpdateZNodeAclListAction] {

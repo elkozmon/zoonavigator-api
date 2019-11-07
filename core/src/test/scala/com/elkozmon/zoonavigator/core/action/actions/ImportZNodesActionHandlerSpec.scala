@@ -31,13 +31,12 @@ import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
 import org.scalatest.FlatSpec
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 @SuppressWarnings(
   Array(
-    "org.wartremover.warts.Any",
     "org.wartremover.warts.TryPartial",
     "org.wartremover.warts.NonUnitStatements",
     "org.wartremover.warts.TraversableOps"
@@ -83,7 +82,7 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       val action =
         ImportZNodesAction(ZNodePath.parse("/").get, exported)
 
-      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       val fooData = new String(curatorFramework.getData.forPath("/foo"))
       val fooAcl = curatorFramework.getACL
@@ -129,7 +128,7 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       val action =
         ImportZNodesAction(ZNodePath.parse("/").get, exported)
 
-      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       val fooData = new String(curatorFramework.getData.forPath("/foo"))
       val fooAcl = curatorFramework.getACL
@@ -184,7 +183,7 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       val action =
         ImportZNodesAction(ZNodePath.parse("/import").get, exported)
 
-      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       val fooData = new String(curatorFramework.getData.forPath("/import/foo"))
       val fooAcl = curatorFramework.getACL
@@ -231,7 +230,7 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       val action =
         ImportZNodesAction(ZNodePath.parse("/non-existent-parent").get, exported)
 
-      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       val fooData = new String(curatorFramework.getData.forPath("/non-existent-parent/foo"))
 

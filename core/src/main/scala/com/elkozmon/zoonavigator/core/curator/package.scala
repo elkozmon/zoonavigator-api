@@ -17,7 +17,7 @@
 
 package com.elkozmon.zoonavigator.core
 
-import monix.eval.Callback
+import monix.execution.Callback
 import monix.eval.Task
 import monix.execution.Cancelable
 import monix.execution.Scheduler
@@ -35,7 +35,7 @@ package object curator {
   private val logger = LoggerFactory.getLogger("curator")
 
   private[curator] def tryTaskCreate[T](
-      fn: (Scheduler, Callback[T]) => Unit
+      fn: (Scheduler, Callback[Throwable, T]) => Unit
   ): Task[T] =
     Task.create[T] { (scheduler, callback) =>
       Try(fn(scheduler, callback)).toEither.left
@@ -45,7 +45,7 @@ package object curator {
     }
 
   private[curator] def newEventCallback(
-      callback: Callback[CuratorEvent]
+      callback: Callback[Throwable, CuratorEvent]
   ): BackgroundCallback =
     (_, event: CuratorEvent) => {
       logger.debug(
@@ -65,7 +65,7 @@ package object curator {
     }
 
   private[curator] def newErrorListener(
-      callback: Callback[_]
+      callback: Callback[Throwable, _]
   ): UnhandledErrorListener =
     (message: String, e: Throwable) => {
       logger.error(message, e)

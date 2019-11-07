@@ -27,7 +27,7 @@ import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
 import org.scalatest.FlatSpec
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -65,7 +65,7 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
           ZNodePath.parse("/foo-move").get
         )
 
-      Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       val bar = new String(curatorFramework.getData.forPath("/foo-move/bar"))
       val baz = new String(curatorFramework.getData.forPath("/foo-move/baz"))
@@ -98,7 +98,7 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
         ZNodePath.parse("/foo-move").get
       )
 
-    Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
     assert(checkExists("/foo").isEmpty).discard()
     assert(checkExists("/foo/bar").isEmpty).discard()
@@ -123,7 +123,7 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
         ZNodePath.parse("/foo-move").get
       )
 
-    Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
     assert(
       curatorFramework.getACL

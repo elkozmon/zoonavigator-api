@@ -29,7 +29,7 @@ import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
 import org.scalatest.FlatSpec
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
@@ -78,7 +78,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec
       )
 
       Await
-        .result(actionHandler.handle(action).runAsync, Duration.Inf)
+        .result(actionHandler.handle(action).runToFuture, Duration.Inf)
         .discard()
 
       val currentAclList = curatorFramework.getACL
@@ -130,7 +130,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec
       )
 
       Await
-        .result(actionHandler.handle(action).runAsync, Duration.Inf)
+        .result(actionHandler.handle(action).runToFuture, Duration.Inf)
         .discard()
 
       val currentAclList = curatorFramework.getACL

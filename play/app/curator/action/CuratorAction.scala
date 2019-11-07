@@ -50,13 +50,12 @@ class CuratorAction(
               .apply(ApiResponse.writeJson[Nothing])
           )
         )
-        .right
         .map {
           case ConnectionParams(connectionString, authInfoList) =>
             curatorFrameworkProvider
               .getCuratorInstance(connectionString, authInfoList)
               .map(new CuratorRequest(_, request))
-              .runAsync
+              .runToFuture
         }
 
     futureOrFuture.bisequence

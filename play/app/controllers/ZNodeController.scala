@@ -23,7 +23,9 @@ import api.ApiResponse
 import api.ApiResponseFactory
 import api.exceptions.BadRequestException
 import cats.free.Cofree
-import cats.implicits._
+import cats.syntax.traverse._
+import cats.instances.list._
+import cats.instances.try_._
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
@@ -59,7 +61,7 @@ class ZNodeController(
         .dispatch(GetZNodeWithChildrenAction(path))
         .map(apiResponseFactory.okPayload)
         .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeWithChildren])
-        .runAsync
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
@@ -76,7 +78,7 @@ class ZNodeController(
         .onErrorHandle(
           apiResponseFactory.fromThrowable[ZNodeMetaWith[ZNodeChildren]]
         )
-        .runAsync
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
@@ -97,7 +99,7 @@ class ZNodeController(
         .dispatch(CreateZNodeAction(path))
         .map(_ => apiResponseFactory.okEmpty)
         .onErrorHandle(apiResponseFactory.fromThrowable)
-        .runAsync
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
@@ -112,7 +114,7 @@ class ZNodeController(
         .dispatch(DuplicateZNodeRecursiveAction(source, destination))
         .map(_ => apiResponseFactory.okEmpty)
         .onErrorHandle(apiResponseFactory.fromThrowable)
-        .runAsync
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
@@ -127,7 +129,7 @@ class ZNodeController(
         .dispatch(MoveZNodeRecursiveAction(source, destination))
         .map(_ => apiResponseFactory.okEmpty)
         .onErrorHandle(apiResponseFactory.fromThrowable)
-        .runAsync
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
@@ -142,7 +144,7 @@ class ZNodeController(
         .dispatch(DeleteZNodeRecursiveAction(path, version))
         .map(_ => apiResponseFactory.okEmpty)
         .onErrorHandle(apiResponseFactory.fromThrowable)
-        .runAsync
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
@@ -153,7 +155,7 @@ class ZNodeController(
   def deleteChildrenNodes(path: ZNodePath, names: List[String]): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
       val futureResultReader = names
-        .traverseU(path.down)
+        .traverse(path.down)
         .toEither
         .left
         .map(apiResponseFactory.fromThrowable)
@@ -164,7 +166,7 @@ class ZNodeController(
               .dispatch(ForceDeleteZNodeRecursiveAction(paths))
               .map(_ => apiResponseFactory.okEmpty)
               .onErrorHandle(apiResponseFactory.fromThrowable)
-              .runAsync
+              .runToFuture
           }
         )
 
@@ -204,7 +206,7 @@ class ZNodeController(
           taskMeta
             .map(apiResponseFactory.okPayload)
             .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeMeta])
-      }.runAsync
+      }.runToFuture
 
       render.async {
         case Accepts.Json() =>
@@ -226,7 +228,7 @@ class ZNodeController(
         )
         .map(apiResponseFactory.okPayload)
         .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeMeta])
-        .runAsync
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
@@ -241,7 +243,7 @@ class ZNodeController(
         .dispatch(ExportZNodesAction(paths))
         .map(apiResponseFactory.okPayload)
         .onErrorHandle(apiResponseFactory.fromThrowable[List[Cofree[List, ZNodeExport]]])
-        .runAsync
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
@@ -259,7 +261,7 @@ class ZNodeController(
               .dispatch(ImportZNodesAction(path, exportZNodes))
               .map(_ => apiResponseFactory.okEmpty)
               .onErrorHandle(apiResponseFactory.fromThrowable)
-        }.runAsync
+        }.runToFuture
 
       render.async {
         case Accepts.Json() =>

@@ -45,7 +45,7 @@ class GetZNodeDataActionHandlerSpec extends FlatSpec with CuratorSpec {
       val action = GetZNodeDataAction(ZNodePath.parse("/null-node").get)
 
       val metadata =
-        Await.result(actionHandler.handle(action).runAsync, Duration.Inf)
+        Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
       assert(metadata.data.bytes.isEmpty)
   }
