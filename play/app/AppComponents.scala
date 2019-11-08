@@ -21,6 +21,7 @@ import api._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
+import config.HttpContext
 import controllers._
 import curator.action.CuratorActionBuilder
 import curator.provider._
@@ -50,9 +51,15 @@ class AppComponents(context: Context)
   LoggerConfigurator(context.environment.classLoader)
     .foreach(_.configure(context.environment))
 
-  private lazy val httpContext: String = configuration
-    .getOptional[String]("play.http.context")
-    .getOrElse("/")
+  private lazy val httpContext: HttpContext =
+    HttpContext(
+      configuration
+        .getOptional[String]("play.http.context")
+        .getOrElse("/")
+        .stripPrefix("/")
+        .stripSuffix("/")
+        .prepended('/')
+    )
 
   override lazy val httpErrorHandler: HttpErrorHandler = {
     //noinspection ScalaUnusedSymbol
@@ -65,11 +72,11 @@ class AppComponents(context: Context)
   }
 
   override lazy val router: Router =
-    wire[Routes].withPrefix(httpContext)
+    wire[Routes].withPrefix(httpContext.context)
 
   override def corsFilter: CORSFilter = {
     //noinspection ScalaUnusedSymbol
-    val prefixes: Seq[String] = Seq(httpContext)
+    val prefixes: Seq[String] = Seq(httpContext.context)
 
     //noinspection ScalaUnusedSymbol
     val corsConfig: CORSConfig = CORSConfig.fromConfiguration(configuration)

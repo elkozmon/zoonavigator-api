@@ -17,25 +17,33 @@
 
 package controllers
 
+import config.HttpContext
 import play.api.http.HttpErrorHandler
 import play.api.mvc._
 
 class FrontendController(
     assets: Assets,
+    httpContext: HttpContext,
     errorHandler: HttpErrorHandler,
     val controllerComponents: ControllerComponents
 ) extends BaseController {
 
   def index: Action[AnyContent] = assets.at("index.html")
 
-  def assetOrDefault(resource: String): Action[AnyContent] =
-    if (resource.startsWith("/api/") || resource.equals("/api")) {
+  def assetOrDefault(resource: String): Action[AnyContent] = {
+    val path = httpContext.context match {
+      case "/" => resource
+      case ctx => resource.stripPrefix(ctx)
+    }
+
+    if (path.startsWith("/api/") || path.equals("/api")) {
       Action.async { request =>
         errorHandler.onClientError(request, NOT_FOUND, "Not found")
       }
-    } else if (resource.contains(".")) {
-      assets.at(resource)
+    } else if (path.contains(".")) {
+      assets.at(path)
     } else {
       index
     }
+  }
 }
