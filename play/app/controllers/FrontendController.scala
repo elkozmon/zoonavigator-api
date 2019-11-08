@@ -31,9 +31,13 @@ class FrontendController(
   def index: Action[AnyContent] = assets.at("index.html")
 
   def assetOrDefault(resource: String): Action[AnyContent] = {
-    val path = httpContext.context match {
-      case "/" => resource
-      case ctx => resource.stripPrefix(ctx)
+    val path = {
+      val p = httpContext.context match {
+        case "/" => resource
+        case ctx => resource.stripPrefix(ctx)
+      }
+
+      p.stripPrefix("/").prepended('/')
     }
 
     if (path.startsWith("/api/") || path.equals("/api")) {
