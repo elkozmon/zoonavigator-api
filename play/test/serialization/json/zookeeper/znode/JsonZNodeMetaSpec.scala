@@ -22,6 +22,8 @@ import org.joda.time.DateTime
 import org.scalatest.FlatSpec
 import play.api.libs.json._
 
+import scala.language.postfixOps
+
 class JsonZNodeMetaSpec extends FlatSpec with JsonZNodeMeta {
 
   private val zNodeMeta =

@@ -23,6 +23,8 @@ import session.SessionToken
 import zookeeper.ConnectionString
 import zookeeper.session.SessionInfo
 
+import scala.language.postfixOps
+
 class JsonSessionInfoSpec extends FlatSpec with JsonSessionInfo {
 
   "Serialized JsonSessionInfo" should "be a JSON object with 'token' field" in {

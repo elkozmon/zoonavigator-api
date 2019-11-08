@@ -23,6 +23,8 @@ import org.joda.time.DateTime
 import org.scalatest.FlatSpec
 import play.api.libs.json._
 
+import scala.language.postfixOps
+
 @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
 class JsonZNodeWithChildrenSpec extends FlatSpec with JsonZNodeWithChildren {
 
