@@ -71,8 +71,12 @@ class AppComponents(context: Context)
     wire[ApiErrorHandler]
   }
 
-  override lazy val router: Router =
-    wire[Routes].withPrefix(httpContext.context)
+  override lazy val router: Router = {
+    //noinspection ScalaUnusedSymbol
+    val prefix = httpContext.context
+
+    wire[Routes]
+  }
 
   override def corsFilter: CORSFilter = {
     //noinspection ScalaUnusedSymbol

@@ -15,6 +15,7 @@ val curatorVersion = "4.0.0"
 val macwireVersion = "2.3.3"
 
 val commonSettings = Seq(
+  maintainer := "contact@elkozmon.com",
   organization := "com.elkozmon",
   licenses += ("GNU Affero GPL V3", url(
     "http://www.gnu.org/licenses/agpl-3.0.html"
@@ -23,7 +24,7 @@ val commonSettings = Seq(
     Developer(
       id = "elkozmon",
       name = "Ľuboš Kozmon",
-      email = "lubosh91@gmail.com",
+      email = "contact@elkozmon.com",
       url = url("http://www.elkozmon.com")
     )
   ),
