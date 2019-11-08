@@ -20,7 +20,7 @@ package com.elkozmon.zoonavigator.core.utils
 object CommonUtils {
 
   def discard[A](any: A): Unit = {
-    val _: A @unchecked = any
+    val _ = any
     ()
   }
 
