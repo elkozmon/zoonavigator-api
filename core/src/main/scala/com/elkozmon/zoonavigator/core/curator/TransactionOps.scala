@@ -33,5 +33,5 @@ trait TransactionOps {
           .withUnhandledErrorListener(newErrorListener(callback))
           .forOperations(ops: _*)
           .discard()
-    }
+      }
 }

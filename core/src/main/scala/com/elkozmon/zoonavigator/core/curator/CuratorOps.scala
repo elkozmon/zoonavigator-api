@@ -112,16 +112,15 @@ trait CuratorOps {
           }
           .map(ZNodeChildren)
 
-      val taskEvent =
-        curatorFramework.getChildren.forPathAsync(path.path)
+      curatorFramework
+        .getChildren
+        .forPathAsync(path.path)
+        .flatMap { event =>
+          val meta = ZNodeMeta.fromStat(event.getStat)
+          val childrenTask = Task.fromTry(getChildrenFromEvent(event))
 
-      val taskChildren =
-        taskEvent.flatMap(event => Task.fromTry(getChildrenFromEvent(event)))
-
-      val taskMeta =
-        taskEvent.map(event => ZNodeMeta.fromStat(event.getStat))
-
-      Task.mapBoth(taskChildren, taskMeta)(ZNodeMetaWith(_, _))
+          childrenTask.map(ZNodeMetaWith(_, meta))
+        }
     }
   }
 }

@@ -32,5 +32,5 @@ trait PathableOps {
           .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path)
           .discard()
-    }
+      }
 }
