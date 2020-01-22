@@ -214,21 +214,22 @@ class ZNodeController(
       }
     }
 
-  // TODO use json in body to reuse json znode data reader
-  def updateData(path: ZNodePath, version: ZNodeDataVersion): Action[String] =
-    newCuratorAction(playBodyParsers.text).async { implicit curatorRequest =>
-      val futureResultReader = actionDispatcherProvider
-        .getDispatcher(curatorRequest.curatorFramework)
-        .dispatch(
-          UpdateZNodeDataAction(
-            path,
-            ZNodeData(Base64.getDecoder.decode(curatorRequest.body)),
-            version
-          )
-        )
-        .map(apiResponseFactory.okPayload)
-        .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeMeta])
-        .runToFuture
+  def updateData(path: ZNodePath, version: ZNodeDataVersion): Action[JsValue] =
+    newCuratorAction(playBodyParsers.json).async { implicit curatorRequest =>
+      val futureResultReader = parseRequestBodyJson[ZNodeData].flatMap {
+        zNodeData =>
+          actionDispatcherProvider
+            .getDispatcher(curatorRequest.curatorFramework)
+            .dispatch(
+              UpdateZNodeDataAction(
+                path,
+                zNodeData,
+                version
+              )
+            )
+            .map(apiResponseFactory.okPayload)
+            .onErrorHandle(apiResponseFactory.fromThrowable[ZNodeMeta])
+      }.runToFuture
 
       render.async {
         case Accepts.Json() =>
