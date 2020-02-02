@@ -17,20 +17,20 @@
 
 package controllers
 
+import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-import api.ApiResponse
-import api.ApiResponseFactory
+import akka.util.ByteString
+import api.{ApiResponse, ApiResponseFactory}
 import api.exceptions.BadRequestException
 import cats.free.Cofree
-import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.try_._
+import cats.syntax.traverse._
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import curator.action.CuratorActionBuilder
-import curator.action.CuratorRequest
+import curator.action.{CuratorActionBuilder, CuratorRequest}
 import modules.action.ActionModule
 import monix.eval.Task
 import monix.execution.Scheduler
@@ -39,6 +39,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import serialization.Json._
 import session.action.SessionActionBuilder
+import utils.Gzip
 
 import scala.concurrent.Future
 
@@ -52,7 +53,11 @@ class ZNodeController(
     implicit val scheduler: Scheduler
 ) extends BaseController {
 
-  private val actionDispatcherProvider = actionModule.actionDispatcherProvider
+  private val actionDispatcherProvider =
+    actionModule.actionDispatcherProvider
+
+  private val malformedDataException =
+    new Exception("Malformed data")
 
   def getNode(path: ZNodePath): Action[Unit] =
     newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
@@ -242,8 +247,13 @@ class ZNodeController(
       val futureResultReader = actionDispatcherProvider
         .getDispatcher(curatorRequest.curatorFramework)
         .dispatch(ExportZNodesAction(paths))
+        .map(implicitly[Writes[List[Cofree[List, ZNodeExport]]]].writes)
+        .map(Json.toBytes)
+        .map(Gzip.compress)
+        .map(Base64.getEncoder.encode)
+        .map(new String(_, StandardCharsets.UTF_8))
         .map(apiResponseFactory.okPayload)
-        .onErrorHandle(apiResponseFactory.fromThrowable[List[Cofree[List, ZNodeExport]]])
+        .onErrorHandle(apiResponseFactory.fromThrowable[String])
         .runToFuture
 
       render.async {
@@ -252,21 +262,48 @@ class ZNodeController(
       }
     }
 
-  def importNodes(path: ZNodePath): Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async { implicit curatorRequest =>
-      val futureResultReader =
-        parseRequestBodyJson[List[Cofree[List, ZNodeExport]]].flatMap {
-          exportZNodes =>
-            actionDispatcherProvider
-              .getDispatcher(curatorRequest.curatorFramework)
-              .dispatch(ImportZNodesAction(path, exportZNodes))
-              .map(_ => apiResponseFactory.okEmpty)
-              .onErrorHandle(apiResponseFactory.fromThrowable)
-        }.runToFuture
+  def importNodes(path: ZNodePath): Action[ByteString] =
+    newCuratorAction(playBodyParsers.byteString).async { implicit curatorRequest =>
+      def dispatchImport(exportZNodes: List[Cofree[List, ZNodeExport]]) =
+        actionDispatcherProvider
+          .getDispatcher(curatorRequest.curatorFramework)
+          .dispatch(ImportZNodesAction(path, exportZNodes))
+          .map(_ => apiResponseFactory.okEmpty[Nothing])
+          .onErrorHandle(apiResponseFactory.fromThrowable[Nothing])
+
+      val importNodesT =
+        curatorRequest.contentType match {
+          case Some("application/json") =>
+            implicitly[Reads[List[Cofree[List, ZNodeExport]]]]
+              .reads(Json.parse(curatorRequest.body.toArray))
+              .asEither
+              .left.map(_ => malformedDataException)
+              .toTry
+              .traverse(dispatchImport)
+              .flatMap(Task.fromTry)
+
+          case Some("application/gzip") =>
+            Gzip
+              .decompress(curatorRequest.body.toArray)
+              .flatMap { byteArray =>
+                implicitly[Reads[List[Cofree[List, ZNodeExport]]]]
+                  .reads(Json.parse(byteArray))
+                  .asEither
+                  .left.map(_ => malformedDataException)
+                  .toTry
+              }
+              .traverse(dispatchImport)
+              .flatMap(Task.fromTry)
+
+          case _ =>
+            Task.now(apiResponseFactory.badRequest(Some(s"Unsupported content type: ${curatorRequest.contentType.getOrElse("?")}")))
+        }
+
+      val importNodesF = importNodesT.runToFuture
 
       render.async {
         case Accepts.Json() =>
-          futureResultReader.map(_(ApiResponse.writeJson[Nothing]))
+          importNodesF.map(_(ApiResponse.writeJson[Nothing]))
       }
     }
 

@@ -59,6 +59,7 @@ val play = project
     name := "zoonavigator-play",
     libraryDependencies ++= Seq(
       filters,
+      "commons-io" % "commons-io" % "2.6",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "org.apache.zookeeper" % "zookeeper" % zookeeperVersion % Provided,
       "com.softwaremill.macwire" %% "macros" % macwireVersion % Provided,
