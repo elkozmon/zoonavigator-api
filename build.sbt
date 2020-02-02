@@ -13,6 +13,7 @@ scalacOptions in ThisBuild ++= Seq(
 val catsVersion = "2.0.0"
 val curatorVersion = "4.0.0"
 val macwireVersion = "2.3.3"
+val zookeeperVersion = "3.4.11"
 
 val commonSettings = Seq(
   maintainer := "contact@elkozmon.com",
@@ -45,7 +46,7 @@ val core = project
       "joda-time" % "joda-time" % "2.9.9",
       "org.apache.curator" % "curator-framework" % curatorVersion exclude("org.apache.zookeeper", "zookeeper"),
       "org.apache.curator" % "curator-test" % curatorVersion % Test,
-      "org.apache.zookeeper" % "zookeeper" % "3.4.11" exclude("org.slf4j", "slf4j-log4j12"),
+      "org.apache.zookeeper" % "zookeeper" % zookeeperVersion % Provided,
       "io.monix" %% "monix-eval" % "3.0.0",
       "com.chuusai" %% "shapeless" % "2.3.3"
     )
@@ -59,6 +60,7 @@ val play = project
     libraryDependencies ++= Seq(
       filters,
       "ch.qos.logback" % "logback-classic" % "1.2.3",
+      "org.apache.zookeeper" % "zookeeper" % zookeeperVersion % Provided,
       "com.softwaremill.macwire" %% "macros" % macwireVersion % Provided,
       "com.softwaremill.macwire" %% "util" % macwireVersion
     ),
@@ -70,6 +72,7 @@ val play = project
     ),
     wartremoverExcluded ++= routes.in(Compile).value,
     sources in (Compile, doc) := Seq.empty,
-    publishArtifact in (Compile, packageDoc) := false
+    publishArtifact in (Compile, packageDoc) := false,
+    scriptClasspath in bashScriptDefines ~= (cp => "zookeeper.jar" +: cp)
   )
   .dependsOn(core)
