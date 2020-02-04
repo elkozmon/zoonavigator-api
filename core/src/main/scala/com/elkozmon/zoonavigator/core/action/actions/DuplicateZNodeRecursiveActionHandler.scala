@@ -32,20 +32,19 @@ import org.apache.curator.framework.api.transaction._
 
 import scala.jdk.CollectionConverters._
 
-class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[DuplicateZNodeRecursiveAction] {
+class DuplicateZNodeRecursiveActionHandler extends ActionHandler[DuplicateZNodeRecursiveAction] {
 
   override def handle(action: DuplicateZNodeRecursiveAction): Task[Unit] =
     for {
-      tree <- curatorFramework
-        .walkTreeAsync(curatorFramework.getZNodeAsync)(action.source)
+      tree <- action.curatorFramework
+        .walkTreeAsync(action.curatorFramework.getZNodeAsync)(action.source)
         .flatMap(t => Task.fromTry(ZooKeeperUtils.rewriteZNodePaths(action.destination, t)))
-      unit <- createTree(tree)
+      unit <- createTree(tree, action.curatorFramework)
     } yield unit
 
-  private def createTree(tree: Cofree[List, ZNode]): Task[Unit] = {
+  private def createTree(tree: Cofree[List, ZNode], curatorFramework: CuratorFramework): Task[Unit] = {
     val ops: Seq[CuratorOp] =
-      tree.reduceMap((node: ZNode) => List(createZNodeOp(node)))
+      tree.reduceMap((node: ZNode) => List(createZNodeOp(node, curatorFramework)))
 
     curatorFramework
       .transaction()
@@ -53,7 +52,7 @@ class DuplicateZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
       .map(discard[CuratorEvent])
   }
 
-  private def createZNodeOp(node: ZNode): CuratorOp =
+  private def createZNodeOp(node: ZNode, curatorFramework: CuratorFramework): CuratorOp =
     curatorFramework
       .transactionOp()
       .create()

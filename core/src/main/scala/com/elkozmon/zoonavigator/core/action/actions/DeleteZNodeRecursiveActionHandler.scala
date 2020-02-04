@@ -24,11 +24,10 @@ import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 
-class DeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[DeleteZNodeRecursiveAction] {
+class DeleteZNodeRecursiveActionHandler extends ActionHandler[DeleteZNodeRecursiveAction] {
 
   override def handle(action: DeleteZNodeRecursiveAction): Task[Unit] =
-    curatorFramework
+    action.curatorFramework
       .delete()
       .deletingChildrenIfNeeded()
       .withVersion(action.expectedDataVersion.version.toInt)

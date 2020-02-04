@@ -19,8 +19,9 @@ package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.Action
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import org.apache.curator.framework.CuratorFramework
 
-final case class ForceDeleteZNodeRecursiveAction(paths: Seq[ZNodePath])
+final case class ForceDeleteZNodeRecursiveAction(paths: Seq[ZNodePath], curatorFramework: CuratorFramework)
     extends Action {
   override type Out = Unit
 }

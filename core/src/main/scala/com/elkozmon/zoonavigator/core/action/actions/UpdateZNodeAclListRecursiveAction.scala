@@ -19,11 +19,13 @@ package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.Action
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import org.apache.curator.framework.CuratorFramework
 
 final case class UpdateZNodeAclListRecursiveAction(
     path: ZNodePath,
     acl: ZNodeAcl,
-    expectedAclVersion: ZNodeAclVersion
+    expectedAclVersion: ZNodeAclVersion,
+    curatorFramework: CuratorFramework
 ) extends Action {
   override type Out = ZNodeMeta
 }

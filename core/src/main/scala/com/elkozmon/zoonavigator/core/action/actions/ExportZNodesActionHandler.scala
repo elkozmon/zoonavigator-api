@@ -28,15 +28,12 @@ import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.utils.ZKPaths
 
-class ExportZNodesActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[ExportZNodesAction] {
+class ExportZNodesActionHandler extends ActionHandler[ExportZNodesAction] {
 
-  override def handle(
-      action: ExportZNodesAction
-  ): Task[List[Cofree[List, ZNodeExport]]] =
+  override def handle(action: ExportZNodesAction): Task[List[Cofree[List, ZNodeExport]]] =
     Task.wander(action.paths.toList) { path =>
-      curatorFramework
-        .walkTreeAsync(curatorFramework.getZNodeAsync)(path)
+      action.curatorFramework
+        .walkTreeAsync(action.curatorFramework.getZNodeAsync)(path)
         .map(_.map(n => ZNodeExport(n.acl, n.path, n.data)))
         .flatMap { tree =>
           Task.fromTry(

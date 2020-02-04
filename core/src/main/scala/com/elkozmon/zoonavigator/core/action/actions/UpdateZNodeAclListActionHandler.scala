@@ -26,11 +26,10 @@ import org.apache.curator.framework.CuratorFramework
 
 import scala.jdk.CollectionConverters._
 
-class UpdateZNodeAclListActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[UpdateZNodeAclListAction] {
+class UpdateZNodeAclListActionHandler extends ActionHandler[UpdateZNodeAclListAction] {
 
   override def handle(action: UpdateZNodeAclListAction): Task[ZNodeMeta] =
-    curatorFramework
+    action.curatorFramework
       .setACL()
       .withVersion(action.expectedAclVersion.version.toInt)
       .withACL(action.acl.aclList.map(Acl.toZooKeeper).asJava)

@@ -33,18 +33,17 @@ import org.apache.zookeeper.KeeperException.Code
 
 import scala.jdk.CollectionConverters._
 
-class ImportZNodesActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[ImportZNodesAction] {
+class ImportZNodesActionHandler extends ActionHandler[ImportZNodesAction] {
 
   override def handle(action: ImportZNodesAction): Task[Unit] =
     for {
-      _ <- curatorFramework
+      _ <- action.curatorFramework
         .checkExists()
         .forPathAsync(action.path.path)
         .map(discard[CuratorEvent])
         .onErrorRecoverWith {
           case e: KeeperException if e.code() == Code.NONODE =>
-            curatorFramework
+            action.curatorFramework
               .create()
               .creatingParentContainersIfNeeded()
               .forPathAsync(action.path.path)
@@ -59,17 +58,15 @@ class ImportZNodesActionHandler(curatorFramework: CuratorFramework)
       }
       ops <- Task.now[List[CuratorOp]](
         trees
-          .flatMap(
-            _.reduceMap((node: ZNodeExport) => List(createZNodeOp(node)))
-          )
+          .flatMap(_.reduceMap((node: ZNodeExport) => List(createZNodeOp(node, action.curatorFramework))))
       )
-      unit <- curatorFramework
+      unit <- action.curatorFramework
         .transaction()
         .forOperationsAsync(ops)
         .map(discard[CuratorEvent])
     } yield unit
 
-  private def createZNodeOp(node: ZNodeExport): CuratorOp =
+  private def createZNodeOp(node: ZNodeExport, curatorFramework: CuratorFramework): CuratorOp =
     curatorFramework
       .transactionOp()
       .create()

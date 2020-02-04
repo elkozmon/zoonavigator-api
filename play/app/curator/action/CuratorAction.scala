@@ -17,12 +17,10 @@
 
 package curator.action
 
-import api.ApiResponse
 import api.ApiResponseFactory
 import cats.implicits._
 import curator.provider.CuratorFrameworkProvider
 import monix.execution.Scheduler
-import play.api.http.Writeable
 import play.api.mvc._
 import session.action.SessionRequest
 import zookeeper.ConnectionParams
@@ -33,21 +31,21 @@ import scala.concurrent.Future
 class CuratorAction(
     apiResponseFactory: ApiResponseFactory,
     zookeeperSessionHelper: ZooKeeperSessionHelper,
-    curatorFrameworkProvider: CuratorFrameworkProvider,
+    curatorFrameworkProvider: CuratorFrameworkProvider
 )(implicit val executionContext: Scheduler)
-  extends ActionRefiner[SessionRequest, CuratorRequest] {
+    extends ActionRefiner[SessionRequest, CuratorRequest] {
 
-  override protected def refine[A](
-      request: SessionRequest[A]
-  ): Future[Either[Result, CuratorRequest[A]]] = {
+  import api.formats.Json._
+
+  override protected def refine[A](request: SessionRequest[A]): Future[Either[Result, CuratorRequest[A]]] = {
     val futureOrFuture: Either[Future[Result], Future[CuratorRequest[A]]] =
       zookeeperSessionHelper
         .getConnectionParams(request.sessionToken, request.sessionManager)
         .toRight(
           Future.successful(
             apiResponseFactory
-              .unauthorized(Some("Session was lost."))
-              .apply(ApiResponse.writeJson[Nothing])
+              .unauthorized[Unit](Some("Session was lost."))
+              .asResult(asJsonApiResponse)
           )
         )
         .map {

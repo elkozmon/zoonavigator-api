@@ -28,19 +28,16 @@ import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.framework.api.transaction.CuratorOp
 
-class ForceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[ForceDeleteZNodeRecursiveAction] {
+class ForceDeleteZNodeRecursiveActionHandler extends ActionHandler[ForceDeleteZNodeRecursiveAction] {
 
   override def handle(action: ForceDeleteZNodeRecursiveAction): Task[Unit] =
     Task
-      .gatherUnordered(
-        action.paths.map(curatorFramework.walkTreeAsync(Task.now))
-      )
-      .flatMap(deleteTrees)
+      .gatherUnordered(action.paths.map(action.curatorFramework.walkTreeAsync(Task.now)))
+      .flatMap(deleteTrees(_, action.curatorFramework))
 
-  private def deleteTrees(trees: List[Cofree[List, ZNodePath]]): Task[Unit] = {
+  private def deleteTrees(trees: List[Cofree[List, ZNodePath]], curatorFramework: CuratorFramework): Task[Unit] = {
     val ops: Seq[CuratorOp] = trees
-      .flatMap(_.reduceMap(path => List(deleteZNodeOp(path))))
+      .flatMap(_.reduceMap(path => List(deleteZNodeOp(path, curatorFramework))))
       .reverse
 
     curatorFramework
@@ -49,7 +46,7 @@ class ForceDeleteZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
       .map(discard[CuratorEvent])
   }
 
-  private def deleteZNodeOp(path: ZNodePath): CuratorOp =
+  private def deleteZNodeOp(path: ZNodePath, curatorFramework: CuratorFramework): CuratorOp =
     curatorFramework
       .transactionOp()
       .delete()

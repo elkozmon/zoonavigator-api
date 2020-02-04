@@ -33,28 +33,24 @@ import org.apache.curator.framework.api.transaction.CuratorOp
 
 import scala.jdk.CollectionConverters._
 
-class MoveZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[MoveZNodeRecursiveAction] {
+class MoveZNodeRecursiveActionHandler extends ActionHandler[MoveZNodeRecursiveAction] {
 
   override def handle(action: MoveZNodeRecursiveAction): Task[Unit] =
     for {
-      tree <- curatorFramework
-        .walkTreeAsync(curatorFramework.getZNodeAsync)(action.source)
-      unit <- moveTree(action.destination, tree)
+      tree <- action.curatorFramework
+        .walkTreeAsync(action.curatorFramework.getZNodeAsync)(action.source)
+      unit <- moveTree(action.destination, tree, action.curatorFramework)
     } yield unit
 
-  private def moveTree(
-      dest: ZNodePath,
-      tree: Cofree[List, ZNode]
-  ): Task[Unit] = {
+  private def moveTree(dest: ZNodePath, tree: Cofree[List, ZNode], curatorFramework: CuratorFramework): Task[Unit] = {
     val deleteOps: Seq[CuratorOp] = tree
-      .reduceMap((node: ZNode) => List(deleteZNodeOp(node.path)))
+      .reduceMap((node: ZNode) => List(deleteZNodeOp(node.path, curatorFramework)))
       .reverse
 
     val createOps: Task[Seq[CuratorOp]] = Task.fromTry(
       ZooKeeperUtils
         .rewriteZNodePaths(dest, tree)
-        .map(_.reduceMap((node: ZNode) => List(createZNodeOp(node))))
+        .map(_.reduceMap((node: ZNode) => List(createZNodeOp(node, curatorFramework))))
     )
 
     Task
@@ -67,14 +63,14 @@ class MoveZNodeRecursiveActionHandler(curatorFramework: CuratorFramework)
       }
   }
 
-  private def createZNodeOp(node: ZNode): CuratorOp =
+  private def createZNodeOp(node: ZNode, curatorFramework: CuratorFramework): CuratorOp =
     curatorFramework
       .transactionOp()
       .create()
       .withACL(node.acl.aclList.map(Acl.toZooKeeper).asJava)
       .forPath(node.path.path, node.data.bytes)
 
-  private def deleteZNodeOp(path: ZNodePath): CuratorOp =
+  private def deleteZNodeOp(path: ZNodePath, curatorFramework: CuratorFramework): CuratorOp =
     curatorFramework
       .transactionOp()
       .delete()

@@ -19,8 +19,14 @@ package com.elkozmon.zoonavigator.core.action.actions
 
 import cats.free.Cofree
 import com.elkozmon.zoonavigator.core.action.Action
-import com.elkozmon.zoonavigator.core.zookeeper.znode.{ZNodeExport, ZNodePath}
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import org.apache.curator.framework.CuratorFramework
 
-final case class ImportZNodesAction(path: ZNodePath, nodes: List[Cofree[List, ZNodeExport]]) extends Action {
+final case class ImportZNodesAction(
+    path: ZNodePath,
+    nodes: List[Cofree[List, ZNodeExport]],
+    curatorFramework: CuratorFramework
+) extends Action {
   override type Out = Unit
 }

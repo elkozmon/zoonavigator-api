@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import logging.AppLogger
-import play.api.{Application, ApplicationLoader}
+import play.api.Application
+import play.api.ApplicationLoader
 import play.api.ApplicationLoader.Context
 
-class AppLoader extends ApplicationLoader with AppLogger {
+class AppLoader extends ApplicationLoader {
 
   override def load(context: Context): Application =
     new AppComponents(context).application

@@ -17,9 +17,7 @@
 
 package session.action
 
-import api.ApiResponse
 import api.ApiResponseFactory
-import play.api.http.Writeable
 import play.api.mvc._
 import session.manager.SessionManager
 
@@ -31,19 +29,19 @@ class SessionAction[B](
     sessionManager: SessionManager,
     val parser: BodyParser[B]
 )(implicit val executionContext: ExecutionContext)
-  extends ActionBuilder[SessionRequest, B]
+    extends ActionBuilder[SessionRequest, B]
     with ActionRefiner[Request, SessionRequest] {
 
-  override protected def refine[A](
-      request: Request[A]
-  ): Future[Either[Result, SessionRequest[A]]] =
+  import api.formats.Json._
+
+  override protected def refine[A](request: Request[A]): Future[Either[Result, SessionRequest[A]]] =
     Future.successful[Either[Result, SessionRequest[A]]](
       sessionManager
         .getSession(request)
         .toRight(
           apiResponseFactory
-            .unauthorized(Some("Session has expired."))
-            .apply(ApiResponse.writeJson[Nothing])
+            .unauthorized[Unit](Some("Session has expired."))
+            .asResult(asJsonApiResponse)
         )
         .map(new SessionRequest(_, sessionManager, request))
     )

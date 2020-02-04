@@ -23,11 +23,8 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
-class GetZNodeDataActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[GetZNodeDataAction] {
+class GetZNodeDataActionHandler extends ActionHandler[GetZNodeDataAction] {
 
-  override def handle(
-      action: GetZNodeDataAction
-  ): Task[ZNodeMetaWith[ZNodeData]] =
-    curatorFramework.getDataAsync(action.path)
+  override def handle(action: GetZNodeDataAction): Task[ZNodeMetaWith[ZNodeData]] =
+    action.curatorFramework.getDataAsync(action.path)
 }

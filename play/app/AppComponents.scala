@@ -17,34 +17,47 @@
 
 import java.util.concurrent.TimeUnit
 
-import api._
+import controllers.AssetsComponents
+import api.controllers.FrontendController
+import api.controllers.ZNodeController
+import api.controllers.ZSessionController
+import api.ApiErrorHandler
+import api.ApiResponseFactory
+import api.DefaultApiResponseFactory
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
 import config.HttpContext
-import controllers._
 import curator.action.CuratorActionBuilder
 import curator.provider._
-import modules.AppModule
+import loggers.AppLogger
 import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
-import play.api.{BuiltInComponentsFromContext, LoggerConfigurator}
+import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
+import play.api.BuiltInComponentsFromContext
+import play.api.LoggerConfigurator
 import play.api.http.HttpErrorHandler
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.core.SourceMapper
-import play.filters.cors.{CORSConfig, CORSFilter}
+import play.filters.cors.CORSConfig
+import play.filters.cors.CORSFilter
+import play.filters.HttpFiltersComponents
 import router.Routes
+import schedulers._
 import session.SessionInactivityTimeout
 import session.action.SessionActionBuilder
-import session.manager.{ExpiringSessionManager, SessionManager}
-import zookeeper.session.{DefaultZooKeeperSessionHelper, ZooKeeperSessionHelper}
+import session.manager.ExpiringSessionManager
+import session.manager.SessionManager
+import zookeeper.session.DefaultZooKeeperSessionHelper
+import zookeeper.session.ZooKeeperSessionHelper
 
 import scala.concurrent.duration.FiniteDuration
 
 class AppComponents(context: Context)
     extends BuiltInComponentsFromContext(context)
+    with HttpFiltersComponents
     with AssetsComponents
     with AppModule {
 
@@ -77,19 +90,6 @@ class AppComponents(context: Context)
 
     wire[Routes]
   }
-
-  override def corsFilter: CORSFilter = {
-    //noinspection ScalaUnusedSymbol
-    val prefixes: Seq[String] = Seq(httpContext.context)
-
-    //noinspection ScalaUnusedSymbol
-    val corsConfig: CORSConfig = CORSConfig.fromConfiguration(configuration)
-
-    wire[CORSFilter]
-  }
-
-  override lazy val httpFilters: Seq[EssentialFilter] =
-    filters.filters
 
   lazy val sessionInactivityTimeout: SessionInactivityTimeout =
     SessionInactivityTimeout(
@@ -124,6 +124,9 @@ class AppComponents(context: Context)
       )
     )
 
+  override val appLogger: AppLogger =
+    AppLogger(LoggerFactory.getLogger("application"))
+
   override val apiResponseFactory: ApiResponseFactory =
     wire[DefaultApiResponseFactory]
 
@@ -151,78 +154,54 @@ class AppComponents(context: Context)
   override lazy val zSessionController: ZSessionController =
     wire[ZSessionController]
 
-  override def getZNodeWithChildrenActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[GetZNodeWithChildrenAction] =
+  override lazy val blockingScheduler: BlockingScheduler =
+    DefaultBlockingScheduler(Scheduler.io("zoonavigator-io"))
+
+  override lazy val computingScheduler: ComputingScheduler =
+    DefaultComputingScheduler(Scheduler(executionContext))
+
+  override lazy val getZNodeWithChildrenActionHandler: ActionHandler[GetZNodeWithChildrenAction] =
     wire[GetZNodeWithChildrenActionHandler]
 
-  override def getZNodeAclActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[GetZNodeAclAction] =
+  override lazy val getZNodeAclActionHandler: ActionHandler[GetZNodeAclAction] =
     wire[GetZNodeAclActionHandler]
 
-  override def getZNodeChildrenActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[GetZNodeChildrenAction] =
+  override lazy val getZNodeChildrenActionHandler: ActionHandler[GetZNodeChildrenAction] =
     wire[GetZNodeChildrenActionHandler]
 
-  override def getZNodeDataActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[GetZNodeDataAction] =
+  override lazy val getZNodeDataActionHandler: ActionHandler[GetZNodeDataAction] =
     wire[GetZNodeDataActionHandler]
 
-  override def getZNodeMetaActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[GetZNodeMetaAction] =
+  override lazy val getZNodeMetaActionHandler: ActionHandler[GetZNodeMetaAction] =
     wire[GetZNodeMetaActionHandler]
 
-  override def createZNodeActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[CreateZNodeAction] =
+  override lazy val createZNodeActionHandler: ActionHandler[CreateZNodeAction] =
     wire[CreateZNodeActionHandler]
 
-  override def deleteZNodeRecursiveActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[DeleteZNodeRecursiveAction] =
+  override lazy val deleteZNodeRecursiveActionHandler: ActionHandler[DeleteZNodeRecursiveAction] =
     wire[DeleteZNodeRecursiveActionHandler]
 
-  override def forceDeleteZNodeRecursiveActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[ForceDeleteZNodeRecursiveAction] =
+  override lazy val forceDeleteZNodeRecursiveActionHandler: ActionHandler[ForceDeleteZNodeRecursiveAction] =
     wire[ForceDeleteZNodeRecursiveActionHandler]
 
-  override def duplicateZNodeRecursiveActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[DuplicateZNodeRecursiveAction] =
+  override lazy val duplicateZNodeRecursiveActionHandler: ActionHandler[DuplicateZNodeRecursiveAction] =
     wire[DuplicateZNodeRecursiveActionHandler]
 
-  override def moveZNodeRecursiveActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[MoveZNodeRecursiveAction] =
+  override lazy val moveZNodeRecursiveActionHandler: ActionHandler[MoveZNodeRecursiveAction] =
     wire[MoveZNodeRecursiveActionHandler]
 
-  override def updateZNodeAclListActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[UpdateZNodeAclListAction] =
+  override lazy val updateZNodeAclListActionHandler: ActionHandler[UpdateZNodeAclListAction] =
     wire[UpdateZNodeAclListActionHandler]
 
-  override def updateZNodeAclListRecursiveActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[UpdateZNodeAclListRecursiveAction] =
+  override lazy val updateZNodeAclListRecursiveActionHandler: ActionHandler[UpdateZNodeAclListRecursiveAction] =
     wire[UpdateZNodeAclListRecursiveActionHandler]
 
-  override def updateZNodeDataActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[UpdateZNodeDataAction] =
+  override lazy val updateZNodeDataActionHandler: ActionHandler[UpdateZNodeDataAction] =
     wire[UpdateZNodeDataActionHandler]
 
-  override def exportZNodesActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[ExportZNodesAction] =
+  override lazy val exportZNodesActionHandler: ActionHandler[ExportZNodesAction] =
     wire[ExportZNodesActionHandler]
 
-  override def importZNodesActionHandler(
-      curatorFramework: CuratorFramework
-  ): ActionHandler[ImportZNodesAction] =
+  override lazy val importZNodesActionHandler: ActionHandler[ImportZNodesAction] =
     wire[ImportZNodesActionHandler]
 }

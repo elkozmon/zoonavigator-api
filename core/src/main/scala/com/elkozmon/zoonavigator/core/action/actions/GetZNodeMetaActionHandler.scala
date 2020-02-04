@@ -23,11 +23,10 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
-class GetZNodeMetaActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[GetZNodeMetaAction] {
+class GetZNodeMetaActionHandler extends ActionHandler[GetZNodeMetaAction] {
 
   override def handle(action: GetZNodeMetaAction): Task[ZNodeMeta] =
-    curatorFramework
+    action.curatorFramework
       .checkExists()
       .forPathAsync(action.path.path)
       .map(event => ZNodeMeta.fromStat(event.getStat))

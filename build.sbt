@@ -1,7 +1,8 @@
 scalaVersion in ThisBuild := "2.13.1"
 
 scalacOptions in ThisBuild ++= Seq(
-  "-encoding", "UTF-8",
+  "-encoding",
+  "UTF-8",
   "-deprecation",
   "-feature",
   "-unchecked",
@@ -18,9 +19,7 @@ val zookeeperVersion = "3.4.11"
 val commonSettings = Seq(
   maintainer := "contact@elkozmon.com",
   organization := "com.elkozmon",
-  licenses += ("GNU Affero GPL V3", url(
-    "http://www.gnu.org/licenses/agpl-3.0.html"
-  )),
+  licenses += ("GNU Affero GPL V3", url("http://www.gnu.org/licenses/agpl-3.0.html")),
   developers := List(
     Developer(
       id = "elkozmon",
@@ -42,13 +41,13 @@ val core = project
   .settings(
     name := "zoonavigator-core",
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-api" % "1.7.25",
-      "joda-time" % "joda-time" % "2.9.9",
-      "org.apache.curator" % "curator-framework" % curatorVersion exclude("org.apache.zookeeper", "zookeeper"),
-      "org.apache.curator" % "curator-test" % curatorVersion % Test,
-      "org.apache.zookeeper" % "zookeeper" % zookeeperVersion % Provided,
-      "io.monix" %% "monix-eval" % "3.0.0",
-      "com.chuusai" %% "shapeless" % "2.3.3"
+      "org.slf4j"            % "slf4j-api"         % "1.7.25",
+      "joda-time"            % "joda-time"         % "2.9.9",
+      "org.apache.curator"   % "curator-framework" % curatorVersion exclude ("org.apache.zookeeper", "zookeeper"),
+      "org.apache.curator"   % "curator-test"      % curatorVersion % Test,
+      "org.apache.zookeeper" % "zookeeper"         % zookeeperVersion,
+      "io.monix"             %% "monix-eval"       % "3.0.0",
+      "com.chuusai"          %% "shapeless"        % "2.3.3"
     )
   )
 
@@ -59,14 +58,14 @@ val play = project
     name := "zoonavigator-play",
     libraryDependencies ++= Seq(
       filters,
-      "commons-io" % "commons-io" % "2.6",
-      "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "org.apache.zookeeper" % "zookeeper" % zookeeperVersion % Provided,
-      "com.softwaremill.macwire" %% "macros" % macwireVersion % Provided,
-      "com.softwaremill.macwire" %% "util" % macwireVersion
+      "commons-io"               % "commons-io"      % "2.6",
+      "ch.qos.logback"           % "logback-classic" % "1.2.3",
+      "org.apache.zookeeper"     % "zookeeper"       % zookeeperVersion % Provided,
+      "com.softwaremill.macwire" %% "macros"         % macwireVersion % Provided,
+      "com.softwaremill.macwire" %% "util"           % macwireVersion
     ),
     routesImport ++= Seq(
-      "binders._",
+      "api.binders._",
       "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath",
       "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion",
       "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion"

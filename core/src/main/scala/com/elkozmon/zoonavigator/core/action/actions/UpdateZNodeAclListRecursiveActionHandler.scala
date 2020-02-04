@@ -27,26 +27,23 @@ import org.apache.curator.framework.CuratorFramework
 
 import scala.jdk.CollectionConverters._
 
-class UpdateZNodeAclListRecursiveActionHandler(
-    curatorFramework: CuratorFramework
-) extends ActionHandler[UpdateZNodeAclListRecursiveAction] {
+class UpdateZNodeAclListRecursiveActionHandler extends ActionHandler[UpdateZNodeAclListRecursiveAction] {
 
-  override def handle(
-      action: UpdateZNodeAclListRecursiveAction
-  ): Task[ZNodeMeta] =
+  override def handle(action: UpdateZNodeAclListRecursiveAction): Task[ZNodeMeta] =
     for {
-      tree <- curatorFramework.walkTreeAsync(Task.now)(action.path)
-      meta <- setNodeAcl(tree.head, action.acl, Some(action.expectedAclVersion))
+      tree <- action.curatorFramework.walkTreeAsync(Task.now)(action.path)
+      meta <- setNodeAcl(tree.head, action.acl, Some(action.expectedAclVersion), action.curatorFramework)
       _ <- Task.gatherUnordered(
         tree.forceTail
-          .reduceMap(path => List(setNodeAcl(path, action.acl, None)))
+          .reduceMap(path => List(setNodeAcl(path, action.acl, None, action.curatorFramework)))
       )
     } yield meta
 
   private def setNodeAcl(
       path: ZNodePath,
       acl: ZNodeAcl,
-      aclVersionOpt: Option[ZNodeAclVersion]
+      aclVersionOpt: Option[ZNodeAclVersion],
+      curatorFramework: CuratorFramework
   ): Task[ZNodeMeta] =
     aclVersionOpt
       .map(ver => curatorFramework.setACL().withVersion(ver.version.toInt))

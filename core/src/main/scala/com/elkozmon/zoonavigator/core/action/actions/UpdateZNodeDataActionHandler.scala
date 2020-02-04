@@ -23,11 +23,10 @@ import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 
-class UpdateZNodeDataActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[UpdateZNodeDataAction] {
+class UpdateZNodeDataActionHandler extends ActionHandler[UpdateZNodeDataAction] {
 
   override def handle(action: UpdateZNodeDataAction): Task[ZNodeMeta] =
-    curatorFramework
+    action.curatorFramework
       .setData()
       .withVersion(action.expectedDataVersion.version.toInt)
       .forPathAsync(action.path.path, action.data.bytes)

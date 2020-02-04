@@ -20,10 +20,12 @@ package com.elkozmon.zoonavigator.core.action.actions
 import com.elkozmon.zoonavigator.core.action.Action
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import org.apache.curator.framework.CuratorFramework
 
 final case class DeleteZNodeRecursiveAction(
     path: ZNodePath,
-    expectedDataVersion: ZNodeDataVersion
+    expectedDataVersion: ZNodeDataVersion,
+    curatorFramework: CuratorFramework
 ) extends Action {
   override type Out = Unit
 }

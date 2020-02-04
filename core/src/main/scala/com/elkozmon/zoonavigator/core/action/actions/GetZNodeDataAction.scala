@@ -19,7 +19,8 @@ package com.elkozmon.zoonavigator.core.action.actions
 
 import com.elkozmon.zoonavigator.core.action.Action
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import org.apache.curator.framework.CuratorFramework
 
-final case class GetZNodeDataAction(path: ZNodePath) extends Action {
+final case class GetZNodeDataAction(path: ZNodePath, curatorFramework: CuratorFramework) extends Action {
   override type Out = ZNodeMetaWith[ZNodeData]
 }

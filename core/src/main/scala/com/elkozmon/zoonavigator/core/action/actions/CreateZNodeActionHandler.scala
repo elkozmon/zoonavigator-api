@@ -24,11 +24,10 @@ import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 
-class CreateZNodeActionHandler(curatorFramework: CuratorFramework)
-    extends ActionHandler[CreateZNodeAction] {
+class CreateZNodeActionHandler extends ActionHandler[CreateZNodeAction] {
 
   override def handle(action: CreateZNodeAction): Task[Unit] =
-    curatorFramework
+    action.curatorFramework
       .create()
       .creatingParentsIfNeeded()
       .forPathAsync(action.path.path)

@@ -33,54 +33,40 @@ class ApiErrorHandler(
     apiResponseFactory: ApiResponseFactory
 ) extends DefaultHttpErrorHandler(env, config, sourceMapper, router) {
 
-  override def onProdServerError(
-      request: RequestHeader,
-      exception: UsefulException
-  ): Future[Result] =
+  import api.formats.Json._
+
+  override def onProdServerError(request: RequestHeader, exception: UsefulException): Future[Result] =
     Future.successful(
       apiResponseFactory
-        .internalServerError(Some("A server error occurred: " + exception.getMessage))
-        .apply(ApiResponse.writeJson[Nothing])
+        .internalServerError[Unit](Some("A server error occurred: " + exception.getMessage))
+        .asResult(asJsonApiResponse)
     )
 
-  override protected def onBadRequest(
-    request: RequestHeader,
-    message: String
-  ): Future[Result] =
+  override protected def onBadRequest(request: RequestHeader, message: String): Future[Result] =
     Future.successful(
       apiResponseFactory
-        .badRequest(Some(message))
-        .apply(ApiResponse.writeJson[Nothing])
+        .badRequest[Unit](Some(message))
+        .asResult(asJsonApiResponse)
     )
 
-  override protected def onForbidden(
-    request: RequestHeader,
-    message: String
-  ): Future[Result] =
+  override protected def onForbidden(request: RequestHeader, message: String): Future[Result] =
     Future.successful(
       apiResponseFactory
-        .forbidden(Some(message))
-        .apply(ApiResponse.writeJson[Nothing])
+        .forbidden[Unit](Some(message))
+        .asResult(asJsonApiResponse)
     )
 
-  override protected def onNotFound(
-      request: RequestHeader,
-      message: String
-  ): Future[Result] =
+  override protected def onNotFound(request: RequestHeader, message: String): Future[Result] =
     Future.successful(
       apiResponseFactory
-        .notFound(Some(message))
-        .apply(ApiResponse.writeJson[Nothing])
+        .notFound[Unit](Some(message))
+        .asResult(asJsonApiResponse)
     )
 
-  override protected def onOtherClientError(
-    request: RequestHeader,
-    statusCode: Int,
-    message: String
-  ): Future[Result] =
+  override protected def onOtherClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] =
     Future.successful(
       apiResponseFactory
-        .badRequest(Some(message))
-        .apply(ApiResponse.writeJson[Nothing])
+        .badRequest[Unit](Some(message))
+        .asResult(asJsonApiResponse)
     )
 }
