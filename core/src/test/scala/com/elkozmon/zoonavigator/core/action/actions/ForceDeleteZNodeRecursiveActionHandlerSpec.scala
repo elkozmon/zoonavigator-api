@@ -28,9 +28,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 @SuppressWarnings(Array("org.wartremover.warts.NonUnitStatements", "org.wartremover.warts.TryPartial"))
-class ForceDeleteZNodeRecursiveActionHandlerSpec
-    extends FlatSpec
-    with CuratorSpec {
+class ForceDeleteZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
 
@@ -58,9 +56,7 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec
         .discard()
 
       val action =
-        ForceDeleteZNodeRecursiveAction(
-          Seq("/foo", "/bar").map(ZNodePath.parse _ andThen(_.get))
-        )
+        ForceDeleteZNodeRecursiveAction(Seq("/foo", "/bar").map(ZNodePath.parse _ andThen (_.get)))
 
       Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
@@ -69,61 +65,57 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec
       assert(checkExists("/baz").isDefined)
   }
 
-  it should "delete node with its children" in withCurator {
-    implicit curatorFramework =>
-      curatorFramework
-        .transaction()
-        .forOperations(
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo", "foo".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo/bar", "bar".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo/baz", "baz".getBytes)
-        )
-        .discard()
+  it should "delete node with its children" in withCurator { implicit curatorFramework =>
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo/bar", "bar".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo/baz", "baz".getBytes)
+      )
+      .discard()
 
-      val action =
-        ForceDeleteZNodeRecursiveAction(Seq(ZNodePath.parse("/foo").get))
+    val action =
+      ForceDeleteZNodeRecursiveAction(Seq(ZNodePath.parse("/foo").get))
 
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
-      assert(checkExists("/foo").isEmpty)
-      assert(checkExists("/foo/bar").isEmpty)
-      assert(checkExists("/foo/baz").isEmpty)
+    assert(checkExists("/foo").isEmpty)
+    assert(checkExists("/foo/bar").isEmpty)
+    assert(checkExists("/foo/baz").isEmpty)
   }
 
-  it should "not delete anything if there is an error" in withCurator {
-    implicit curatorFramework =>
-      curatorFramework
-        .transaction()
-        .forOperations(
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo", "foo".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/bar", "bar".getBytes)
-        )
-        .discard()
+  it should "not delete anything if there is an error" in withCurator { implicit curatorFramework =>
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/bar", "bar".getBytes)
+      )
+      .discard()
 
-      val action =
-        ForceDeleteZNodeRecursiveAction(
-          Seq("/foo", "/bar", "/nonexistent").map(ZNodePath.parse _ andThen(_.get))
-        )
+    val action =
+      ForceDeleteZNodeRecursiveAction(Seq("/foo", "/bar", "/nonexistent").map(ZNodePath.parse _ andThen (_.get)))
 
-      Await.ready(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.ready(actionHandler.handle(action).runToFuture, Duration.Inf)
 
-      assert(checkExists("/foo").isDefined)
-      assert(checkExists("/bar").isDefined)
-      assert(checkExists("/nonexistent").isEmpty)
+    assert(checkExists("/foo").isDefined)
+    assert(checkExists("/bar").isDefined)
+    assert(checkExists("/nonexistent").isEmpty)
   }
 }

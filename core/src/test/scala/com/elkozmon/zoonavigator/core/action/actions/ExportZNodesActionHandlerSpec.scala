@@ -17,7 +17,6 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import cats.Now
 import cats.free.Cofree
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.curator.CuratorSpec
@@ -25,10 +24,7 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
 import org.scalatest.FlatSpec
@@ -57,81 +53,64 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       ZNodeData(data.getBytes)
     )
 
-  "ExportZNodeActionHandler" should "export two sibling nodes" in withCurator {
-    implicit curatorFramework =>
-      curatorFramework
-        .transaction()
-        .forOperations(
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo", "foo".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/bar", "bar".getBytes)
-        )
-        .discard()
+  "ExportZNodeActionHandler" should "export two sibling nodes" in withCurator { implicit curatorFramework =>
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/bar", "bar".getBytes)
+      )
+      .discard()
 
-      val action =
-        ExportZNodesAction(
-          Seq(ZNodePath.parse("/foo").get, ZNodePath.parse("/bar").get)
-        )
+    val action =
+      ExportZNodesAction(Seq(ZNodePath.parse("/foo").get, ZNodePath.parse("/bar").get))
 
-      val exported =
-        Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    val exported =
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
-      assertResult {
-        List(
-          Cofree(
-            getDefaultExportNode("/foo", "foo"),
-            Now(List.empty[Cofree[List, ZNodeExport]])
-          ),
-          Cofree(
-            getDefaultExportNode("/bar", "bar"),
-            Now(List.empty[Cofree[List, ZNodeExport]])
-          )
-        )
-      }(exported.map(_.forceAll))
+    assertResult {
+      List(
+        Cofree(getDefaultExportNode("/foo", "foo"), Now(List.empty[Cofree[List, ZNodeExport]])),
+        Cofree(getDefaultExportNode("/bar", "bar"), Now(List.empty[Cofree[List, ZNodeExport]]))
+      )
+    }(exported.map(_.forceAll))
   }
 
-  it should "export one node with child" in withCurator {
-    implicit curatorFramework =>
-      curatorFramework
-        .transaction()
-        .forOperations(
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo", "foo".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo/bar", "bar".getBytes)
+  it should "export one node with child" in withCurator { implicit curatorFramework =>
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo/bar", "bar".getBytes)
+      )
+      .discard()
+
+    val action =
+      ExportZNodesAction(Seq(ZNodePath.parse("/foo").get))
+
+    val exported =
+      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+
+    assertResult {
+      List(
+        Cofree(
+          getDefaultExportNode("/foo", "foo"),
+          Now(List(Cofree(getDefaultExportNode("/foo/bar", "bar"), Now(List.empty[Cofree[List, ZNodeExport]]))))
         )
-        .discard()
-
-      val action =
-        ExportZNodesAction(Seq(ZNodePath.parse("/foo").get))
-
-      val exported =
-        Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
-
-      assertResult {
-        List(
-          Cofree(
-            getDefaultExportNode("/foo", "foo"),
-            Now(
-              List(
-                Cofree(
-                  getDefaultExportNode("/foo/bar", "bar"),
-                  Now(List.empty[Cofree[List, ZNodeExport]])
-                )
-              )
-            )
-          )
-        )
-      }(exported.map(_.forceAll))
+      )
+    }(exported.map(_.forceAll))
   }
 
   it should "export nodes as root nodes (path of the parent node is cut out)" in withCurator {
@@ -159,12 +138,7 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
         .discard()
 
       val action =
-        ExportZNodesAction(
-          Seq(
-            ZNodePath.parse("/export/foo").get,
-            ZNodePath.parse("/export/baz").get
-          )
-        )
+        ExportZNodesAction(Seq(ZNodePath.parse("/export/foo").get, ZNodePath.parse("/export/baz").get))
 
       val exported =
         Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
@@ -173,19 +147,9 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
         List(
           Cofree(
             getDefaultExportNode("/foo", "foo"),
-            Now(
-              List(
-                Cofree(
-                  getDefaultExportNode("/foo/bar", "bar"),
-                  Now(List.empty[Cofree[List, ZNodeExport]])
-                )
-              )
-            )
+            Now(List(Cofree(getDefaultExportNode("/foo/bar", "bar"), Now(List.empty[Cofree[List, ZNodeExport]]))))
           ),
-          Cofree(
-            getDefaultExportNode("/baz", "baz"),
-            Now(List.empty[Cofree[List, ZNodeExport]])
-          )
+          Cofree(getDefaultExportNode("/baz", "baz"), Now(List.empty[Cofree[List, ZNodeExport]]))
         )
       }(exported.map(_.forceAll))
   }

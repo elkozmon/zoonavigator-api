@@ -23,8 +23,6 @@ import api.formats.json.zookeeper.JsonConnectionParams
 import api.formats.json.zookeeper.JsonSessionInfo
 import api.formats.json.zookeeper.acl.JsonAcl
 import api.formats.json.zookeeper.znode._
-import play.api.libs.json.DefaultReads
-import play.api.libs.json.DefaultWrites
 
 object Json
     extends Formats

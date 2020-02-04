@@ -25,8 +25,10 @@ import play.api.libs.json._
 trait JsonZNodeData {
 
   implicit object ZNodeDataFormat extends Format[ZNodeData] {
+
     override def writes(o: ZNodeData): JsValue =
       JsString(Base64.getEncoder.encodeToString(o.bytes))
+
     override def reads(json: JsValue): JsResult[ZNodeData] =
       json
         .validate[String]

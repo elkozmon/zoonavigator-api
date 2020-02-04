@@ -25,9 +25,7 @@ import scala.language.implicitConversions
 
 trait PathAndBytesableOps {
 
-  implicit def toPathableAsync[T](
-      bp: BackgroundPathAndBytesable[T]
-  ): PathableAsync =
+  implicit def toPathableAsync[T](bp: BackgroundPathAndBytesable[T]): PathableAsync =
     path =>
       tryTaskCreate[CuratorEvent] { (scheduler, callback) =>
         bp.inBackground(newEventCallback(callback), scheduler)
@@ -36,9 +34,7 @@ trait PathAndBytesableOps {
           .discard()
       }
 
-  implicit def toPathAndBytesableAsync[T](
-      bp: BackgroundPathAndBytesable[T]
-  ): PathAndBytesableAsync =
+  implicit def toPathAndBytesableAsync[T](bp: BackgroundPathAndBytesable[T]): PathAndBytesableAsync =
     (path, bytes) =>
       tryTaskCreate[CuratorEvent] { (scheduler, callback) =>
         bp.inBackground(newEventCallback(callback), scheduler)

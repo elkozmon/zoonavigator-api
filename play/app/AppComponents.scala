@@ -17,7 +17,6 @@
 
 import java.util.concurrent.TimeUnit
 
-import controllers.AssetsComponents
 import api.controllers.FrontendController
 import api.controllers.ZNodeController
 import api.controllers.ZSessionController
@@ -28,21 +27,18 @@ import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
 import config.HttpContext
+import controllers.AssetsComponents
 import curator.action.CuratorActionBuilder
 import curator.provider._
 import loggers.AppLogger
 import monix.execution.Scheduler
-import org.apache.curator.framework.CuratorFramework
 import org.slf4j.LoggerFactory
 import play.api.ApplicationLoader.Context
 import play.api.BuiltInComponentsFromContext
 import play.api.LoggerConfigurator
 import play.api.http.HttpErrorHandler
-import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.core.SourceMapper
-import play.filters.cors.CORSConfig
-import play.filters.cors.CORSFilter
 import play.filters.HttpFiltersComponents
 import router.Routes
 import schedulers._

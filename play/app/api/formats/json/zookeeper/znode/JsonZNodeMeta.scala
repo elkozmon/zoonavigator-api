@@ -26,6 +26,7 @@ trait JsonZNodeMeta {
   private val isoDateTimeFormatter = ISODateTimeFormat.dateTime()
 
   implicit object ZNodeMetaWrites extends Writes[ZNodeMeta] {
+
     override def writes(o: ZNodeMeta): JsValue =
       Json.obj(
         "creationId" -> o.creationId,

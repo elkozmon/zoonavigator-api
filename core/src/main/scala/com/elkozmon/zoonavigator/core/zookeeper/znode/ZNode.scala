@@ -17,9 +17,4 @@
 
 package com.elkozmon.zoonavigator.core.zookeeper.znode
 
-final case class ZNode(
-    acl: ZNodeAcl,
-    path: ZNodePath,
-    data: ZNodeData,
-    meta: ZNodeMeta
-)
+final case class ZNode(acl: ZNodeAcl, path: ZNodePath, data: ZNodeData, meta: ZNodeMeta)

@@ -25,14 +25,8 @@ final case class Acl(aclId: AclId, permissions: Set[Permission])
 object Acl {
 
   def fromZooKeeper(acl: ACL): Acl =
-    Acl(
-      AclId(acl.getId.getScheme, acl.getId.getId),
-      Permission.fromZooKeeperMask(acl.getPerms)
-    )
+    Acl(AclId(acl.getId.getScheme, acl.getId.getId), Permission.fromZooKeeperMask(acl.getPerms))
 
   def toZooKeeper(acl: Acl): ACL =
-    new ACL(
-      Permission.toZooKeeperMask(acl.permissions),
-      new Id(acl.aclId.scheme, acl.aclId.id)
-    )
+    new ACL(Permission.toZooKeeperMask(acl.permissions), new Id(acl.aclId.scheme, acl.aclId.id))
 }

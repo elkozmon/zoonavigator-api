@@ -17,8 +17,4 @@
 
 package com.elkozmon.zoonavigator.core.zookeeper.znode
 
-final case class ZNodeExport(
-    acl: ZNodeAcl,
-    path: ZNodePath,
-    data: ZNodeData
-)
+final case class ZNodeExport(acl: ZNodeAcl, path: ZNodePath, data: ZNodeData)

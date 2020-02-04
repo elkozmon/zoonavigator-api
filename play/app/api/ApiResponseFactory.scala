@@ -17,9 +17,9 @@
 
 package api
 
+import cats.data.Reader
 import play.api.http.Writeable
 import play.api.mvc.Result
-import cats.data.Reader
 
 trait ApiResponseFactory {
 

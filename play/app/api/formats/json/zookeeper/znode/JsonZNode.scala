@@ -20,19 +20,16 @@ package api.formats.json.zookeeper.znode
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
 import play.api.libs.json._
 
-trait JsonZNode
-    extends JsonZNodePath
-    with JsonZNodeAcl
-    with JsonZNodeData
-    with JsonZNodeMeta {
+trait JsonZNode extends JsonZNodePath with JsonZNodeAcl with JsonZNodeData with JsonZNodeMeta {
 
   implicit object ZNodeWrites extends OWrites[ZNode] {
+
     override def writes(o: ZNode): JsObject =
       Json.obj(
         "acl" -> Json.toJson(o.acl),
         "path" -> Json.toJson(o.path),
         "data" -> Json.toJson(o.data),
-        "meta" -> Json.toJson(o.meta),
+        "meta" -> Json.toJson(o.meta)
       )
   }
 

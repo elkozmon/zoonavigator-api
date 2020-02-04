@@ -17,23 +17,19 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
-import cats.Now
 import cats.free.Cofree
 import com.elkozmon.zoonavigator.core.curator.CuratorSpec
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission._
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
 import org.scalatest.FlatSpec
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.jdk.CollectionConverters._
 
 @SuppressWarnings(
   Array(
@@ -49,191 +45,151 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
   private def actionHandler(implicit curatorFramework: CuratorFramework) =
     new ImportZNodesActionHandler(curatorFramework)
 
-  private def getExportNode(
-      path: String,
-      data: String,
-      acls: List[Acl]
-  ): ZNodeExport =
-    ZNodeExport(
-      ZNodeAcl(acls),
-      ZNodePath.parse(path).get,
-      ZNodeData(data.getBytes)
-    )
+  private def getExportNode(path: String, data: String, acls: List[Acl]): ZNodeExport =
+    ZNodeExport(ZNodeAcl(acls), ZNodePath.parse(path).get, ZNodeData(data.getBytes))
 
-  "ImportZNodeActionHandler" should "import two sibling nodes" in withCurator {
-    implicit curatorFramework =>
-      val fooAclDefault =
-        List(Acl(AclId("world", "anyone"), Set(Read, Create)))
-      val barAclDefault =
-        List(Acl(AclId("world", "anyone"), Set(Read, Create, Delete)))
+  "ImportZNodeActionHandler" should "import two sibling nodes" in withCurator { implicit curatorFramework =>
+    val fooAclDefault =
+      List(Acl(AclId("world", "anyone"), Set(Read, Create)))
+    val barAclDefault =
+      List(Acl(AclId("world", "anyone"), Set(Read, Create, Delete)))
 
-      val exported =
-        List(
-          Cofree(
-            getExportNode("/foo", "foo", fooAclDefault),
-            Now(List.empty[Cofree[List, ZNodeExport]])
-          ),
-          Cofree(
-            getExportNode("/bar", "bar", barAclDefault),
-            Now(List.empty[Cofree[List, ZNodeExport]])
-          )
-        )
+    val exported =
+      List(
+        Cofree(getExportNode("/foo", "foo", fooAclDefault), Now(List.empty[Cofree[List, ZNodeExport]])),
+        Cofree(getExportNode("/bar", "bar", barAclDefault), Now(List.empty[Cofree[List, ZNodeExport]]))
+      )
 
-      val action =
-        ImportZNodesAction(ZNodePath.parse("/").get, exported)
+    val action =
+      ImportZNodesAction(ZNodePath.parse("/").get, exported)
 
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
-      val fooData = new String(curatorFramework.getData.forPath("/foo"))
-      val fooAcl = curatorFramework.getACL
-        .forPath("/foo")
-        .asScala
-        .map(Acl.fromZooKeeper)
+    val fooData = new String(curatorFramework.getData.forPath("/foo"))
+    val fooAcl = curatorFramework.getACL
+      .forPath("/foo")
+      .asScala
+      .map(Acl.fromZooKeeper)
 
-      val barData = new String(curatorFramework.getData.forPath("/bar"))
-      val barAcl = curatorFramework.getACL
-        .forPath("/bar")
-        .asScala
-        .map(Acl.fromZooKeeper)
+    val barData = new String(curatorFramework.getData.forPath("/bar"))
+    val barAcl = curatorFramework.getACL
+      .forPath("/bar")
+      .asScala
+      .map(Acl.fromZooKeeper)
 
-      assertResult("foo")(fooData)
-      assertResult(fooAclDefault)(fooAcl)
+    assertResult("foo")(fooData)
+    assertResult(fooAclDefault)(fooAcl)
 
-      assertResult("bar")(barData)
-      assertResult(barAclDefault)(barAcl)
+    assertResult("bar")(barData)
+    assertResult(barAclDefault)(barAcl)
   }
 
-  it should "import one node with child" in withCurator {
-    implicit curatorFramework =>
-      val fooAclDefault =
-        List(Acl(AclId("world", "anyone"), Set(Read, Create)))
-      val barAclDefault =
-        List(Acl(AclId("world", "anyone"), Set(Read, Create, Delete)))
+  it should "import one node with child" in withCurator { implicit curatorFramework =>
+    val fooAclDefault =
+      List(Acl(AclId("world", "anyone"), Set(Read, Create)))
+    val barAclDefault =
+      List(Acl(AclId("world", "anyone"), Set(Read, Create, Delete)))
 
-      val exported =
-        List(
-          Cofree(
-            getExportNode("/foo", "foo", fooAclDefault),
-            Now(
-              List(
-                Cofree(
-                  getExportNode("/foo/bar", "bar", barAclDefault),
-                  Now(List.empty[Cofree[List, ZNodeExport]])
-                )
-              )
-            )
-          )
+    val exported =
+      List(
+        Cofree(
+          getExportNode("/foo", "foo", fooAclDefault),
+          Now(List(Cofree(getExportNode("/foo/bar", "bar", barAclDefault), Now(List.empty[Cofree[List, ZNodeExport]]))))
         )
+      )
 
-      val action =
-        ImportZNodesAction(ZNodePath.parse("/").get, exported)
+    val action =
+      ImportZNodesAction(ZNodePath.parse("/").get, exported)
 
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
-      val fooData = new String(curatorFramework.getData.forPath("/foo"))
-      val fooAcl = curatorFramework.getACL
-        .forPath("/foo")
-        .asScala
-        .map(Acl.fromZooKeeper)
+    val fooData = new String(curatorFramework.getData.forPath("/foo"))
+    val fooAcl = curatorFramework.getACL
+      .forPath("/foo")
+      .asScala
+      .map(Acl.fromZooKeeper)
 
-      val barData = new String(curatorFramework.getData.forPath("/foo/bar"))
-      val barAcl = curatorFramework.getACL
-        .forPath("/foo/bar")
-        .asScala
-        .map(Acl.fromZooKeeper)
+    val barData = new String(curatorFramework.getData.forPath("/foo/bar"))
+    val barAcl = curatorFramework.getACL
+      .forPath("/foo/bar")
+      .asScala
+      .map(Acl.fromZooKeeper)
 
-      assertResult("foo")(fooData)
-      assertResult(fooAclDefault)(fooAcl)
+    assertResult("foo")(fooData)
+    assertResult(fooAclDefault)(fooAcl)
 
-      assertResult("bar")(barData)
-      assertResult(barAclDefault)(barAcl)
+    assertResult("bar")(barData)
+    assertResult(barAclDefault)(barAcl)
   }
 
-  it should "import node as a child of 'import' ZNode" in withCurator {
-    implicit curatorFramework =>
-      val fooAclDefault =
-        List(Acl(AclId("world", "anyone"), Set(Read, Create)))
-      val barAclDefault =
-        List(Acl(AclId("world", "anyone"), Set(Read, Create, Delete)))
-      val bazAclDefault =
-        List(Acl(AclId("world", "anyone"), Set(Read, Create, Write, Delete)))
+  it should "import node as a child of 'import' ZNode" in withCurator { implicit curatorFramework =>
+    val fooAclDefault =
+      List(Acl(AclId("world", "anyone"), Set(Read, Create)))
+    val barAclDefault =
+      List(Acl(AclId("world", "anyone"), Set(Read, Create, Delete)))
+    val bazAclDefault =
+      List(Acl(AclId("world", "anyone"), Set(Read, Create, Write, Delete)))
 
-      val exported =
-        List(
-          Cofree(
-            getExportNode("/foo", "foo", fooAclDefault),
-            Now(
-              List(
-                Cofree(
-                  getExportNode("/foo/bar", "bar", barAclDefault),
-                  Now(List.empty[Cofree[List, ZNodeExport]])
-                )
-              )
-            )
-          ),
-          Cofree(
-            getExportNode("/baz", "baz", bazAclDefault),
-            Now(List.empty[Cofree[List, ZNodeExport]])
-          )
-        )
+    val exported =
+      List(
+        Cofree(
+          getExportNode("/foo", "foo", fooAclDefault),
+          Now(List(Cofree(getExportNode("/foo/bar", "bar", barAclDefault), Now(List.empty[Cofree[List, ZNodeExport]]))))
+        ),
+        Cofree(getExportNode("/baz", "baz", bazAclDefault), Now(List.empty[Cofree[List, ZNodeExport]]))
+      )
 
-      // create "import" container node
-      curatorFramework.createContainers("/import")
+    // create "import" container node
+    curatorFramework.createContainers("/import")
 
-      val action =
-        ImportZNodesAction(ZNodePath.parse("/import").get, exported)
+    val action =
+      ImportZNodesAction(ZNodePath.parse("/import").get, exported)
 
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
-      val fooData = new String(curatorFramework.getData.forPath("/import/foo"))
-      val fooAcl = curatorFramework.getACL
-        .forPath("/import/foo")
-        .asScala
-        .map(Acl.fromZooKeeper)
+    val fooData = new String(curatorFramework.getData.forPath("/import/foo"))
+    val fooAcl = curatorFramework.getACL
+      .forPath("/import/foo")
+      .asScala
+      .map(Acl.fromZooKeeper)
 
-      val barData =
-        new String(curatorFramework.getData.forPath("/import/foo/bar"))
-      val barAcl = curatorFramework.getACL
-        .forPath("/import/foo/bar")
-        .asScala
-        .map(Acl.fromZooKeeper)
+    val barData =
+      new String(curatorFramework.getData.forPath("/import/foo/bar"))
+    val barAcl = curatorFramework.getACL
+      .forPath("/import/foo/bar")
+      .asScala
+      .map(Acl.fromZooKeeper)
 
-      val bazData = new String(curatorFramework.getData.forPath("/import/baz"))
-      val bazAcl = curatorFramework.getACL
-        .forPath("/import/baz")
-        .asScala
-        .map(Acl.fromZooKeeper)
+    val bazData = new String(curatorFramework.getData.forPath("/import/baz"))
+    val bazAcl = curatorFramework.getACL
+      .forPath("/import/baz")
+      .asScala
+      .map(Acl.fromZooKeeper)
 
-      assertResult("foo")(fooData)
-      assertResult(fooAclDefault)(fooAcl)
+    assertResult("foo")(fooData)
+    assertResult(fooAclDefault)(fooAcl)
 
-      assertResult("bar")(barData)
-      assertResult(barAclDefault)(barAcl)
+    assertResult("bar")(barData)
+    assertResult(barAclDefault)(barAcl)
 
-      assertResult("baz")(bazData)
-      assertResult(bazAclDefault)(bazAcl)
+    assertResult("baz")(bazData)
+    assertResult(bazAclDefault)(bazAcl)
   }
 
-  it should "import node creating its non-existent target parent" in withCurator {
-    implicit curatorFramework =>
-      val fooAclDefault =
-        List(Acl(AclId("world", "anyone"), Set(Read, Create)))
+  it should "import node creating its non-existent target parent" in withCurator { implicit curatorFramework =>
+    val fooAclDefault =
+      List(Acl(AclId("world", "anyone"), Set(Read, Create)))
 
-      val exported =
-        List(
-          Cofree(
-            getExportNode("/foo", "foo", fooAclDefault),
-            Now(List.empty[Cofree[List, ZNodeExport]])
-          )
-        )
+    val exported =
+      List(Cofree(getExportNode("/foo", "foo", fooAclDefault), Now(List.empty[Cofree[List, ZNodeExport]])))
 
-      val action =
-        ImportZNodesAction(ZNodePath.parse("/non-existent-parent").get, exported)
+    val action =
+      ImportZNodesAction(ZNodePath.parse("/non-existent-parent").get, exported)
 
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
-      val fooData = new String(curatorFramework.getData.forPath("/non-existent-parent/foo"))
+    val fooData = new String(curatorFramework.getData.forPath("/non-existent-parent/foo"))
 
-      assertResult("foo")(fooData)
+    assertResult("foo")(fooData)
   }
 }

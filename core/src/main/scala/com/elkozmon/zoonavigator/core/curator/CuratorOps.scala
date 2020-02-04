@@ -19,9 +19,9 @@ package com.elkozmon.zoonavigator.core.curator
 
 import cats.Eval
 import cats.free.Cofree
-import cats.syntax.traverse._
 import cats.instances.list._
 import cats.instances.try_._
+import cats.syntax.traverse._
 import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
@@ -39,9 +39,7 @@ trait CuratorOps {
 
   implicit class CuratorAsyncOps(curatorFramework: CuratorFramework) {
 
-    def walkTreeAsync[T](
-        fn: ZNodePath => Task[T]
-    )(node: ZNodePath): Task[Cofree[List, T]] = {
+    def walkTreeAsync[T](fn: ZNodePath => Task[T])(node: ZNodePath): Task[Cofree[List, T]] = {
       val taskT = fn(node)
       val taskChildren = for {
         paths <- getChildrenAsync(node).map(_.data.children)
@@ -73,10 +71,7 @@ trait CuratorOps {
       curatorFramework.getData
         .forPathAsync(path.path)
         .map { event =>
-          ZNodeMetaWith(
-            ZNodeData(Option(event.getData).getOrElse(Array.empty)),
-            ZNodeMeta.fromStat(event.getStat)
-          )
+          ZNodeMetaWith(ZNodeData(Option(event.getData).getOrElse(Array.empty)), ZNodeMeta.fromStat(event.getStat))
         }
 
     def getAclAsync(path: ZNodePath): Task[ZNodeMetaWith[ZNodeAcl]] =
@@ -86,10 +81,7 @@ trait CuratorOps {
           val acl = ZNodeAcl(
             event.getACLList.asScala.toList
               .map { acl =>
-                Acl(
-                  AclId(acl.getId.getScheme, acl.getId.getId),
-                  Permission.fromZooKeeperMask(acl.getPerms)
-                )
+                Acl(AclId(acl.getId.getScheme, acl.getId.getId), Permission.fromZooKeeperMask(acl.getPerms))
               }
           )
 
@@ -98,9 +90,7 @@ trait CuratorOps {
           ZNodeMetaWith(acl, meta)
         }
 
-    def getChildrenAsync(
-        path: ZNodePath
-    ): Task[ZNodeMetaWith[ZNodeChildren]] = {
+    def getChildrenAsync(path: ZNodePath): Task[ZNodeMetaWith[ZNodeChildren]] = {
       def getChildrenFromEvent(event: CuratorEvent): Try[ZNodeChildren] =
         event.getChildren.asScala.toList
           .traverse { name =>
@@ -112,8 +102,7 @@ trait CuratorOps {
           }
           .map(ZNodeChildren)
 
-      curatorFramework
-        .getChildren
+      curatorFramework.getChildren
         .forPathAsync(path.path)
         .flatMap { event =>
           val meta = ZNodeMeta.fromStat(event.getStat)

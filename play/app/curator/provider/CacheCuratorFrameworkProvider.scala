@@ -35,8 +35,8 @@ import org.apache.curator.retry.ExponentialBackoffRetry
 import zookeeper.AuthInfo
 import zookeeper.ConnectionString
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 import scala.language.postfixOps
 import scala.util.Try
 

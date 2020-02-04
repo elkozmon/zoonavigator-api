@@ -1,7 +1,6 @@
 package com.elkozmon.zoonavigator.core.action
 
 import com.elkozmon.zoonavigator.core.action.actions._
-import org.apache.curator.framework.CuratorFramework
 import shapeless.HNil
 
 trait ActionModule {

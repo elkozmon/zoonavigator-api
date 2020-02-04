@@ -27,59 +27,50 @@ import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
 import org.scalatest.FlatSpec
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 
 @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
-class DuplicateZNodeRecursiveActionHandlerSpec
-    extends FlatSpec
-    with CuratorSpec {
+class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
 
   private def actionHandler(implicit curatorFramework: CuratorFramework) =
     new DuplicateZNodeRecursiveActionHandler(curatorFramework)
 
-  "DuplicateZNodeRecursiveActionHandler" should "copy child nodes data" in withCurator {
-    implicit curatorFramework =>
-      curatorFramework
-        .transaction()
-        .forOperations(
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo", "foo".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo/bar", "bar".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo/baz", "baz".getBytes)
-        )
-        .discard()
+  "DuplicateZNodeRecursiveActionHandler" should "copy child nodes data" in withCurator { implicit curatorFramework =>
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo/bar", "bar".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo/baz", "baz".getBytes)
+      )
+      .discard()
 
-      val action =
-        DuplicateZNodeRecursiveAction(
-          ZNodePath.parse("/foo").get,
-          ZNodePath.parse("/foo-copy").get
-        )
+    val action =
+      DuplicateZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-copy").get)
 
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
-      val bar = new String(curatorFramework.getData.forPath("/foo-copy/bar"))
-      val baz = new String(curatorFramework.getData.forPath("/foo-copy/baz"))
+    val bar = new String(curatorFramework.getData.forPath("/foo-copy/bar"))
+    val baz = new String(curatorFramework.getData.forPath("/foo-copy/baz"))
 
-      assertResult("barbaz")(bar + baz)
+    assertResult("barbaz")(bar + baz)
   }
 
   it should "copy ACLs" in withCurator { implicit curatorFramework =>
-    val acl = new ACL(
-      Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)),
-      new Id("world", "anyone")
-    )
+    val acl = new ACL(Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)), new Id("world", "anyone"))
 
     curatorFramework
       .create()
@@ -88,10 +79,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec
       .discard()
 
     val action =
-      DuplicateZNodeRecursiveAction(
-        ZNodePath.parse("/foo").get,
-        ZNodePath.parse("/foo-copy").get
-      )
+      DuplicateZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-copy").get)
 
     Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 

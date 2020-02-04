@@ -45,11 +45,8 @@ trait JsonAcl extends JsonPermission {
     override def writes(o: Acl): JsValue = {
       val jsonPermissions = o.permissions.toList
 
-      Json.obj(
-        IdKey -> o.aclId.id.mkString,
-        SchemeKey -> o.aclId.scheme,
-        PermissionsKey -> Json.toJson(jsonPermissions)
-      )
+      Json
+        .obj(IdKey -> o.aclId.id.mkString, SchemeKey -> o.aclId.scheme, PermissionsKey -> Json.toJson(jsonPermissions))
     }
   }
 

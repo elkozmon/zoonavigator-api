@@ -17,8 +17,8 @@
 
 package com.elkozmon.zoonavigator.core
 
-import monix.execution.Callback
 import monix.eval.Task
+import monix.execution.Callback
 import monix.execution.Cancelable
 import monix.execution.Scheduler
 import org.apache.curator.framework.api.BackgroundCallback
@@ -34,9 +34,7 @@ package object curator {
 
   private val logger = LoggerFactory.getLogger("curator")
 
-  private[curator] def tryTaskCreate[T](
-      fn: (Scheduler, Callback[Throwable, T]) => Unit
-  ): Task[T] =
+  private[curator] def tryTaskCreate[T](fn: (Scheduler, Callback[Throwable, T]) => Unit): Task[T] =
     Task.create[T] { (scheduler, callback) =>
       Try(fn(scheduler, callback)).toEither.left
         .foreach(callback.onError)
@@ -44,15 +42,9 @@ package object curator {
       Cancelable.empty
     }
 
-  private[curator] def newEventCallback(
-      callback: Callback[Throwable, CuratorEvent]
-  ): BackgroundCallback =
+  private[curator] def newEventCallback(callback: Callback[Throwable, CuratorEvent]): BackgroundCallback =
     (_, event: CuratorEvent) => {
-      logger.debug(
-        "{} event completed with result code {}",
-        event.getType,
-        event.getResultCode
-      )
+      logger.debug("{} event completed with result code {}", event.getType, event.getResultCode)
 
       if (event.getResultCode == 0) {
         callback.onSuccess(event)
@@ -64,9 +56,7 @@ package object curator {
       }
     }
 
-  private[curator] def newErrorListener(
-      callback: Callback[Throwable, _]
-  ): UnhandledErrorListener =
+  private[curator] def newErrorListener(callback: Callback[Throwable, _]): UnhandledErrorListener =
     (message: String, e: Throwable) => {
       logger.error(message, e)
       callback.onError(e)

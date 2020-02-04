@@ -25,23 +25,19 @@ import api.ApiResponseFactory
 import com.google.common.cache.CacheBuilder
 import play.api.http.HeaderNames
 import play.api.mvc.RequestHeader
-import session.{SessionInactivityTimeout, SessionToken}
+import session.SessionInactivityTimeout
+import session.SessionToken
 
-import scala.jdk.CollectionConverters._
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
-class ExpiringSessionManager(
-    apiResponseFactory: ApiResponseFactory,
-    sessionInactivityTimeout: SessionInactivityTimeout
-) extends SessionManager {
+class ExpiringSessionManager(apiResponseFactory: ApiResponseFactory, sessionInactivityTimeout: SessionInactivityTimeout)
+    extends SessionManager {
 
   private val sessionCache =
     CacheBuilder
       .newBuilder()
-      .expireAfterAccess(
-        sessionInactivityTimeout.duration.toMillis,
-        TimeUnit.MILLISECONDS
-      )
+      .expireAfterAccess(sessionInactivityTimeout.duration.toMillis, TimeUnit.MILLISECONDS)
       .build[SessionToken, mutable.Map[String, AnyRef]]()
       .asMap()
       .asScala
@@ -59,31 +55,23 @@ class ExpiringSessionManager(
       .get(HeaderNames.AUTHORIZATION)
       .map(SessionToken)
 
-  override def closeSession()(
-      implicit token: SessionToken
-  ): Map[String, AnyRef] =
+  override def closeSession()(implicit token: SessionToken): Map[String, AnyRef] =
     sessionCache
       .remove(token)
       .getOrElse(mutable.Map.empty)
       .toMap
 
-  override def getSessionData(
-      key: String
-  )(implicit token: SessionToken): Option[AnyRef] =
+  override def getSessionData(key: String)(implicit token: SessionToken): Option[AnyRef] =
     sessionCache
       .get(token)
       .flatMap(_.get(key))
 
-  override def putSessionData(key: String, value: AnyRef)(
-      implicit token: SessionToken
-  ): Option[AnyRef] =
+  override def putSessionData(key: String, value: AnyRef)(implicit token: SessionToken): Option[AnyRef] =
     sessionCache
       .getOrElseUpdate(token, mutable.Map.empty)
       .put(key, value)
 
-  override def removeSessionData(
-      key: String
-  )(implicit token: SessionToken): Option[AnyRef] =
+  override def removeSessionData(key: String)(implicit token: SessionToken): Option[AnyRef] =
     sessionCache
       .get(token)
       .flatMap(_.remove(key))

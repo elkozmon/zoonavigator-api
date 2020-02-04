@@ -21,8 +21,8 @@ import cats.free.Cofree
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.Implicits._
-import com.elkozmon.zoonavigator.core.utils.ZooKeeperUtils
 import com.elkozmon.zoonavigator.core.utils.CommonUtils.discard
+import com.elkozmon.zoonavigator.core.utils.ZooKeeperUtils
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath

@@ -22,7 +22,6 @@ import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import monix.eval.Task
-import org.apache.curator.framework.CuratorFramework
 
 import scala.jdk.CollectionConverters._
 

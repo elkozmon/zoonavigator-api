@@ -21,7 +21,6 @@ import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.curator.Implicits._
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import monix.eval.Task
-import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 
 class DeleteZNodeRecursiveActionHandler extends ActionHandler[DeleteZNodeRecursiveAction] {

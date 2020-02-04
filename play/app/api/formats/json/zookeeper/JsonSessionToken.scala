@@ -23,6 +23,7 @@ import session.SessionToken
 trait JsonSessionToken {
 
   implicit object SessionTokenFormat extends Format[SessionToken] {
+
     override def reads(json: JsValue): JsResult[SessionToken] =
       json match {
         case JsString(sessionToken) =>

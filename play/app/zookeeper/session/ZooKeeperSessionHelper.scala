@@ -23,13 +23,9 @@ import zookeeper.ConnectionParams
 
 trait ZooKeeperSessionHelper {
 
-  def setConnectionParams(params: ConnectionParams)(
-      implicit token: SessionToken,
-      manager: SessionManager
-  ): Option[ConnectionParams]
+  def setConnectionParams(
+      params: ConnectionParams
+  )(implicit token: SessionToken, manager: SessionManager): Option[ConnectionParams]
 
-  def getConnectionParams(
-      implicit token: SessionToken,
-      manager: SessionManager
-  ): Option[ConnectionParams]
+  def getConnectionParams(implicit token: SessionToken, manager: SessionManager): Option[ConnectionParams]
 }

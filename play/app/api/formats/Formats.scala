@@ -18,7 +18,6 @@
 package api.formats
 
 import cats.data.Reader
-import play.api.http.DefaultWriteables
 import play.api.http.Writeable
 import play.api.mvc.Result
 

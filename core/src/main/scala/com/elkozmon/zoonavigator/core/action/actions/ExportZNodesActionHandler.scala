@@ -25,7 +25,6 @@ import com.elkozmon.zoonavigator.core.utils.ZooKeeperUtils
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import monix.eval.Task
-import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.utils.ZKPaths
 
 class ExportZNodesActionHandler extends ActionHandler[ExportZNodesAction] {

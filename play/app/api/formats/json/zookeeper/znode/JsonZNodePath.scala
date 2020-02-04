@@ -23,8 +23,10 @@ import play.api.libs.json._
 trait JsonZNodePath {
 
   implicit object ZNodePathFormat extends Format[ZNodePath] {
+
     override def writes(o: ZNodePath): JsValue =
       JsString(o.path)
+
     override def reads(json: JsValue): JsResult[ZNodePath] =
       json.validate[String].map(ZNodePath.apply)
   }

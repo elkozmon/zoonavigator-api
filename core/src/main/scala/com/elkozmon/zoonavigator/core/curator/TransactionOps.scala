@@ -24,9 +24,7 @@ import scala.language.implicitConversions
 
 trait TransactionOps {
 
-  implicit def toTransactionAsync(
-      bp: Backgroundable[ErrorListenerMultiTransactionMain]
-  ): TransactionAsync =
+  implicit def toTransactionAsync(bp: Backgroundable[ErrorListenerMultiTransactionMain]): TransactionAsync =
     ops =>
       tryTaskCreate[CuratorEvent] { (scheduler, callback) =>
         bp.inBackground(newEventCallback(callback), scheduler)

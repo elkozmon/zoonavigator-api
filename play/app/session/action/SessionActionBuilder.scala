@@ -17,8 +17,7 @@
 
 package session.action
 
-import api.{ApiResponse, ApiResponseFactory}
-import play.api.http.Writeable
+import api.ApiResponseFactory
 import play.api.mvc.BodyParser
 import session.manager.SessionManager
 

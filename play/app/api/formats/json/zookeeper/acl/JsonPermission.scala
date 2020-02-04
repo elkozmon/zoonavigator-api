@@ -29,6 +29,7 @@ trait JsonPermission {
   private final val Admin = "admin"
 
   implicit object PermissionFormat extends Format[Permission] {
+
     override def reads(json: JsValue): JsResult[Permission] =
       json match {
         case JsString(Create) => JsSuccess(Permission.Create)

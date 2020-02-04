@@ -17,10 +17,9 @@
 
 package curator.action
 
-import api.{ApiResponse, ApiResponseFactory}
+import api.ApiResponseFactory
 import curator.provider.CuratorFrameworkProvider
 import monix.execution.Scheduler
-import play.api.http.Writeable
 import zookeeper.session.ZooKeeperSessionHelper
 
 class CuratorActionBuilder(
@@ -31,9 +30,5 @@ class CuratorActionBuilder(
 ) {
 
   def apply(): CuratorAction =
-    new CuratorAction(
-      apiResponseFactory,
-      zookeeperSessionHelper,
-      curatorFrameworkProvider
-    )(scheduler)
+    new CuratorAction(apiResponseFactory, zookeeperSessionHelper, curatorFrameworkProvider)(scheduler)
 }

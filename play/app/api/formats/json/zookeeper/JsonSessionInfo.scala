@@ -23,10 +23,8 @@ import zookeeper.session.SessionInfo
 trait JsonSessionInfo extends JsonSessionToken with JsonConnectionString {
 
   implicit object SessionInfoWrites extends Writes[SessionInfo] {
+
     override def writes(sessionInfo: SessionInfo): JsValue =
-      Json.obj(
-        "token" -> sessionInfo.token,
-        "connectionString" -> sessionInfo.connectionString
-      )
+      Json.obj("token" -> sessionInfo.token, "connectionString" -> sessionInfo.connectionString)
   }
 }

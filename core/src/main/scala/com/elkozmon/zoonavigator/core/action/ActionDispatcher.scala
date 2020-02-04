@@ -23,8 +23,6 @@ import shapeless.ops.hlist
 
 class ActionDispatcher[L <: HList](handlers: L) {
 
-  def dispatch[A <: Action](
-      action: A
-  )(implicit selector: hlist.Selector[L, ActionHandler[A]]): Task[A#Out] =
+  def dispatch[A <: Action](action: A)(implicit selector: hlist.Selector[L, ActionHandler[A]]): Task[A#Out] =
     selector(handlers).handle(action)
 }

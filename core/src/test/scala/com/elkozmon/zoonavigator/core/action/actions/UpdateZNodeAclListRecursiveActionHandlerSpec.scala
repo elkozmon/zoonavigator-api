@@ -29,116 +29,90 @@ import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
 import org.scalatest.FlatSpec
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.jdk.CollectionConverters._
 
 @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
-class UpdateZNodeAclListRecursiveActionHandlerSpec
-    extends FlatSpec
-    with CuratorSpec {
+class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
 
   private def actionHandler(implicit curatorFramework: CuratorFramework) =
     new UpdateZNodeAclListRecursiveActionHandler(curatorFramework)
 
-  "UpdateZNodeAclListRecursiveActionHandler" should "set root node ACLs" in withCurator {
-    implicit curatorFramework =>
-      val initAcl =
-        ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
-          .map(Acl.toZooKeeper)
-          .asJava
+  "UpdateZNodeAclListRecursiveActionHandler" should "set root node ACLs" in withCurator { implicit curatorFramework =>
+    val initAcl =
+      ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
+        .map(Acl.toZooKeeper)
+        .asJava
 
-      curatorFramework
-        .transaction()
-        .forOperations(
-          curatorFramework
-            .transactionOp()
-            .create()
-            .withACL(initAcl)
-            .forPath("/foo", "foo".getBytes)
-        )
-        .discard()
-
-      val newAcl =
-        ZNodeAcl(
-          List(
-            Acl(
-              AclId("world", "anyone"),
-              Set(Permission.Admin, Permission.Read)
-            )
-          )
-        )
-
-      val action = UpdateZNodeAclListRecursiveAction(
-        ZNodePath.parse("/foo").get,
-        newAcl,
-        ZNodeAclVersion(0L)
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .withACL(initAcl)
+          .forPath("/foo", "foo".getBytes)
       )
+      .discard()
 
-      Await
-        .result(actionHandler.handle(action).runToFuture, Duration.Inf)
-        .discard()
+    val newAcl =
+      ZNodeAcl(List(Acl(AclId("world", "anyone"), Set(Permission.Admin, Permission.Read))))
 
-      val currentAclList = curatorFramework.getACL
-        .forPath("/foo")
-        .asScala
-        .toList
-        .map(Acl.fromZooKeeper)
+    val action = UpdateZNodeAclListRecursiveAction(ZNodePath.parse("/foo").get, newAcl, ZNodeAclVersion(0L))
 
-      assertResult(newAcl.aclList)(currentAclList)
+    Await
+      .result(actionHandler.handle(action).runToFuture, Duration.Inf)
+      .discard()
+
+    val currentAclList = curatorFramework.getACL
+      .forPath("/foo")
+      .asScala
+      .toList
+      .map(Acl.fromZooKeeper)
+
+    assertResult(newAcl.aclList)(currentAclList)
   }
 
-  it should "set children node ACLs" in withCurator {
-    implicit curatorFramework =>
-      val initAcl =
-        ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
-          .map(Acl.toZooKeeper)
-          .asJava
+  it should "set children node ACLs" in withCurator { implicit curatorFramework =>
+    val initAcl =
+      ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
+        .map(Acl.toZooKeeper)
+        .asJava
 
-      curatorFramework
-        .transaction()
-        .forOperations(
-          curatorFramework
-            .transactionOp()
-            .create()
-            .withACL(initAcl)
-            .forPath("/foo", "foo".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .withACL(initAcl)
-            .forPath("/foo/bar", "bar".getBytes)
-        )
-        .discard()
-
-      val newAcl =
-        ZNodeAcl(
-          List(
-            Acl(
-              AclId("world", "anyone"),
-              Set(Permission.Admin, Permission.Read)
-            )
-          )
-        )
-
-      val action = UpdateZNodeAclListRecursiveAction(
-        ZNodePath.parse("/foo").get,
-        newAcl,
-        ZNodeAclVersion(0L)
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .withACL(initAcl)
+          .forPath("/foo", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .withACL(initAcl)
+          .forPath("/foo/bar", "bar".getBytes)
       )
+      .discard()
 
-      Await
-        .result(actionHandler.handle(action).runToFuture, Duration.Inf)
-        .discard()
+    val newAcl =
+      ZNodeAcl(List(Acl(AclId("world", "anyone"), Set(Permission.Admin, Permission.Read))))
 
-      val currentAclList = curatorFramework.getACL
-        .forPath("/foo/bar")
-        .asScala
-        .toList
-        .map(Acl.fromZooKeeper)
+    val action = UpdateZNodeAclListRecursiveAction(ZNodePath.parse("/foo").get, newAcl, ZNodeAclVersion(0L))
 
-      assertResult(newAcl.aclList)(currentAclList)
+    Await
+      .result(actionHandler.handle(action).runToFuture, Duration.Inf)
+      .discard()
+
+    val currentAclList = curatorFramework.getACL
+      .forPath("/foo/bar")
+      .asScala
+      .toList
+      .map(Acl.fromZooKeeper)
+
+    assertResult(newAcl.aclList)(currentAclList)
   }
 }

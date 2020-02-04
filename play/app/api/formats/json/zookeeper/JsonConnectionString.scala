@@ -23,6 +23,7 @@ import zookeeper.ConnectionString
 trait JsonConnectionString {
 
   implicit object ConnectionStringFormat extends Format[ConnectionString] {
+
     override def reads(json: JsValue): JsResult[ConnectionString] =
       json match {
         case JsString(connectionString) =>

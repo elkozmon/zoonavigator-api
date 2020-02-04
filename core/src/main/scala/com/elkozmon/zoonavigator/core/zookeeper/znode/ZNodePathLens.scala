@@ -28,12 +28,14 @@ object ZNodePathLens {
 
   implicit object ZNodeExportPathLens extends ZNodePathLens[ZNodeExport] {
     override def path(obj: ZNodeExport): ZNodePath = obj.path
+
     override def update(obj: ZNodeExport, path: ZNodePath): ZNodeExport =
       obj.copy(path = path)
   }
 
   implicit object ZNodePathLens extends ZNodePathLens[ZNode] {
     override def path(obj: ZNode): ZNodePath = obj.path
+
     override def update(obj: ZNode, path: ZNodePath): ZNode =
       obj.copy(path = path)
   }

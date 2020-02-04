@@ -25,20 +25,16 @@ class DefaultZooKeeperSessionHelper extends ZooKeeperSessionHelper {
 
   private final val ConnectionParamsKey = "zkConnectionParams"
 
-  override def setConnectionParams(params: ConnectionParams)(
-      implicit token: SessionToken,
-      manager: SessionManager
-  ): Option[ConnectionParams] =
+  override def setConnectionParams(
+      params: ConnectionParams
+  )(implicit token: SessionToken, manager: SessionManager): Option[ConnectionParams] =
     manager
       .putSessionData(ConnectionParamsKey, params)
       .collect {
         case cp: ConnectionParams => cp
       }
 
-  override def getConnectionParams(
-      implicit token: SessionToken,
-      manager: SessionManager
-  ): Option[ConnectionParams] =
+  override def getConnectionParams(implicit token: SessionToken, manager: SessionManager): Option[ConnectionParams] =
     manager
       .getSessionData(ConnectionParamsKey)
       .collect {

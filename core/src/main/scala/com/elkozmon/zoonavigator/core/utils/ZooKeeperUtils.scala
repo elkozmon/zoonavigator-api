@@ -34,8 +34,7 @@ object ZooKeeperUtils {
     Try {
       tree.transform(
         head => lens.update(head, path),
-        tail =>
-          rewriteZNodePaths(path.down(lens.path(tail.head).name).get, tail).get
+        tail => rewriteZNodePaths(path.down(lens.path(tail.head).name).get, tail).get
       )
     }
 }

@@ -19,12 +19,10 @@ package curator.provider
 
 import monix.eval.Task
 import org.apache.curator.framework.CuratorFramework
-import zookeeper.{AuthInfo, ConnectionString}
+import zookeeper.AuthInfo
+import zookeeper.ConnectionString
 
 trait CuratorFrameworkProvider {
 
-  def getCuratorInstance(
-      connectionString: ConnectionString,
-      authInfoList: List[AuthInfo]
-  ): Task[CuratorFramework]
+  def getCuratorInstance(connectionString: ConnectionString, authInfoList: List[AuthInfo]): Task[CuratorFramework]
 }

@@ -18,13 +18,10 @@
 package api.formats.json.zookeeper.znode
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
-trait JsonZNodeExport
-    extends JsonZNodePath
-    with JsonZNodeAcl
-    with JsonZNodeData {
+trait JsonZNodeExport extends JsonZNodePath with JsonZNodeAcl with JsonZNodeData {
 
   private val zNodeExportReads = (
     (JsPath \ "acl").read[ZNodeAcl] and
@@ -33,12 +30,9 @@ trait JsonZNodeExport
   ).apply(ZNodeExport.apply _)
 
   implicit object ZNodeExportFormat extends OFormat[ZNodeExport] {
+
     override def writes(o: ZNodeExport): JsObject =
-      Json.obj(
-        "acl" -> Json.toJson(o.acl),
-        "path" -> Json.toJson(o.path),
-        "data" -> Json.toJson(o.data)
-      )
+      Json.obj("acl" -> Json.toJson(o.acl), "path" -> Json.toJson(o.path), "data" -> Json.toJson(o.data))
 
     override def reads(json: JsValue): JsResult[ZNodeExport] =
       zNodeExportReads.reads(json)

@@ -17,12 +17,10 @@
 
 package session.action
 
-import play.api.mvc.{Request, WrappedRequest}
+import play.api.mvc.Request
+import play.api.mvc.WrappedRequest
 import session.SessionToken
 import session.manager.SessionManager
 
-class SessionRequest[A](
-    val sessionToken: SessionToken,
-    val sessionManager: SessionManager,
-    request: Request[A]
-) extends WrappedRequest[A](request)
+class SessionRequest[A](val sessionToken: SessionToken, val sessionManager: SessionManager, request: Request[A])
+    extends WrappedRequest[A](request)

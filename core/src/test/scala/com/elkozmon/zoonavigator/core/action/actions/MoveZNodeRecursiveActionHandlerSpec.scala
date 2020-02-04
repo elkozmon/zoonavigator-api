@@ -27,9 +27,9 @@ import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
 import org.scalatest.FlatSpec
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 
 @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
 class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
@@ -39,38 +39,34 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
   private def actionHandler(implicit curatorFramework: CuratorFramework) =
     new MoveZNodeRecursiveActionHandler(curatorFramework)
 
-  "MoveZNodeRecursiveActionHandler" should "copy child nodes data" in withCurator {
-    implicit curatorFramework =>
-      curatorFramework
-        .transaction()
-        .forOperations(
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo", "foo".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo/bar", "bar".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/foo/baz", "baz".getBytes)
-        )
-        .discard()
+  "MoveZNodeRecursiveActionHandler" should "copy child nodes data" in withCurator { implicit curatorFramework =>
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo/bar", "bar".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/foo/baz", "baz".getBytes)
+      )
+      .discard()
 
-      val action =
-        MoveZNodeRecursiveAction(
-          ZNodePath.parse("/foo").get,
-          ZNodePath.parse("/foo-move").get
-        )
+    val action =
+      MoveZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-move").get)
 
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
-      val bar = new String(curatorFramework.getData.forPath("/foo-move/bar"))
-      val baz = new String(curatorFramework.getData.forPath("/foo-move/baz"))
+    val bar = new String(curatorFramework.getData.forPath("/foo-move/bar"))
+    val baz = new String(curatorFramework.getData.forPath("/foo-move/baz"))
 
-      assertResult("barbaz")(bar + baz)
+    assertResult("barbaz")(bar + baz)
   }
 
   it should "remove old nodes" in withCurator { implicit curatorFramework =>
@@ -93,10 +89,7 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
       .discard()
 
     val action =
-      MoveZNodeRecursiveAction(
-        ZNodePath.parse("/foo").get,
-        ZNodePath.parse("/foo-move").get
-      )
+      MoveZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-move").get)
 
     Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 
@@ -106,10 +99,7 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
   }
 
   it should "copy ACLs" in withCurator { implicit curatorFramework =>
-    val acl = new ACL(
-      Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)),
-      new Id("world", "anyone")
-    )
+    val acl = new ACL(Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)), new Id("world", "anyone"))
 
     curatorFramework
       .create()
@@ -118,10 +108,7 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
       .discard()
 
     val action =
-      MoveZNodeRecursiveAction(
-        ZNodePath.parse("/foo").get,
-        ZNodePath.parse("/foo-move").get
-      )
+      MoveZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-move").get)
 
     Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
 

@@ -17,8 +17,4 @@
 
 package com.elkozmon.zoonavigator.core.curator
 
-object Implicits
-    extends CuratorOps
-    with PathableOps
-    with PathAndBytesableOps
-    with TransactionOps
+object Implicits extends CuratorOps with PathableOps with PathAndBytesableOps with TransactionOps
