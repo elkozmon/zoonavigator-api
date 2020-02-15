@@ -17,4 +17,4 @@
 
 package api.exceptions
 
-class BadRequestException(message: String) extends HttpException(400, message)
+class UnsupportedMediaTypeException(message: String) extends HttpException(415, message)

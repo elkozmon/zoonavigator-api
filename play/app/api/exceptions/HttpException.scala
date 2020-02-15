@@ -17,4 +17,27 @@
 
 package api.exceptions
 
-class BadRequestException(message: String) extends HttpException(400, message)
+import org.apache.zookeeper.KeeperException.NoAuthException
+import play.api.http.HttpErrorHandler
+import play.api.mvc._
+
+import scala.concurrent.Future
+
+class HttpException(val statusCode: Int, message: String) extends Exception(message)
+
+object HttpException {
+
+  def resultHandler(
+      request: RequestHeader,
+      httpErrorHandler: HttpErrorHandler
+  ): PartialFunction[Throwable, Future[Result]] = {
+    case e: NoAuthException =>
+      httpErrorHandler.onClientError(request, 403, e.getMessage)
+
+    case e: HttpException if e.statusCode >= 400 && e.statusCode < 500 =>
+      httpErrorHandler.onClientError(request, e.statusCode, e.getMessage)
+
+    case e =>
+      httpErrorHandler.onServerError(request, e)
+  }
+}

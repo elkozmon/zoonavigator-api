@@ -19,7 +19,13 @@ package api
 
 import play.api._
 import play.api.http.DefaultHttpErrorHandler
+import play.api.libs.json.Json
 import play.api.mvc._
+import play.api.mvc.Results.BadRequest
+import play.api.mvc.Results.Forbidden
+import play.api.mvc.Results.InternalServerError
+import play.api.mvc.Results.NotFound
+import play.api.mvc.Results.Status
 import play.api.routing.Router
 import play.core.SourceMapper
 
@@ -29,44 +35,68 @@ class ApiErrorHandler(
     env: Environment,
     config: Configuration,
     sourceMapper: Option[SourceMapper],
-    router: => Option[Router],
-    apiResponseFactory: ApiResponseFactory
-) extends DefaultHttpErrorHandler(env, config, sourceMapper, router) {
+    router: => Option[Router]
+) extends DefaultHttpErrorHandler(env, config, sourceMapper, router)
+    with Rendering
+    with AcceptExtractors {
 
   import api.formats.Json._
 
-  override def onProdServerError(request: RequestHeader, exception: UsefulException): Future[Result] =
-    Future.successful(
-      apiResponseFactory
-        .internalServerError[Unit](Some("A server error occurred: " + exception.getMessage))
-        .asResult(asJsonApiResponse)
-    )
+  override def onProdServerError(request: RequestHeader, exception: UsefulException): Future[Result] = {
+    val response =
+      ApiResponse[Unit](
+        success = false,
+        message = Some("A server error occurred: " + exception.getMessage),
+        payload = None
+      )
 
-  override protected def onBadRequest(request: RequestHeader, message: String): Future[Result] =
-    Future.successful(
-      apiResponseFactory
-        .badRequest[Unit](Some(message))
-        .asResult(asJsonApiResponse)
-    )
+    render.async {
+      case Accepts.Json() =>
+        Future.successful(InternalServerError(Json.toJson(response)))
+    }(request)
+  }
 
-  override protected def onForbidden(request: RequestHeader, message: String): Future[Result] =
-    Future.successful(
-      apiResponseFactory
-        .forbidden[Unit](Some(message))
-        .asResult(asJsonApiResponse)
-    )
+  override protected def onBadRequest(request: RequestHeader, message: String): Future[Result] = {
+    val response =
+      ApiResponse[Unit](success = false, message = Some(message), payload = None)
 
-  override protected def onNotFound(request: RequestHeader, message: String): Future[Result] =
-    Future.successful(
-      apiResponseFactory
-        .notFound[Unit](Some(message))
-        .asResult(asJsonApiResponse)
-    )
+    render.async {
+      case Accepts.Json() =>
+        Future.successful(BadRequest(Json.toJson(response)))
+    }(request)
+  }
 
-  override protected def onOtherClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] =
-    Future.successful(
-      apiResponseFactory
-        .badRequest[Unit](Some(message))
-        .asResult(asJsonApiResponse)
-    )
+  override protected def onForbidden(request: RequestHeader, message: String): Future[Result] = {
+    val response =
+      ApiResponse[Unit](success = false, message = Some(message), payload = None)
+
+    render.async {
+      case Accepts.Json() =>
+        Future.successful(Forbidden(Json.toJson(response)))
+    }(request)
+  }
+
+  override protected def onNotFound(request: RequestHeader, message: String): Future[Result] = {
+    val response =
+      ApiResponse[Unit](success = false, message = Some(message), payload = None)
+
+    render.async {
+      case Accepts.Json() =>
+        Future.successful(NotFound(Json.toJson(response)))
+    }(request)
+  }
+
+  override protected def onOtherClientError(
+      request: RequestHeader,
+      statusCode: Int,
+      message: String
+  ): Future[Result] = {
+    val response =
+      ApiResponse[Unit](success = false, message = Some(message), payload = None)
+
+    render.async {
+      case Accepts.Json() =>
+        Future.successful(Status(statusCode)(Json.toJson(response)))
+    }(request)
+  }
 }

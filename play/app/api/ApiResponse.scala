@@ -18,3 +18,18 @@
 package api
 
 final case class ApiResponse[+T](success: Boolean, message: Option[String], payload: Option[T])
+
+object ApiResponse {
+
+  val successEmpty: ApiResponse[Unit] =
+    ApiResponse[Unit](success = true, None, None)
+
+  def success[T](payload: T): ApiResponse[T] =
+    ApiResponse(success = true, None, Some(payload))
+
+  def success[T](payload: T, message: String): ApiResponse[T] =
+    ApiResponse(success = true, Some(message), Some(payload))
+
+  def failure[T](message: String): ApiResponse[T] =
+    ApiResponse(success = false, Some(message), None)
+}

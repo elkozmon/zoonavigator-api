@@ -25,8 +25,7 @@ import api.formats.json.zookeeper.acl.JsonAcl
 import api.formats.json.zookeeper.znode._
 
 object Json
-    extends Formats
-    with JsonApiResponse
+    extends JsonApiResponse
     with JsonZNodeWithChildren
     with JsonZNodeMetaWith
     with JsonZNodeMeta

@@ -17,32 +17,26 @@
 
 package session.action
 
-import api.ApiResponseFactory
+import cats.instances.either._
+import cats.instances.future._
+import cats.syntax.traverse._
+import play.api.http.HttpErrorHandler
 import play.api.mvc._
 import session.manager.SessionManager
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-class SessionAction[B](
-    apiResponseFactory: ApiResponseFactory,
-    sessionManager: SessionManager,
-    val parser: BodyParser[B]
-)(implicit val executionContext: ExecutionContext)
-    extends ActionBuilder[SessionRequest, B]
+class SessionAction[B](httpErrorHandler: HttpErrorHandler, sessionManager: SessionManager, val parser: BodyParser[B])(
+    implicit val executionContext: ExecutionContext
+) extends ActionBuilder[SessionRequest, B]
     with ActionRefiner[Request, SessionRequest] {
 
-  import api.formats.Json._
-
   override protected def refine[A](request: Request[A]): Future[Either[Result, SessionRequest[A]]] =
-    Future.successful[Either[Result, SessionRequest[A]]](
-      sessionManager
-        .getSession(request)
-        .toRight(
-          apiResponseFactory
-            .unauthorized[Unit](Some("Session has expired."))
-            .asResult(asJsonApiResponse)
-        )
-        .map(new SessionRequest(_, sessionManager, request))
-    )
+    sessionManager
+      .getSession(request)
+      .map(new SessionRequest(_, sessionManager, request))
+      .toLeft(httpErrorHandler.onClientError(request, 401, "Session has expired."))
+      .sequence
+      .map(_.swap)
 }

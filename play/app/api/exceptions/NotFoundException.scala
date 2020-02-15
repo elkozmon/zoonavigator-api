@@ -17,4 +17,4 @@
 
 package api.exceptions
 
-class BadRequestException(message: String) extends HttpException(400, message)
+class NotFoundException(message: String) extends HttpException(404, message)

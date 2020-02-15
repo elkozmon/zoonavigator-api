@@ -15,26 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package api.formats
+package api.exceptions
 
-import cats.data.Reader
-import play.api.http.Writeable
-import play.api.mvc.Result
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-
-trait Formats {
-
-  implicit class WriteableResult[A](reader: Reader[Writeable[A], Result]) {
-
-    def asResult(w: Writeable[A]): Result =
-      reader(w)
-  }
-
-  implicit class AsyncWriteableResult[A](futureReader: Future[Reader[Writeable[A], Result]]) {
-
-    def asResultAsync(w: Writeable[A])(ec: ExecutionContext): Future[Result] =
-      futureReader.map(_.asResult(w))(ec)
-  }
-}
+class NotAcceptableException(message: String) extends HttpException(406, message)

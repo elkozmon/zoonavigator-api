@@ -17,10 +17,12 @@
 
 package curator.action
 
-import api.ApiResponseFactory
-import cats.implicits._
+import cats.instances.either._
+import cats.instances.future._
+import cats.syntax.traverse._
 import curator.provider.CuratorFrameworkProvider
 import monix.execution.Scheduler
+import play.api.http.HttpErrorHandler
 import play.api.mvc._
 import session.action.SessionRequest
 import zookeeper.ConnectionParams
@@ -29,33 +31,23 @@ import zookeeper.session.ZooKeeperSessionHelper
 import scala.concurrent.Future
 
 class CuratorAction(
-    apiResponseFactory: ApiResponseFactory,
+    httpErrorHandler: HttpErrorHandler,
     zookeeperSessionHelper: ZooKeeperSessionHelper,
     curatorFrameworkProvider: CuratorFrameworkProvider
 )(implicit val executionContext: Scheduler)
     extends ActionRefiner[SessionRequest, CuratorRequest] {
 
-  import api.formats.Json._
-
-  override protected def refine[A](request: SessionRequest[A]): Future[Either[Result, CuratorRequest[A]]] = {
-    val futureOrFuture: Either[Future[Result], Future[CuratorRequest[A]]] =
-      zookeeperSessionHelper
-        .getConnectionParams(request.sessionToken, request.sessionManager)
-        .toRight(
-          Future.successful(
-            apiResponseFactory
-              .unauthorized[Unit](Some("Session was lost."))
-              .asResult(asJsonApiResponse)
-          )
-        )
-        .map {
-          case ConnectionParams(connectionString, authInfoList) =>
-            curatorFrameworkProvider
-              .getCuratorInstance(connectionString, authInfoList)
-              .map(new CuratorRequest(_, request))
-              .runToFuture
-        }
-
-    futureOrFuture.bisequence
-  }
+  override protected def refine[A](request: SessionRequest[A]): Future[Either[Result, CuratorRequest[A]]] =
+    zookeeperSessionHelper
+      .getConnectionParams(request.sessionToken, request.sessionManager)
+      .toLeft(httpErrorHandler.onClientError(request, 401, "Session was lost."))
+      .sequence
+      .map(_.swap)
+      .flatMap(_.traverse {
+        case ConnectionParams(connectionString, authInfoList) =>
+          curatorFrameworkProvider
+            .getCuratorInstance(connectionString, authInfoList)
+            .map(new CuratorRequest(_, request))
+            .runToFuture
+      })
 }

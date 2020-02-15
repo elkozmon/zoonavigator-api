@@ -17,18 +17,18 @@
 
 package session.action
 
-import api.ApiResponseFactory
+import play.api.http.HttpErrorHandler
 import play.api.mvc.BodyParser
 import session.manager.SessionManager
 
 import scala.concurrent.ExecutionContext
 
 class SessionActionBuilder(
-    apiResponseFactory: ApiResponseFactory,
+    httpErrorHandler: HttpErrorHandler,
     sessionManager: SessionManager,
     executionContext: ExecutionContext
 ) {
 
   def apply[B](bodyParser: BodyParser[B]): SessionAction[B] =
-    new SessionAction(apiResponseFactory, sessionManager, bodyParser)(executionContext)
+    new SessionAction(httpErrorHandler, sessionManager, bodyParser)(executionContext)
 }

@@ -22,7 +22,7 @@ import monix.execution.Scheduler
 import scala.language.implicitConversions
 
 trait ComputingScheduler {
-  val scheduler: Scheduler
+  implicit val scheduler: Scheduler
 }
 
 object ComputingScheduler {

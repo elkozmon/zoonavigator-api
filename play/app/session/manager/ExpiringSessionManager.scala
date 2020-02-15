@@ -21,7 +21,6 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
-import api.ApiResponseFactory
 import com.google.common.cache.CacheBuilder
 import play.api.http.HeaderNames
 import play.api.mvc.RequestHeader
@@ -31,8 +30,7 @@ import session.SessionToken
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
-class ExpiringSessionManager(apiResponseFactory: ApiResponseFactory, sessionInactivityTimeout: SessionInactivityTimeout)
-    extends SessionManager {
+class ExpiringSessionManager(sessionInactivityTimeout: SessionInactivityTimeout) extends SessionManager {
 
   private val sessionCache =
     CacheBuilder

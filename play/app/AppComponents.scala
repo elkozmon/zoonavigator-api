@@ -21,8 +21,6 @@ import api.controllers.FrontendController
 import api.controllers.ZNodeController
 import api.controllers.ZSessionController
 import api.ApiErrorHandler
-import api.ApiResponseFactory
-import api.DefaultApiResponseFactory
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
@@ -122,9 +120,6 @@ class AppComponents(context: Context)
 
   override val appLogger: AppLogger =
     AppLogger(LoggerFactory.getLogger("application"))
-
-  override val apiResponseFactory: ApiResponseFactory =
-    wire[DefaultApiResponseFactory]
 
   override val sessionManager: SessionManager =
     wire[ExpiringSessionManager]

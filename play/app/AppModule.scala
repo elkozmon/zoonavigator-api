@@ -1,7 +1,6 @@
 import api.controllers.FrontendController
 import api.controllers.ZNodeController
 import api.controllers.ZSessionController
-import api.ApiResponseFactory
 import com.elkozmon.zoonavigator.core.action.ActionModule
 import curator.action.CuratorActionBuilder
 import curator.provider.CuratorFrameworkProvider
@@ -37,8 +36,6 @@ trait AppModule extends ActionModule {
   val actionModule: ActionModule = this
 
   val appLogger: AppLogger
-
-  val apiResponseFactory: ApiResponseFactory
 
   val sessionManager: SessionManager
 

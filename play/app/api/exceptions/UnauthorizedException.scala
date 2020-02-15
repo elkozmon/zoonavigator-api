@@ -17,4 +17,4 @@
 
 package api.exceptions
 
-class BadRequestException(message: String) extends HttpException(400, message)
+class UnauthorizedException(message: String) extends HttpException(401, message)

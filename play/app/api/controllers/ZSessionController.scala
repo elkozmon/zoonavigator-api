@@ -17,11 +17,14 @@
 
 package api.controllers
 
-import api.ApiResponseFactory
+import api.ApiResponse
 import api.exceptions.BadRequestException
+import api.exceptions.HttpException
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import curator.provider.CuratorFrameworkProvider
 import monix.eval.Task
+import play.api.http.HttpErrorHandler
+import play.api.libs.json.Json
 import play.api.libs.json.JsSuccess
 import play.api.mvc._
 import schedulers.ComputingScheduler
@@ -32,7 +35,7 @@ import zookeeper.session.SessionInfo
 import zookeeper.session.ZooKeeperSessionHelper
 
 class ZSessionController(
-    apiResponseFactory: ApiResponseFactory,
+    httpErrorHandler: HttpErrorHandler,
     zookeeperSessionHelper: ZooKeeperSessionHelper,
     curatorFrameworkProvider: CuratorFrameworkProvider,
     computingScheduler: ComputingScheduler,
@@ -64,15 +67,18 @@ class ZSessionController(
           Task.raiseError(new BadRequestException("Invalid request. Session info is missing."))
       }
 
-    val futureResultReader = actionTask
-      .map(apiResponseFactory.okPayload)
-      .onErrorHandle(apiResponseFactory.fromThrowable[SessionInfo])
+    val futureApiResponse = actionTask
+      .map(ApiResponse.success(_))
       .executeOn(computingScheduler)
       .runToFuture(computingScheduler)
 
     render.async {
       case Accepts.Json() =>
-        futureResultReader.asResultAsync(asJsonApiResponse)(computingScheduler)
+        import computingScheduler.scheduler
+
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(request, httpErrorHandler))
     }
   }
 
@@ -83,7 +89,7 @@ class ZSessionController(
 
     render {
       case Accepts.Json() =>
-        apiResponseFactory.okEmpty[Unit].asResult(asJsonApiResponse)
+        Ok(Json.toJson(ApiResponse.successEmpty))
     }
   }
 }
