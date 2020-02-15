@@ -83,10 +83,8 @@ class CacheCuratorFrameworkProvider(
       connectionString: ConnectionString,
       authInfoList: List[AuthInfo]
   ): Task[CuratorFramework] =
-    sessionCacheMap.synchronized(
-      sessionCacheMap
-        .getOrElseUpdate(CuratorKey(connectionString, authInfoList), newCuratorInstance(connectionString, authInfoList))
-    )
+    sessionCacheMap
+      .getOrElseUpdate(CuratorKey(connectionString, authInfoList), newCuratorInstance(connectionString, authInfoList))
 
   private def newCuratorInstance(
       connectionString: ConnectionString,
