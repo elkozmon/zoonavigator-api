@@ -19,4 +19,4 @@ package schedulers
 
 import monix.execution.Scheduler
 
-final case class DefaultComputingScheduler(override val scheduler: Scheduler) extends ComputingScheduler
+final case class DefaultComputingScheduler(override val implicitScheduler: Scheduler) extends ComputingScheduler

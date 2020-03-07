@@ -17,14 +17,14 @@
 
 package api.controllers
 
-import config.HttpContext
+import config.PlayHttpContext
 import controllers.Assets
 import play.api.http.HttpErrorHandler
 import play.api.mvc._
 
 class FrontendController(
     assets: Assets,
-    httpContext: HttpContext,
+    httpContext: PlayHttpContext,
     errorHandler: HttpErrorHandler,
     controllerComponents: ControllerComponents
 ) extends AbstractController(controllerComponents) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,6 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package session
+package api.controllers
 
-final case class SessionToken(token: String)
+import play.api.mvc.AbstractController
+import play.api.mvc.Action
+import play.api.mvc.ControllerComponents
+
+class ApplicationController(controllerComponents: ControllerComponents)
+    extends AbstractController(controllerComponents) {
+
+  def getConfig: Action[Unit] =
+    ???
+}

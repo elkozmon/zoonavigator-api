@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,20 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package session.action
+package config
 
-import play.api.http.HttpErrorHandler
-import play.api.mvc.BodyParser
-import session.manager.SessionManager
-
-import scala.concurrent.ExecutionContext
-
-class SessionActionBuilder(
-    httpErrorHandler: HttpErrorHandler,
-    sessionManager: SessionManager,
-    executionContext: ExecutionContext
-) {
-
-  def apply[B](bodyParser: BodyParser[B]): SessionAction[B] =
-    new SessionAction(httpErrorHandler, sessionManager, bodyParser)(executionContext)
-}
+final case class ApplicationConfig() // TODO

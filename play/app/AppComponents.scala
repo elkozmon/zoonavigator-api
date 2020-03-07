@@ -24,7 +24,7 @@ import api.ApiErrorHandler
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
-import config.HttpContext
+import config.PlayHttpContext
 import controllers.AssetsComponents
 import curator.action.CuratorActionBuilder
 import curator.provider._
@@ -58,8 +58,8 @@ class AppComponents(context: Context)
   LoggerConfigurator(context.environment.classLoader)
     .foreach(_.configure(context.environment))
 
-  private lazy val httpContext: HttpContext =
-    HttpContext(
+  private lazy val httpContext: PlayHttpContext =
+    PlayHttpContext(
       configuration
         .getOptional[String]("play.http.context")
         .getOrElse("/")

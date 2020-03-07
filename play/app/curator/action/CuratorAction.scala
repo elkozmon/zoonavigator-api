@@ -17,37 +17,70 @@
 
 package curator.action
 
+import java.util.Base64
+
 import cats.instances.either._
 import cats.instances.future._
-import cats.syntax.traverse._
+import cats.syntax.bitraverse._
 import curator.provider.CuratorFrameworkProvider
+import monix.eval.Task
 import monix.execution.Scheduler
+import org.apache.curator.framework.CuratorFramework
 import play.api.http.HttpErrorHandler
+import play.api.libs.json.Json
 import play.api.mvc._
-import session.action.SessionRequest
+import zookeeper.ConnectionName
 import zookeeper.ConnectionParams
-import zookeeper.session.ZooKeeperSessionHelper
 
 import scala.concurrent.Future
 
-class CuratorAction(
-    httpErrorHandler: HttpErrorHandler,
-    zookeeperSessionHelper: ZooKeeperSessionHelper,
-    curatorFrameworkProvider: CuratorFrameworkProvider
-)(implicit val executionContext: Scheduler)
-    extends ActionRefiner[SessionRequest, CuratorRequest] {
+class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider: CuratorFrameworkProvider)(
+    implicit val executionContext: Scheduler
+) extends ActionRefiner[Request, CuratorRequest] {
 
-  override protected def refine[A](request: SessionRequest[A]): Future[Either[Result, CuratorRequest[A]]] =
-    zookeeperSessionHelper
-      .getConnectionParams(request.sessionToken, request.sessionManager)
-      .toLeft(httpErrorHandler.onClientError(request, 401, "Session was lost."))
-      .sequence
-      .map(_.swap)
-      .flatMap(_.traverse {
-        case ConnectionParams(connectionString, authInfoList) =>
-          curatorFrameworkProvider
-            .getCuratorInstance(connectionString, authInfoList)
-            .map(new CuratorRequest(_, request))
-            .runToFuture
-      })
+  import api.formats.Json._
+
+  private val cxnPreDefHeaderPrefix = "CXNPREDEF"
+
+  private val cxnParamsHeaderPrefix = "CXNPARAMS"
+
+  private def missingAuthHeaderResult[A](request: Request[A]): Future[Result] =
+    httpErrorHandler.onClientError(request, 401, "Missing Authorization header")
+
+  private def malformedAuthHeaderResult[A](request: Request[A]): Future[Result] =
+    httpErrorHandler.onClientError(request, 401, "Malformed Authorization header")
+
+  private def invalidCxnNameHeaderResult[A](request: Request[A]): Future[Result] =
+    httpErrorHandler.onClientError(request, 401, "Invalid connection name")
+
+  override protected def refine[A](request: Request[A]): Future[Either[Result, CuratorRequest[A]]] =
+    request.headers
+      .get("Authorization")
+      .toRight(missingAuthHeaderResult(request))
+      .map(_.trim)
+      .flatMap[Future[Result], Task[Either[Result, CuratorFramework]]] {
+        case x if x.startsWith(cxnPreDefHeaderPrefix) =>
+          val b64 = x.stripSuffix(cxnPreDefHeaderPrefix).trim
+          val json = Json.parse(Base64.getDecoder.decode(b64))
+          json
+            .asOpt[ConnectionName]
+            .toRight(malformedAuthHeaderResult(request))
+            .map(curatorFrameworkProvider.getCuratorInstance)
+            .map(_.map(_.toRight(invalidCxnNameHeaderResult(request)).map(Future.successful)))
+            .map(_.map(_.bisequence).flatMap(Task.fromFuture))
+
+        case x if x.startsWith(cxnParamsHeaderPrefix) =>
+          val b64 = x.stripSuffix(cxnParamsHeaderPrefix).trim
+          val json = Json.parse(Base64.getDecoder.decode(b64))
+          json
+            .asOpt[ConnectionParams]
+            .toRight(malformedAuthHeaderResult(request))
+            .map(curatorFrameworkProvider.getCuratorInstance(_).map(Right(_)))
+
+        case _ =>
+          Left(malformedAuthHeaderResult(request))
+      }
+      .map[Future[Either[Result, CuratorFramework]]](_.runToFuture)
+      .bisequence
+      .map(_.flatten.map(new CuratorRequest(_, request)))
 }
