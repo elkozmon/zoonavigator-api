@@ -21,6 +21,7 @@ import java.util.Base64
 
 import cats.instances.either._
 import cats.instances.future._
+import cats.syntax.traverse._
 import cats.syntax.bitraverse._
 import curator.provider.CuratorFrameworkProvider
 import monix.eval.Task
@@ -65,9 +66,12 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
           json
             .asOpt[ConnectionName]
             .toRight(malformedAuthHeaderResult(request))
-            .map(curatorFrameworkProvider.getCuratorInstance)
-            .map(_.map(_.toRight(invalidCxnNameHeaderResult(request)).map(Future.successful)))
-            .map(_.map(_.bisequence).flatMap(Task.fromFuture))
+            .map(
+              curatorFrameworkProvider
+                .getCuratorInstance(_)
+                .map(_.toRight(invalidCxnNameHeaderResult(request)).leftSequence)
+                .flatMap(Task.fromFuture)
+            )
 
         case x if x.startsWith(cxnParamsHeaderPrefix) =>
           val b64 = x.stripSuffix(cxnParamsHeaderPrefix).trim
