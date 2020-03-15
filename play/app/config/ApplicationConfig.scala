@@ -17,4 +17,46 @@
 
 package config
 
-final case class ApplicationConfig() // TODO
+import java.nio.charset.StandardCharsets
+
+import com.typesafe.config.Config
+import play.api.ConfigLoader
+import zookeeper.AuthInfo
+import zookeeper.ConnectionString
+
+import scala.concurrent.duration.FiniteDuration
+import scala.jdk.CollectionConverters._
+import scala.jdk.DurationConverters._
+
+final case class ApplicationConfig(
+    requestTimeout: FiniteDuration,
+    autoConnect: Option[String],
+    connections: List[ApplicationConfig.Connection]
+)
+
+object ApplicationConfig {
+
+  implicit val configLoader: ConfigLoader[ApplicationConfig] =
+    (root: Config, path: String) => {
+      val config = root.getConfig(path)
+
+      ApplicationConfig(
+        config.getDuration("requestTimeout").toScala,
+        if (config.hasPath("autoConnect")) {
+          Some(config.getString("autoConnect"))
+        } else {
+          None
+        },
+        config.getObjectList("connections").asScala.toList.map { o =>
+          val c = o.toConfig
+          val authList = c.getObjectList("auth").asScala.toList.map { o =>
+            val c = o.toConfig
+            AuthInfo(c.getString("scheme"), c.getString("id").getBytes(StandardCharsets.UTF_8))
+          }
+          Connection(c.getString("name"), ConnectionString(c.getString("conn")), authList)
+        }
+      )
+    }
+
+  final case class Connection(name: String, connectionString: ConnectionString, authInfoList: List[AuthInfo])
+}

@@ -17,6 +17,7 @@
 
 package curator.action
 
+import java.nio.charset.StandardCharsets
 import java.util.Base64
 
 import cats.instances.either._
@@ -29,6 +30,7 @@ import monix.execution.Scheduler
 import org.apache.curator.framework.CuratorFramework
 import play.api.http.HttpErrorHandler
 import play.api.libs.json.Json
+import play.api.libs.json.JsString
 import play.api.mvc._
 import zookeeper.ConnectionName
 import zookeeper.ConnectionParams
@@ -41,9 +43,9 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
 
   import api.formats.Json._
 
-  private val cxnPreDefHeaderPrefix = "CXNPREDEF"
+  private val cxnPreDefHeaderPrefix = "CxnPredef"
 
-  private val cxnParamsHeaderPrefix = "CXNPARAMS"
+  private val cxnParamsHeaderPrefix = "CxnParams"
 
   private def missingAuthHeaderResult[A](request: Request[A]): Future[Result] =
     httpErrorHandler.onClientError(request, 401, "Missing Authorization header")
@@ -61,8 +63,8 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
       .map(_.trim)
       .flatMap[Future[Result], Task[Either[Result, CuratorFramework]]] {
         case x if x.startsWith(cxnPreDefHeaderPrefix) =>
-          val b64 = x.stripSuffix(cxnPreDefHeaderPrefix).trim
-          val json = Json.parse(Base64.getDecoder.decode(b64))
+          val b64 = x.stripPrefix(cxnPreDefHeaderPrefix).trim
+          val json = JsString(new String(Base64.getDecoder.decode(b64), StandardCharsets.UTF_8))
           json
             .asOpt[ConnectionName]
             .toRight(malformedAuthHeaderResult(request))
@@ -74,7 +76,7 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
             )
 
         case x if x.startsWith(cxnParamsHeaderPrefix) =>
-          val b64 = x.stripSuffix(cxnParamsHeaderPrefix).trim
+          val b64 = x.stripPrefix(cxnParamsHeaderPrefix).trim
           val json = Json.parse(Base64.getDecoder.decode(b64))
           json
             .asOpt[ConnectionParams]

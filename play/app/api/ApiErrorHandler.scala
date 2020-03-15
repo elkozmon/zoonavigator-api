@@ -99,4 +99,14 @@ class ApiErrorHandler(
         Future.successful(Status(statusCode)(Json.toJson(response)))
     }(request)
   }
+
+  override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
+    val response =
+      ApiResponse[Unit](success = false, message = Some(exception.getMessage), payload = None)
+
+    render.async {
+      case Accepts.Json() =>
+        Future.successful(Status(500)(Json.toJson(response)))
+    }(request)
+  }
 }

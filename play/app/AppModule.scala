@@ -1,15 +1,12 @@
+import api.controllers.ApplicationController
 import api.controllers.FrontendController
 import api.controllers.ZNodeController
-import api.controllers.ZSessionController
 import com.elkozmon.zoonavigator.core.action.ActionModule
-import curator.action.CuratorActionBuilder
 import curator.provider.CuratorFrameworkProvider
 import loggers.AppLogger
 import play.api.BuiltInComponentsFromContext
 import schedulers.BlockingScheduler
 import schedulers.ComputingScheduler
-import session.action.SessionActionBuilder
-import session.manager.SessionManager
 /*
  * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
@@ -27,8 +24,6 @@ import session.manager.SessionManager
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import zookeeper.session.ZooKeeperSessionHelper
-
 //noinspection ScalaUnusedSymbol
 trait AppModule extends ActionModule {
   self: BuiltInComponentsFromContext =>
@@ -37,21 +32,13 @@ trait AppModule extends ActionModule {
 
   val appLogger: AppLogger
 
-  val sessionManager: SessionManager
-
   val curatorFrameworkProvider: CuratorFrameworkProvider
-
-  val zookeeperSessionHelper: ZooKeeperSessionHelper
-
-  val curatorActionBuilder: CuratorActionBuilder
-
-  val sessionActionBuilder: SessionActionBuilder
 
   val frontendController: FrontendController
 
   val zNodeController: ZNodeController
 
-  val zSessionController: ZSessionController
+  val applicationController: ApplicationController
 
   val blockingScheduler: BlockingScheduler
 
