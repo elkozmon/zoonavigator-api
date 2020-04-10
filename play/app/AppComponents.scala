@@ -22,6 +22,7 @@ import api.controllers.FrontendController
 import api.controllers.ZNodeController
 import api.ApiErrorHandler
 import com.elkozmon.zoonavigator.core.action.ActionHandler
+import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
 import config.ApplicationConfig
@@ -36,9 +37,11 @@ import play.api.ApplicationLoader.Context
 import play.api.BuiltInComponentsFromContext
 import play.api.LoggerConfigurator
 import play.api.http.HttpErrorHandler
+import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.core.SourceMapper
 import play.filters.HttpFiltersComponents
+import play.filters.cors.CORSComponents
 import router.Routes
 import schedulers._
 
@@ -47,6 +50,7 @@ import scala.concurrent.duration.FiniteDuration
 class AppComponents(context: Context)
     extends BuiltInComponentsFromContext(context)
     with HttpFiltersComponents
+    with CORSComponents
     with AssetsComponents
     with AppModule {
 
@@ -79,6 +83,35 @@ class AppComponents(context: Context)
     def sourceMapper: Option[SourceMapper] = devContext.map(_.sourceMapper)
 
     wire[ApiErrorHandler]
+  }
+
+  override def httpFilters: Seq[EssentialFilter] = {
+    val filters = Seq.newBuilder[EssentialFilter]
+
+    val enabledFilters = configuration
+      .get[Seq[String]]("play.filters.enabled")
+
+    if (enabledFilters.contains("play.filters.headers.SecurityHeadersFilter")) {
+      appLogger.info("Enabling Filter: " + securityHeadersFilter.getClass.getName)
+      (filters += securityHeadersFilter).discard()
+    }
+
+    if (enabledFilters.contains("play.filters.hosts.AllowedHostsFilter")) {
+      appLogger.info("Enabling Filter: " + allowedHostsFilter.getClass.getName)
+      (filters += allowedHostsFilter).discard()
+    }
+
+    if (enabledFilters.contains("play.filters.cors.CORSFilter")) {
+      appLogger.info("Enabling Filter: " + corsFilter.getClass.getName)
+      (filters += corsFilter).discard()
+    }
+
+    if (enabledFilters.contains("play.filters.csrf.CSRFFilter")) {
+      appLogger.info("Enabling Filter: " + csrfFilter.getClass.getName)
+      (filters += csrfFilter).discard()
+    }
+
+    filters.result()
   }
 
   override lazy val router: Router = {
