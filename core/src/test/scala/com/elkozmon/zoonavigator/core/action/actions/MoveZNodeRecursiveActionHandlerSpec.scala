@@ -17,12 +17,12 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
+import cats._
 import com.elkozmon.zoonavigator.core.curator.CuratorSpec
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import monix.execution.Scheduler
-import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
 import org.scalatest.FlatSpec
@@ -36,10 +36,7 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
 
-  private def actionHandler(implicit curatorFramework: CuratorFramework) =
-    new MoveZNodeRecursiveActionHandler(curatorFramework)
-
-  "MoveZNodeRecursiveActionHandler" should "copy child nodes data" in withCurator { implicit curatorFramework =>
+  "MoveZNodeRecursiveActionHandler" should "copy child nodes data" in withCurator { curatorFramework =>
     curatorFramework
       .transaction()
       .forOperations(
@@ -59,9 +56,9 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
       .discard()
 
     val action =
-      MoveZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-move").get)
+      MoveZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-move").get, curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new MoveZNodeRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
 
     val bar = new String(curatorFramework.getData.forPath("/foo-move/bar"))
     val baz = new String(curatorFramework.getData.forPath("/foo-move/baz"))
@@ -89,16 +86,16 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
       .discard()
 
     val action =
-      MoveZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-move").get)
+      MoveZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-move").get, curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new MoveZNodeRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
 
     assert(checkExists("/foo").isEmpty).discard()
     assert(checkExists("/foo/bar").isEmpty).discard()
     assert(checkExists("/foo/baz").isEmpty).discard()
   }
 
-  it should "copy ACLs" in withCurator { implicit curatorFramework =>
+  it should "copy ACLs" in withCurator { curatorFramework =>
     val acl = new ACL(Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)), new Id("world", "anyone"))
 
     curatorFramework
@@ -108,9 +105,9 @@ class MoveZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec {
       .discard()
 
     val action =
-      MoveZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-move").get)
+      MoveZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-move").get, curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new MoveZNodeRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
 
     assert(
       curatorFramework.getACL

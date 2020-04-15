@@ -38,10 +38,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec with Curator
 
   import Scheduler.Implicits.global
 
-  private def actionHandler(implicit curatorFramework: CuratorFramework) =
-    new UpdateZNodeAclListRecursiveActionHandler(curatorFramework)
-
-  "UpdateZNodeAclListRecursiveActionHandler" should "set root node ACLs" in withCurator { implicit curatorFramework =>
+  "UpdateZNodeAclListRecursiveActionHandler" should "set root node ACLs" in withCurator { curatorFramework =>
     val initAcl =
       ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
         .map(Acl.toZooKeeper)
@@ -61,10 +58,11 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec with Curator
     val newAcl =
       ZNodeAcl(List(Acl(AclId("world", "anyone"), Set(Permission.Admin, Permission.Read))))
 
-    val action = UpdateZNodeAclListRecursiveAction(ZNodePath.parse("/foo").get, newAcl, ZNodeAclVersion(0L))
+    val action =
+      UpdateZNodeAclListRecursiveAction(ZNodePath.parse("/foo").get, newAcl, ZNodeAclVersion(0L), curatorFramework)
 
     Await
-      .result(actionHandler.handle(action).runToFuture, Duration.Inf)
+      .result((new UpdateZNodeAclListRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
       .discard()
 
     val currentAclList = curatorFramework.getACL
@@ -76,7 +74,7 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec with Curator
     assertResult(newAcl.aclList)(currentAclList)
   }
 
-  it should "set children node ACLs" in withCurator { implicit curatorFramework =>
+  it should "set children node ACLs" in withCurator { curatorFramework =>
     val initAcl =
       ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))).aclList
         .map(Acl.toZooKeeper)
@@ -101,10 +99,11 @@ class UpdateZNodeAclListRecursiveActionHandlerSpec extends FlatSpec with Curator
     val newAcl =
       ZNodeAcl(List(Acl(AclId("world", "anyone"), Set(Permission.Admin, Permission.Read))))
 
-    val action = UpdateZNodeAclListRecursiveAction(ZNodePath.parse("/foo").get, newAcl, ZNodeAclVersion(0L))
+    val action =
+      UpdateZNodeAclListRecursiveAction(ZNodePath.parse("/foo").get, newAcl, ZNodeAclVersion(0L), curatorFramework)
 
     Await
-      .result(actionHandler.handle(action).runToFuture, Duration.Inf)
+      .result((new UpdateZNodeAclListRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
       .discard()
 
     val currentAclList = curatorFramework.getACL

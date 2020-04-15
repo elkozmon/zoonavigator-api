@@ -18,6 +18,7 @@
 package com.elkozmon.zoonavigator.core.action.actions
 
 import cats.free.Cofree
+import cats._
 import cats.implicits._
 import com.elkozmon.zoonavigator.core.curator.CuratorSpec
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
@@ -26,7 +27,6 @@ import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import monix.execution.Scheduler
-import org.apache.curator.framework.CuratorFramework
 import org.scalatest.FlatSpec
 
 import scala.concurrent.Await
@@ -43,9 +43,6 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
 
-  private def actionHandler(implicit curatorFramework: CuratorFramework) =
-    new ExportZNodesActionHandler(curatorFramework)
-
   private def getDefaultExportNode(path: String, data: String): ZNodeExport =
     ZNodeExport(
       ZNodeAcl(List(Acl(AclId("world", "anyone"), Permission.All))),
@@ -53,7 +50,7 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       ZNodeData(data.getBytes)
     )
 
-  "ExportZNodeActionHandler" should "export two sibling nodes" in withCurator { implicit curatorFramework =>
+  "ExportZNodeActionHandler" should "export two sibling nodes" in withCurator { curatorFramework =>
     curatorFramework
       .transaction()
       .forOperations(
@@ -69,10 +66,10 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       .discard()
 
     val action =
-      ExportZNodesAction(Seq(ZNodePath.parse("/foo").get, ZNodePath.parse("/bar").get))
+      ExportZNodesAction(Seq(ZNodePath.parse("/foo").get, ZNodePath.parse("/bar").get), curatorFramework)
 
     val exported =
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+      Await.result((new ExportZNodesActionHandler).handle(action).runToFuture, Duration.Inf)
 
     assertResult {
       List(
@@ -82,7 +79,7 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
     }(exported.map(_.forceAll))
   }
 
-  it should "export one node with child" in withCurator { implicit curatorFramework =>
+  it should "export one node with child" in withCurator { curatorFramework =>
     curatorFramework
       .transaction()
       .forOperations(
@@ -98,10 +95,10 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       .discard()
 
     val action =
-      ExportZNodesAction(Seq(ZNodePath.parse("/foo").get))
+      ExportZNodesAction(Seq(ZNodePath.parse("/foo").get), curatorFramework)
 
     val exported =
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+      Await.result((new ExportZNodesActionHandler).handle(action).runToFuture, Duration.Inf)
 
     assertResult {
       List(
@@ -113,44 +110,43 @@ class ExportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
     }(exported.map(_.forceAll))
   }
 
-  it should "export nodes as root nodes (path of the parent node is cut out)" in withCurator {
-    implicit curatorFramework =>
-      curatorFramework
-        .transaction()
-        .forOperations(
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/export", Array.emptyByteArray),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/export/foo", "foo".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/export/foo/bar", "bar".getBytes),
-          curatorFramework
-            .transactionOp()
-            .create()
-            .forPath("/export/baz", "baz".getBytes)
-        )
-        .discard()
+  it should "export nodes as root nodes (path of the parent node is cut out)" in withCurator { curatorFramework =>
+    curatorFramework
+      .transaction()
+      .forOperations(
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/export", Array.emptyByteArray),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/export/foo", "foo".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/export/foo/bar", "bar".getBytes),
+        curatorFramework
+          .transactionOp()
+          .create()
+          .forPath("/export/baz", "baz".getBytes)
+      )
+      .discard()
 
-      val action =
-        ExportZNodesAction(Seq(ZNodePath.parse("/export/foo").get, ZNodePath.parse("/export/baz").get))
+    val action =
+      ExportZNodesAction(Seq(ZNodePath.parse("/export/foo").get, ZNodePath.parse("/export/baz").get), curatorFramework)
 
-      val exported =
-        Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    val exported =
+      Await.result((new ExportZNodesActionHandler).handle(action).runToFuture, Duration.Inf)
 
-      assertResult {
-        List(
-          Cofree(
-            getDefaultExportNode("/foo", "foo"),
-            Now(List(Cofree(getDefaultExportNode("/foo/bar", "bar"), Now(List.empty[Cofree[List, ZNodeExport]]))))
-          ),
-          Cofree(getDefaultExportNode("/baz", "baz"), Now(List.empty[Cofree[List, ZNodeExport]]))
-        )
-      }(exported.map(_.forceAll))
+    assertResult {
+      List(
+        Cofree(
+          getDefaultExportNode("/foo", "foo"),
+          Now(List(Cofree(getDefaultExportNode("/foo/bar", "bar"), Now(List.empty[Cofree[List, ZNodeExport]]))))
+        ),
+        Cofree(getDefaultExportNode("/baz", "baz"), Now(List.empty[Cofree[List, ZNodeExport]]))
+      )
+    }(exported.map(_.forceAll))
   }
 }

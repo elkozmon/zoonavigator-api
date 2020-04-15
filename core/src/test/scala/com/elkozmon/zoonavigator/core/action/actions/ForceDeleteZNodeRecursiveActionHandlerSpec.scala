@@ -32,9 +32,6 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSp
 
   import Scheduler.Implicits.global
 
-  private def actionHandler(implicit curatorFramework: CuratorFramework) =
-    new ForceDeleteZNodeRecursiveActionHandler(curatorFramework)
-
   "ForceDeleteZNodeRecursiveActionHandler" should "delete two sibling nodes" in withCurator {
     implicit curatorFramework =>
       curatorFramework
@@ -56,9 +53,9 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSp
         .discard()
 
       val action =
-        ForceDeleteZNodeRecursiveAction(Seq("/foo", "/bar").map(ZNodePath.parse _ andThen (_.get)))
+        ForceDeleteZNodeRecursiveAction(Seq("/foo", "/bar").map(ZNodePath.parse _ andThen (_.get)), curatorFramework)
 
-      Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+      Await.result((new ForceDeleteZNodeRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
 
       assert(checkExists("/foo").isEmpty)
       assert(checkExists("/bar").isEmpty)
@@ -85,9 +82,9 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSp
       .discard()
 
     val action =
-      ForceDeleteZNodeRecursiveAction(Seq(ZNodePath.parse("/foo").get))
+      ForceDeleteZNodeRecursiveAction(Seq(ZNodePath.parse("/foo").get), curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new ForceDeleteZNodeRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
 
     assert(checkExists("/foo").isEmpty)
     assert(checkExists("/foo/bar").isEmpty)
@@ -110,9 +107,12 @@ class ForceDeleteZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSp
       .discard()
 
     val action =
-      ForceDeleteZNodeRecursiveAction(Seq("/foo", "/bar", "/nonexistent").map(ZNodePath.parse _ andThen (_.get)))
+      ForceDeleteZNodeRecursiveAction(
+        Seq("/foo", "/bar", "/nonexistent").map(ZNodePath.parse _ andThen (_.get)),
+        curatorFramework
+      )
 
-    Await.ready(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.ready((new ForceDeleteZNodeRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
 
     assert(checkExists("/foo").isDefined)
     assert(checkExists("/bar").isDefined)
