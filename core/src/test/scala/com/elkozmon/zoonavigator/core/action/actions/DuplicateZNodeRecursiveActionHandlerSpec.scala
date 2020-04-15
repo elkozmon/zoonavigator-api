@@ -22,7 +22,6 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import monix.execution.Scheduler
-import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
 import org.scalatest.FlatSpec
@@ -36,10 +35,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec
 
   import Scheduler.Implicits.global
 
-  private def actionHandler(implicit curatorFramework: CuratorFramework) =
-    new DuplicateZNodeRecursiveActionHandler(curatorFramework)
-
-  "DuplicateZNodeRecursiveActionHandler" should "copy child nodes data" in withCurator { implicit curatorFramework =>
+  "DuplicateZNodeRecursiveActionHandler" should "copy child nodes data" in withCurator { curatorFramework =>
     curatorFramework
       .transaction()
       .forOperations(
@@ -59,9 +55,9 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec
       .discard()
 
     val action =
-      DuplicateZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-copy").get)
+      DuplicateZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-copy").get, curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new DuplicateZNodeRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
 
     val bar = new String(curatorFramework.getData.forPath("/foo-copy/bar"))
     val baz = new String(curatorFramework.getData.forPath("/foo-copy/baz"))
@@ -69,7 +65,7 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec
     assertResult("barbaz")(bar + baz)
   }
 
-  it should "copy ACLs" in withCurator { implicit curatorFramework =>
+  it should "copy ACLs" in withCurator { curatorFramework =>
     val acl = new ACL(Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)), new Id("world", "anyone"))
 
     curatorFramework
@@ -79,9 +75,9 @@ class DuplicateZNodeRecursiveActionHandlerSpec extends FlatSpec with CuratorSpec
       .discard()
 
     val action =
-      DuplicateZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-copy").get)
+      DuplicateZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-copy").get, curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new DuplicateZNodeRecursiveActionHandler).handle(action).runToFuture, Duration.Inf)
 
     assert(
       curatorFramework.getACL

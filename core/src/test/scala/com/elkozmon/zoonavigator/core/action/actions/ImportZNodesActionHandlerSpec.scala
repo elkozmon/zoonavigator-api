@@ -17,6 +17,7 @@
 
 package com.elkozmon.zoonavigator.core.action.actions
 
+import cats._
 import cats.free.Cofree
 import com.elkozmon.zoonavigator.core.curator.CuratorSpec
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
@@ -42,13 +43,10 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
 
-  private def actionHandler(implicit curatorFramework: CuratorFramework) =
-    new ImportZNodesActionHandler(curatorFramework)
-
   private def getExportNode(path: String, data: String, acls: List[Acl]): ZNodeExport =
     ZNodeExport(ZNodeAcl(acls), ZNodePath.parse(path).get, ZNodeData(data.getBytes))
 
-  "ImportZNodeActionHandler" should "import two sibling nodes" in withCurator { implicit curatorFramework =>
+  "ImportZNodeActionHandler" should "import two sibling nodes" in withCurator { curatorFramework =>
     val fooAclDefault =
       List(Acl(AclId("world", "anyone"), Set(Read, Create)))
     val barAclDefault =
@@ -61,9 +59,9 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       )
 
     val action =
-      ImportZNodesAction(ZNodePath.parse("/").get, exported)
+      ImportZNodesAction(ZNodePath.parse("/").get, exported, curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new ImportZNodesActionHandler).handle(action).runToFuture, Duration.Inf)
 
     val fooData = new String(curatorFramework.getData.forPath("/foo"))
     val fooAcl = curatorFramework.getACL
@@ -84,7 +82,7 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
     assertResult(barAclDefault)(barAcl)
   }
 
-  it should "import one node with child" in withCurator { implicit curatorFramework =>
+  it should "import one node with child" in withCurator { curatorFramework =>
     val fooAclDefault =
       List(Acl(AclId("world", "anyone"), Set(Read, Create)))
     val barAclDefault =
@@ -99,9 +97,9 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       )
 
     val action =
-      ImportZNodesAction(ZNodePath.parse("/").get, exported)
+      ImportZNodesAction(ZNodePath.parse("/").get, exported, curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new ImportZNodesActionHandler).handle(action).runToFuture, Duration.Inf)
 
     val fooData = new String(curatorFramework.getData.forPath("/foo"))
     val fooAcl = curatorFramework.getACL
@@ -122,7 +120,7 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
     assertResult(barAclDefault)(barAcl)
   }
 
-  it should "import node as a child of 'import' ZNode" in withCurator { implicit curatorFramework =>
+  it should "import node as a child of 'import' ZNode" in withCurator { curatorFramework =>
     val fooAclDefault =
       List(Acl(AclId("world", "anyone"), Set(Read, Create)))
     val barAclDefault =
@@ -143,9 +141,9 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
     curatorFramework.createContainers("/import")
 
     val action =
-      ImportZNodesAction(ZNodePath.parse("/import").get, exported)
+      ImportZNodesAction(ZNodePath.parse("/import").get, exported, curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new ImportZNodesActionHandler).handle(action).runToFuture, Duration.Inf)
 
     val fooData = new String(curatorFramework.getData.forPath("/import/foo"))
     val fooAcl = curatorFramework.getACL
@@ -176,7 +174,7 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
     assertResult(bazAclDefault)(bazAcl)
   }
 
-  it should "import node creating its non-existent target parent" in withCurator { implicit curatorFramework =>
+  it should "import node creating its non-existent target parent" in withCurator { curatorFramework =>
     val fooAclDefault =
       List(Acl(AclId("world", "anyone"), Set(Read, Create)))
 
@@ -184,9 +182,9 @@ class ImportZNodesActionHandlerSpec extends FlatSpec with CuratorSpec {
       List(Cofree(getExportNode("/foo", "foo", fooAclDefault), Now(List.empty[Cofree[List, ZNodeExport]])))
 
     val action =
-      ImportZNodesAction(ZNodePath.parse("/non-existent-parent").get, exported)
+      ImportZNodesAction(ZNodePath.parse("/non-existent-parent").get, exported, curatorFramework)
 
-    Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+    Await.result((new ImportZNodesActionHandler).handle(action).runToFuture, Duration.Inf)
 
     val fooData = new String(curatorFramework.getData.forPath("/non-existent-parent/foo"))
 

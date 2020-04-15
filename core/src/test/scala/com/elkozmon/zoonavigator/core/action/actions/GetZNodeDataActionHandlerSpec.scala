@@ -32,20 +32,17 @@ class GetZNodeDataActionHandlerSpec extends FlatSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
 
-  private def actionHandler(implicit curatorFramework: CuratorFramework) =
-    new GetZNodeDataActionHandler(curatorFramework)
-
   "GetZNodeDataActionHandler" should "return empty byte array for node with null data" in withCurator {
-    implicit curatorFramework =>
+    curatorFramework =>
       curatorFramework
         .create()
         .forPath("/null-node", null)
         .discard()
 
-      val action = GetZNodeDataAction(ZNodePath.parse("/null-node").get)
+      val action = GetZNodeDataAction(ZNodePath.parse("/null-node").get, curatorFramework)
 
       val metadata =
-        Await.result(actionHandler.handle(action).runToFuture, Duration.Inf)
+        Await.result((new GetZNodeDataActionHandler).handle(action).runToFuture, Duration.Inf)
 
       assert(metadata.data.bytes.isEmpty)
   }
