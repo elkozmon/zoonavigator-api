@@ -33,28 +33,24 @@ import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.action.ActionModule
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import curator.action.CuratorActionBuilder
-import curator.action.CuratorRequest
+import curator.action.CuratorAction
 import monix.eval.Task
 import play.api.http.HttpErrorHandler
-import play.api.http.Writeable
 import play.api.libs.json._
 import play.api.mvc._
-import schedulers.BlockingScheduler
 import schedulers.ComputingScheduler
-import session.action.SessionActionBuilder
 import utils.Gzip
 
 class ZNodeController(
     httpErrorHandler: HttpErrorHandler,
-    curatorActionBuilder: CuratorActionBuilder,
-    sessionActionBuilder: SessionActionBuilder,
-    blockingScheduler: BlockingScheduler,
+    curatorAction: CuratorAction,
     computingScheduler: ComputingScheduler,
     actionModule: ActionModule,
     playBodyParsers: PlayBodyParsers,
     controllerComponents: ControllerComponents
 ) extends AbstractController(controllerComponents) {
+
+  import computingScheduler.implicitScheduler
 
   private val actionDispatcher =
     actionModule.actionDispatcher
@@ -63,17 +59,14 @@ class ZNodeController(
     new Exception("Malformed data")
 
   def getNode(path: ZNodePath): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+    Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = actionDispatcher
         .dispatch(GetZNodeWithChildrenAction(path, curatorRequest.curatorFramework))
         .map(ApiResponse.success(_))
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -81,17 +74,14 @@ class ZNodeController(
     }
 
   def getChildrenNodes(path: ZNodePath): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+    Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = actionDispatcher
         .dispatch(GetZNodeChildrenAction(path, curatorRequest.curatorFramework))
         .map(ApiResponse.success(_))
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -99,17 +89,14 @@ class ZNodeController(
     }
 
   def createNode(path: ZNodePath): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+    Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = actionDispatcher
         .dispatch(CreateZNodeAction(path, curatorRequest.curatorFramework))
         .map(_ => ApiResponse.successEmpty)
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -117,17 +104,14 @@ class ZNodeController(
     }
 
   def duplicateNode(source: ZNodePath, destination: ZNodePath): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+    Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = actionDispatcher
         .dispatch(DuplicateZNodeRecursiveAction(source, destination, curatorRequest.curatorFramework))
         .map(_ => ApiResponse.successEmpty)
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -135,17 +119,14 @@ class ZNodeController(
     }
 
   def moveNode(source: ZNodePath, destination: ZNodePath): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+    Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = actionDispatcher
         .dispatch(MoveZNodeRecursiveAction(source, destination, curatorRequest.curatorFramework))
         .map(_ => ApiResponse.successEmpty)
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -153,17 +134,14 @@ class ZNodeController(
     }
 
   def deleteNode(path: ZNodePath, version: ZNodeDataVersion): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+    Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = actionDispatcher
         .dispatch(DeleteZNodeRecursiveAction(path, version, curatorRequest.curatorFramework))
         .map(_ => ApiResponse.successEmpty)
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -171,20 +149,17 @@ class ZNodeController(
     }
 
   def deleteChildrenNodes(path: ZNodePath, names: List[String]): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+    Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = Task
         .fromTry(names.traverse(path.down))
         .flatMap { t =>
           actionDispatcher.dispatch(ForceDeleteZNodeRecursiveAction(t, curatorRequest.curatorFramework))
         }
         .map(_ => ApiResponse.successEmpty)
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -192,7 +167,7 @@ class ZNodeController(
     }
 
   def updateAcl(path: ZNodePath, version: ZNodeAclVersion, recursive: Option[Boolean]): Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async { implicit curatorRequest =>
+    Action(playBodyParsers.json).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = parseRequestBodyJson[List[Acl]]
         .flatMap {
           case jsonAclList if recursive.contains(true) =>
@@ -206,13 +181,10 @@ class ZNodeController(
               .dispatch(UpdateZNodeAclListAction(path, ZNodeAcl(jsonAclList), version, curatorRequest.curatorFramework))
         }
         .map(ApiResponse.success(_))
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -220,19 +192,16 @@ class ZNodeController(
     }
 
   def updateData(path: ZNodePath, version: ZNodeDataVersion): Action[JsValue] =
-    newCuratorAction(playBodyParsers.json).async { implicit curatorRequest =>
+    Action(playBodyParsers.json).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = parseRequestBodyJson[ZNodeData]
         .flatMap { t =>
           actionDispatcher.dispatch(UpdateZNodeDataAction(path, t, version, curatorRequest.curatorFramework))
         }
         .map(ApiResponse.success(_))
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -240,7 +209,7 @@ class ZNodeController(
     }
 
   def getExportNodes(paths: List[ZNodePath]): Action[Unit] =
-    newCuratorAction(playBodyParsers.empty).async { implicit curatorRequest =>
+    Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = actionDispatcher
         .dispatch(ExportZNodesAction(paths, curatorRequest.curatorFramework))
         .map(implicitly[Writes[List[Cofree[List, ZNodeExport]]]].writes)
@@ -249,13 +218,10 @@ class ZNodeController(
         .map(Base64.getEncoder.encode)
         .map(new String(_, StandardCharsets.UTF_8))
         .map(ApiResponse.success(_))
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+        .runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
@@ -263,7 +229,7 @@ class ZNodeController(
     }
 
   def importNodes(path: ZNodePath): Action[ByteString] =
-    newCuratorAction(playBodyParsers.byteString).async { implicit curatorRequest =>
+    Action(playBodyParsers.byteString).andThen(curatorAction).async { implicit curatorRequest =>
       def dispatchImport(exportZNodes: List[Cofree[List, ZNodeExport]]) =
         actionDispatcher
           .dispatch(ImportZNodesAction(path, exportZNodes, curatorRequest.curatorFramework))
@@ -301,24 +267,15 @@ class ZNodeController(
             )
         }
 
-      val futureApiResponse = importNodesT
-        .executeOn(blockingScheduler)
-        .runToFuture(blockingScheduler)
+      val futureApiResponse = importNodesT.runToFuture
 
       render.async {
         case Accepts.Json() =>
-          import computingScheduler.scheduler
-
           futureApiResponse
             .map(apiResponse => Ok(Json.toJson(apiResponse)))
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
-
-  private def newCuratorAction[B](
-      bodyParser: BodyParser[B]
-  )(implicit wrt: Writeable[ApiResponse[String]]): ActionBuilder[CuratorRequest, B] =
-    sessionActionBuilder(bodyParser) andThen curatorActionBuilder()
 
   private def parseRequestBodyJson[T](implicit request: Request[JsValue], reads: Reads[T]): Task[T] =
     request.body.validateOpt[T] match {

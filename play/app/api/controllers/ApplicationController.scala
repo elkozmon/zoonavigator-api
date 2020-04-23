@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,6 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package session
+package api.controllers
 
-final case class SessionToken(token: String)
+import config.ApplicationConfig
+import play.api.libs.json._
+import play.api.mvc.AbstractController
+import play.api.mvc.Action
+import play.api.mvc.ControllerComponents
+import play.api.mvc._
+
+class ApplicationController(applicationConfig: ApplicationConfig, controllerComponents: ControllerComponents)
+    extends AbstractController(controllerComponents) {
+
+  import api.formats.Json._
+
+  def getConfig: Action[AnyContent] =
+    Action { implicit request =>
+      render {
+        case Accepts.Json() =>
+          Ok(Json.toJson(applicationConfig))
+      }
+    }
+}

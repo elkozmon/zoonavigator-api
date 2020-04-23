@@ -22,11 +22,11 @@ import monix.execution.Scheduler
 import scala.language.implicitConversions
 
 trait BlockingScheduler {
-  implicit val scheduler: Scheduler
+  implicit val implicitScheduler: Scheduler
 }
 
 object BlockingScheduler {
 
   implicit def asScheduler(blockingScheduler: BlockingScheduler): Scheduler =
-    blockingScheduler.scheduler
+    blockingScheduler.implicitScheduler
 }

@@ -19,20 +19,21 @@ package api.formats
 
 import api.formats.json.api.JsonApiResponse
 import api.formats.json.cats.JsonCofree
-import api.formats.json.zookeeper.JsonConnectionParams
-import api.formats.json.zookeeper.JsonSessionInfo
+import api.formats.json.config.JsonApplicationConfig
+import api.formats.json.zookeeper._
 import api.formats.json.zookeeper.acl.JsonAcl
 import api.formats.json.zookeeper.znode._
 
 object Json
     extends JsonApiResponse
+    with JsonApplicationConfig
     with JsonZNodeWithChildren
     with JsonZNodeMetaWith
     with JsonZNodeMeta
     with JsonZNodeChildren
     with JsonZNode
-    with JsonSessionInfo
     with JsonConnectionParams
+    with JsonConnectionName
     with JsonAcl
     with JsonZNodeExport
     with JsonCofree

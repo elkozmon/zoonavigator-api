@@ -19,8 +19,11 @@ package curator.provider
 
 import java.util.concurrent._
 
+import cats.syntax.traverse._
+import cats.instances.option._
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.google.common.cache._
+import config.ApplicationConfig
 import loggers.AppLogger
 import monix.eval.Task
 import monix.execution.Cancelable
@@ -33,6 +36,8 @@ import org.apache.curator.framework.state.ConnectionState
 import org.apache.curator.framework.state.ConnectionStateListener
 import org.apache.curator.retry.ExponentialBackoffRetry
 import zookeeper.AuthInfo
+import zookeeper.ConnectionName
+import zookeeper.ConnectionParams
 import zookeeper.ConnectionString
 
 import scala.concurrent.duration._
@@ -42,27 +47,33 @@ import scala.util.Try
 
 class CacheCuratorFrameworkProvider(
     appLogger: AppLogger,
+    appConfig: ApplicationConfig,
     curatorCacheMaxAge: CuratorCacheMaxAge,
     curatorConnectTimeout: CuratorConnectTimeout,
     implicit val scheduler: Scheduler
 ) extends CuratorFrameworkProvider
     with RemovalListener[CuratorKey, Task[CuratorFramework]] {
 
-  private val sessionCache =
+  private val predefConnectionParamMap =
+    appConfig.connections
+      .map(c => ConnectionName(c.name) -> ConnectionParams(c.connectionString, c.authInfoList))
+      .toMap
+
+  private val curatorFrameworkCache =
     CacheBuilder
       .newBuilder()
       .expireAfterAccess(curatorCacheMaxAge.duration.toMillis, TimeUnit.MILLISECONDS)
       .removalListener(CacheCuratorFrameworkProvider.this)
       .build[CuratorKey, Task[CuratorFramework]]()
 
-  private val sessionCacheMap =
-    sessionCache
+  private val curatorFrameworkCacheMap =
+    curatorFrameworkCache
       .asMap()
       .asScala
 
   // start clean up job
   scheduler
-    .scheduleWithFixedDelay(1 second, 1 second)(sessionCache.cleanUp())
+    .scheduleWithFixedDelay(1 second, 1 second)(curatorFrameworkCache.cleanUp())
     .discard()
 
   override def onRemoval(notification: RemovalNotification[CuratorKey, Task[CuratorFramework]]): Unit = {
@@ -79,11 +90,14 @@ class CacheCuratorFrameworkProvider(
       .discard()
   }
 
+  override def getCuratorInstance(connectionName: ConnectionName): Task[Option[CuratorFramework]] =
+    predefConnectionParamMap.get(connectionName).map(getCuratorInstance).sequence
+
   override def getCuratorInstance(
       connectionString: ConnectionString,
       authInfoList: List[AuthInfo]
   ): Task[CuratorFramework] =
-    sessionCacheMap
+    curatorFrameworkCacheMap
       .getOrElseUpdate(CuratorKey(connectionString, authInfoList), newCuratorInstance(connectionString, authInfoList))
 
   private def newCuratorInstance(
@@ -160,4 +174,5 @@ class CacheCuratorFrameworkProvider(
         Cancelable.empty
       }
       .memoize
+
 }

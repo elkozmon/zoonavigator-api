@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,22 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package session.manager
+package api.formats.json.zookeeper
 
-import play.api.mvc.RequestHeader
-import session.SessionToken
+import play.api.libs.json._
+import zookeeper.ConnectionName
 
-trait SessionManager {
+trait JsonConnectionName {
 
-  def newSession(): SessionToken
+  implicit object ConnectionNameFormat extends Format[ConnectionName] {
 
-  def getSession(rh: RequestHeader): Option[SessionToken]
+    override def reads(json: JsValue): JsResult[ConnectionName] =
+      json match {
+        case JsString(connectionName) =>
+          JsSuccess(ConnectionName(connectionName))
+        case _ =>
+          JsError("Invalid connection string format")
+      }
 
-  def closeSession()(implicit token: SessionToken): Map[String, AnyRef]
+    override def writes(o: ConnectionName): JsValue =
+      JsString(o.name)
+  }
 
-  def getSessionData(key: String)(implicit token: SessionToken): Option[AnyRef]
-
-  def putSessionData(key: String, value: AnyRef)(implicit token: SessionToken): Option[AnyRef]
-
-  def removeSessionData(key: String)(implicit token: SessionToken): Option[AnyRef]
 }

@@ -17,17 +17,18 @@
 
 import java.util.concurrent.TimeUnit
 
+import api.controllers.ApplicationController
 import api.controllers.FrontendController
 import api.controllers.ZNodeController
-import api.controllers.ZSessionController
 import api.ApiErrorHandler
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
-import config.HttpContext
+import config.ApplicationConfig
+import config.PlayHttpContext
 import controllers.AssetsComponents
-import curator.action.CuratorActionBuilder
+import curator.action.CuratorAction
 import curator.provider._
 import loggers.AppLogger
 import monix.execution.Scheduler
@@ -43,12 +44,6 @@ import play.filters.HttpFiltersComponents
 import play.filters.cors.CORSComponents
 import router.Routes
 import schedulers._
-import session.SessionInactivityTimeout
-import session.action.SessionActionBuilder
-import session.manager.ExpiringSessionManager
-import session.manager.SessionManager
-import zookeeper.session.DefaultZooKeeperSessionHelper
-import zookeeper.session.ZooKeeperSessionHelper
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -62,8 +57,8 @@ class AppComponents(context: Context)
   LoggerConfigurator(context.environment.classLoader)
     .foreach(_.configure(context.environment))
 
-  private lazy val httpContext: HttpContext =
-    HttpContext(
+  private lazy val httpContext: PlayHttpContext =
+    PlayHttpContext(
       configuration
         .getOptional[String]("play.http.context")
         .getOrElse("/")
@@ -71,6 +66,14 @@ class AppComponents(context: Context)
         .stripSuffix("/")
         .prepended('/')
     )
+
+  private lazy val applicationConfig: ApplicationConfig =
+    configuration.get[ApplicationConfig]("zoonavigator")
+
+  private lazy val curatorAction: CuratorAction = {
+    implicit val scheduler: Scheduler = computingScheduler
+    wire[CuratorAction]
+  }
 
   override lazy val httpErrorHandler: HttpErrorHandler = {
     //noinspection ScalaUnusedSymbol
@@ -118,16 +121,6 @@ class AppComponents(context: Context)
     wire[Routes]
   }
 
-  lazy val sessionInactivityTimeout: SessionInactivityTimeout =
-    SessionInactivityTimeout(
-      new FiniteDuration(
-        context.initialConfiguration
-          .getOptional[Long]("play.http.session.maxAge")
-          .getOrElse(5 * 60 * 1000),
-        TimeUnit.MILLISECONDS
-      )
-    )
-
   lazy val scheduler: Scheduler =
     Scheduler(actorSystem.dispatcher)
 
@@ -154,20 +147,8 @@ class AppComponents(context: Context)
   override val appLogger: AppLogger =
     AppLogger(LoggerFactory.getLogger("application"))
 
-  override val sessionManager: SessionManager =
-    wire[ExpiringSessionManager]
-
   override val curatorFrameworkProvider: CuratorFrameworkProvider =
     wire[CacheCuratorFrameworkProvider]
-
-  override val zookeeperSessionHelper: ZooKeeperSessionHelper =
-    wire[DefaultZooKeeperSessionHelper]
-
-  override lazy val curatorActionBuilder: CuratorActionBuilder =
-    wire[CuratorActionBuilder]
-
-  override lazy val sessionActionBuilder: SessionActionBuilder =
-    wire[SessionActionBuilder]
 
   override lazy val frontendController: FrontendController =
     wire[FrontendController]
@@ -175,8 +156,8 @@ class AppComponents(context: Context)
   override lazy val zNodeController: ZNodeController =
     wire[ZNodeController]
 
-  override lazy val zSessionController: ZSessionController =
-    wire[ZSessionController]
+  override lazy val applicationController: ApplicationController =
+    wire[ApplicationController]
 
   override lazy val blockingScheduler: BlockingScheduler =
     DefaultBlockingScheduler(Scheduler.io("zoonavigator-io"))

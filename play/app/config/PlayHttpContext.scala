@@ -15,25 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package api.formats.json.zookeeper
+package config
 
-import play.api.libs.json._
-import session.SessionToken
-
-trait JsonSessionToken {
-
-  implicit object SessionTokenFormat extends Format[SessionToken] {
-
-    override def reads(json: JsValue): JsResult[SessionToken] =
-      json match {
-        case JsString(sessionToken) =>
-          JsSuccess(SessionToken(sessionToken))
-        case _ =>
-          JsError("Invalid session token format")
-      }
-
-    override def writes(o: SessionToken): JsValue =
-      JsString(o.token)
-  }
-
-}
+case class PlayHttpContext(context: String) extends AnyVal
