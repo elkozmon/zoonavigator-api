@@ -37,7 +37,7 @@ trait JsonApplicationConfig extends JsonConnectionString with DefaultWrites {
   implicit val applicationConfigOWrites: OWrites[ApplicationConfig] =
     (
       (JsPath \ "requestTimeoutMillis").write[Long].contramap[FiniteDuration](_.toMillis) and
-        (JsPath \ "autoConnect").write[Option[String]] and
+        (JsPath \ "autoConnect").writeNullable[String] and
         (JsPath \ "connections").write[List[Connection]]
     )(unlift(ApplicationConfig.unapply))
 }
