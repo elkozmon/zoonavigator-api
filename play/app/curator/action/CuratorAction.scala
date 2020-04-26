@@ -43,7 +43,7 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
 
   import api.formats.Json._
 
-  private val cxnPreDefHeaderPrefix = "CxnPredef"
+  private val cxnPresetHeaderPrefix = "CxnPreset"
 
   private val cxnParamsHeaderPrefix = "CxnParams"
 
@@ -62,8 +62,8 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
       .toRight(missingAuthHeaderResult(request))
       .map(_.trim)
       .flatMap[Future[Result], Task[Either[Result, CuratorFramework]]] {
-        case x if x.startsWith(cxnPreDefHeaderPrefix) =>
-          val b64 = x.stripPrefix(cxnPreDefHeaderPrefix).trim
+        case x if x.startsWith(cxnPresetHeaderPrefix) =>
+          val b64 = x.stripPrefix(cxnPresetHeaderPrefix).trim
           val json = JsString(new String(Base64.getDecoder.decode(b64), StandardCharsets.UTF_8))
           json
             .asOpt[ConnectionName]

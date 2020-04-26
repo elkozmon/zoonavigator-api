@@ -54,7 +54,7 @@ class CacheCuratorFrameworkProvider(
 ) extends CuratorFrameworkProvider
     with RemovalListener[CuratorKey, Task[CuratorFramework]] {
 
-  private val predefConnectionParamMap =
+  private val presetConnectionParamMap =
     appConfig.connections
       .map(c => ConnectionName(c.name) -> ConnectionParams(c.connectionString, c.authInfoList))
       .toMap
@@ -91,7 +91,7 @@ class CacheCuratorFrameworkProvider(
   }
 
   override def getCuratorInstance(connectionName: ConnectionName): Task[Option[CuratorFramework]] =
-    predefConnectionParamMap.get(connectionName).map(getCuratorInstance).sequence
+    presetConnectionParamMap.get(connectionName).map(getCuratorInstance).sequence
 
   override def getCuratorInstance(
       connectionString: ConnectionString,
