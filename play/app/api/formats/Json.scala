@@ -33,6 +33,7 @@ object Json
     with JsonZNodeChildren
     with JsonZNode
     with JsonConnectionParams
+    with JsonConnectionId
     with JsonConnectionName
     with JsonAcl
     with JsonZNodeExport

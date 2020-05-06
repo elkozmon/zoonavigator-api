@@ -27,13 +27,16 @@ trait JsonConnectionName {
     override def reads(json: JsValue): JsResult[ConnectionName] =
       json match {
         case JsString(connectionName) =>
-          JsSuccess(ConnectionName(connectionName))
+          JsSuccess(ConnectionName(Some(connectionName)))
         case _ =>
-          JsError("Invalid connection string format")
+          JsError("Invalid connection name format")
       }
 
     override def writes(o: ConnectionName): JsValue =
-      JsString(o.name)
+      o.name match {
+        case Some(value) => JsString(value)
+        case None        => JsNull
+      }
   }
 
 }

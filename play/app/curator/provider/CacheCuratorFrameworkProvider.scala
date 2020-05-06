@@ -36,7 +36,7 @@ import org.apache.curator.framework.state.ConnectionState
 import org.apache.curator.framework.state.ConnectionStateListener
 import org.apache.curator.retry.ExponentialBackoffRetry
 import zookeeper.AuthInfo
-import zookeeper.ConnectionName
+import zookeeper.ConnectionId
 import zookeeper.ConnectionParams
 import zookeeper.ConnectionString
 
@@ -56,7 +56,7 @@ class CacheCuratorFrameworkProvider(
 
   private val presetConnectionParamMap =
     appConfig.connections
-      .map(c => ConnectionName(c.name) -> ConnectionParams(c.connectionString, c.authInfoList))
+      .map(c => ConnectionId(c.id) -> ConnectionParams(c.connectionString, c.authInfoList))
       .toMap
 
   private val curatorFrameworkCache =
@@ -90,8 +90,8 @@ class CacheCuratorFrameworkProvider(
       .discard()
   }
 
-  override def getCuratorInstance(connectionName: ConnectionName): Task[Option[CuratorFramework]] =
-    presetConnectionParamMap.get(connectionName).map(getCuratorInstance).sequence
+  override def getCuratorInstance(connectionId: ConnectionId): Task[Option[CuratorFramework]] =
+    presetConnectionParamMap.get(connectionId).map(getCuratorInstance).sequence
 
   override def getCuratorInstance(
       connectionString: ConnectionString,

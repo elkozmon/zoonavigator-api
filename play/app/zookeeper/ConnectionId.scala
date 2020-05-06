@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,18 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package curator.provider
+package zookeeper
 
-import monix.eval.Task
-import org.apache.curator.framework.CuratorFramework
-import zookeeper._
-
-trait CuratorFrameworkProvider {
-
-  def getCuratorInstance(connectionId: ConnectionId): Task[Option[CuratorFramework]]
-
-  def getCuratorInstance(connectionString: ConnectionString, authInfoList: List[AuthInfo]): Task[CuratorFramework]
-
-  final def getCuratorInstance(connectionParams: ConnectionParams): Task[CuratorFramework] =
-    getCuratorInstance(connectionParams.connectionString, connectionParams.authInfoList)
-}
+final case class ConnectionId(id: String) extends AnyVal

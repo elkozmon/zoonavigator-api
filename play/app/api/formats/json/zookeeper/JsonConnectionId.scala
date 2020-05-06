@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,18 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package curator.provider
+package api.formats.json.zookeeper
 
-import monix.eval.Task
-import org.apache.curator.framework.CuratorFramework
-import zookeeper._
+import play.api.libs.json._
+import zookeeper.ConnectionId
 
-trait CuratorFrameworkProvider {
+trait JsonConnectionId {
 
-  def getCuratorInstance(connectionId: ConnectionId): Task[Option[CuratorFramework]]
+  implicit object ConnectionIdFormat extends Format[ConnectionId] {
 
-  def getCuratorInstance(connectionString: ConnectionString, authInfoList: List[AuthInfo]): Task[CuratorFramework]
+    override def reads(json: JsValue): JsResult[ConnectionId] =
+      json match {
+        case JsString(connectionId) => JsSuccess(ConnectionId(connectionId))
+        case _                      => JsError("Invalid connection id format")
+      }
 
-  final def getCuratorInstance(connectionParams: ConnectionParams): Task[CuratorFramework] =
-    getCuratorInstance(connectionParams.connectionString, connectionParams.authInfoList)
+    override def writes(o: ConnectionId): JsValue =
+      JsString(o.id)
+  }
 }

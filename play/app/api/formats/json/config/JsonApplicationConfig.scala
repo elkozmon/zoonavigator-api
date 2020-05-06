@@ -30,9 +30,10 @@ trait JsonApplicationConfig extends JsonConnectionString with DefaultWrites {
 
   private implicit val connectionOWrites: OWrites[Connection] =
     (
-      (JsPath \ "name").write[String] and
+      (JsPath \ "id").write[String] and
+        (JsPath \ "name").writeNullable[String] and
         (JsPath \ "connectionString").write[ConnectionString]
-    )((c: Connection) => (c.name, c.connectionString))
+    )((c: Connection) => (c.id, c.name, c.connectionString))
 
   implicit val applicationConfigOWrites: OWrites[ApplicationConfig] =
     (

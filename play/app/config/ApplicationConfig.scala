@@ -20,6 +20,8 @@ package config
 import java.nio.charset.StandardCharsets
 
 import com.typesafe.config.Config
+import com.typesafe.config.ConfigList
+import com.typesafe.config.ConfigObject
 import play.api.ConfigLoader
 import zookeeper.AuthInfo
 import zookeeper.ConnectionString
@@ -34,6 +36,7 @@ final case class ApplicationConfig(
     connections: List[ApplicationConfig.Connection]
 )
 
+@SuppressWarnings(Array("org.wartremover.warts.Throw"))
 object ApplicationConfig {
 
   implicit val configLoader: ConfigLoader[ApplicationConfig] =
@@ -47,16 +50,38 @@ object ApplicationConfig {
         } else {
           None
         },
-        config.getObjectList("connections").asScala.toList.map { o =>
-          val c = o.toConfig
-          val authList = c.getObjectList("auth").asScala.toList.map { o =>
-            val c = o.toConfig
-            AuthInfo(c.getString("scheme"), c.getString("id").getBytes(StandardCharsets.UTF_8))
+        config
+          .getObject("connections")
+          .entrySet()
+          .asScala
+          .toList
+          .map { o =>
+            val id = o.getKey
+            val c = o.getValue match {
+              case o: ConfigObject => o.toConfig
+              case _               => throw new RuntimeException("Invalid Config object at 'zoonavigator.connections'")
+            }
+
+            val authList = c.getObjectList("auth").asScala.toList.map { o =>
+              val c = o.toConfig
+              AuthInfo(c.getString("scheme"), c.getString("id").getBytes(StandardCharsets.UTF_8))
+            }
+
+            val maybeName = if (c.hasPath("name")) {
+              Some(c.getString("name"))
+            } else {
+              None
+            }
+
+            Connection(id, maybeName, ConnectionString(c.getString("conn")), authList)
           }
-          Connection(c.getString("name"), ConnectionString(c.getString("conn")), authList)
-        }
       )
     }
 
-  final case class Connection(name: String, connectionString: ConnectionString, authInfoList: List[AuthInfo])
+  final case class Connection(
+      id: String,
+      name: Option[String],
+      connectionString: ConnectionString,
+      authInfoList: List[AuthInfo]
+  )
 }

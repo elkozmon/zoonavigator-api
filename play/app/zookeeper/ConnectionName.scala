@@ -17,4 +17,4 @@
 
 package zookeeper
 
-final case class ConnectionName(name: String) extends AnyVal
+final case class ConnectionName(name: Option[String]) extends AnyVal

@@ -22,7 +22,6 @@ import java.util.Base64
 
 import cats.instances.either._
 import cats.instances.future._
-import cats.syntax.traverse._
 import cats.syntax.bitraverse._
 import curator.provider.CuratorFrameworkProvider
 import monix.eval.Task
@@ -32,7 +31,7 @@ import play.api.http.HttpErrorHandler
 import play.api.libs.json.Json
 import play.api.libs.json.JsString
 import play.api.mvc._
-import zookeeper.ConnectionName
+import zookeeper.ConnectionId
 import zookeeper.ConnectionParams
 
 import scala.concurrent.Future
@@ -66,7 +65,7 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
           val b64 = x.stripPrefix(cxnPresetHeaderPrefix).trim
           val json = JsString(new String(Base64.getDecoder.decode(b64), StandardCharsets.UTF_8))
           json
-            .asOpt[ConnectionName]
+            .asOpt[ConnectionId]
             .toRight(malformedAuthHeaderResult(request))
             .map(
               curatorFrameworkProvider
