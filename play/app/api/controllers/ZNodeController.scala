@@ -247,7 +247,7 @@ class ZNodeController(
               .traverse(dispatchImport)
               .flatMap(Task.fromTry)
 
-          case Some("application/gzip") =>
+          case Some("application/gzip") | Some("application/x-gzip") =>
             Gzip
               .decompress(curatorRequest.body.toArray)
               .flatMap { byteArray =>
