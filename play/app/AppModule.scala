@@ -1,6 +1,5 @@
-import api.controllers.ApplicationController
 import api.controllers.FrontendController
-import api.controllers.ZNodeController
+import api.controllers.ApiController
 import com.elkozmon.zoonavigator.core.action.ActionModule
 import curator.provider.CuratorFrameworkProvider
 import loggers.AppLogger
@@ -36,9 +35,7 @@ trait AppModule extends ActionModule {
 
   val frontendController: FrontendController
 
-  val zNodeController: ZNodeController
-
-  val applicationController: ApplicationController
+  val apiController: ApiController
 
   val blockingScheduler: BlockingScheduler
 

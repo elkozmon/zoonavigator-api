@@ -17,10 +17,11 @@
 
 import java.util.concurrent.TimeUnit
 
-import api.controllers.ApplicationController
 import api.controllers.FrontendController
-import api.controllers.ZNodeController
+import api.controllers.ApiController
 import api.ApiErrorHandler
+import api.routers.ApiRouter
+import api.routers.ApplicationRouter
 import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.action.actions._
@@ -42,7 +43,6 @@ import play.api.routing.Router
 import play.core.SourceMapper
 import play.filters.HttpFiltersComponents
 import play.filters.cors.CORSComponents
-import router.Routes
 import schedulers._
 
 import scala.concurrent.duration.FiniteDuration
@@ -116,9 +116,9 @@ class AppComponents(context: Context)
 
   override lazy val router: Router = {
     //noinspection ScalaUnusedSymbol
-    val prefix = httpContext.context
+    val apiRouter = wire[ApiRouter]
 
-    wire[Routes]
+    wire[ApplicationRouter]
   }
 
   lazy val scheduler: Scheduler =
@@ -153,11 +153,8 @@ class AppComponents(context: Context)
   override lazy val frontendController: FrontendController =
     wire[FrontendController]
 
-  override lazy val zNodeController: ZNodeController =
-    wire[ZNodeController]
-
-  override lazy val applicationController: ApplicationController =
-    wire[ApplicationController]
+  override lazy val apiController: ApiController =
+    wire[ApiController]
 
   override lazy val blockingScheduler: BlockingScheduler =
     DefaultBlockingScheduler(Scheduler.io("zoonavigator-io"))
