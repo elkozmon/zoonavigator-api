@@ -33,6 +33,7 @@ import com.elkozmon.zoonavigator.core.action.actions._
 import com.elkozmon.zoonavigator.core.action.ActionModule
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
+import config.ApplicationConfig
 import curator.action.CuratorAction
 import monix.eval.Task
 import play.api.http.HttpErrorHandler
@@ -41,7 +42,8 @@ import play.api.mvc._
 import schedulers.ComputingScheduler
 import utils.Gzip
 
-class ZNodeController(
+class ApiController(
+    applicationConfig: ApplicationConfig,
     httpErrorHandler: HttpErrorHandler,
     curatorAction: CuratorAction,
     computingScheduler: ComputingScheduler,
@@ -57,6 +59,14 @@ class ZNodeController(
 
   private val malformedDataException =
     new Exception("Malformed data")
+
+  def getConfig: Action[AnyContent] =
+    Action { implicit request =>
+      render {
+        case Accepts.Json() =>
+          Ok(Json.toJson(applicationConfig))
+      }
+    }
 
   def getNode(path: ZNodePath): Action[Unit] =
     Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
@@ -148,10 +158,10 @@ class ZNodeController(
       }
     }
 
-  def deleteChildrenNodes(path: ZNodePath, names: List[String]): Action[Unit] =
+  def deleteChildrenNodes(path: ZNodePath, names: Seq[String]): Action[Unit] =
     Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = Task
-        .fromTry(names.traverse(path.down))
+        .fromTry(names.toList.traverse(path.down))
         .flatMap { t =>
           actionDispatcher.dispatch(ForceDeleteZNodeRecursiveAction(t, curatorRequest.curatorFramework))
         }

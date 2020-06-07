@@ -15,25 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package api.controllers
+package api.routers
 
-import config.ApplicationConfig
-import play.api.libs.json._
-import play.api.mvc.AbstractController
-import play.api.mvc.Action
-import play.api.mvc.ControllerComponents
-import play.api.mvc._
+import api.controllers.FrontendController
+import play.api.http.HttpErrorHandler
+import play.api.mvc.DefaultActionBuilder
+import play.api.routing.Router.Routes
+import play.api.routing.SimpleRouter
+import play.api.routing.sird._
 
-class ApplicationController(applicationConfig: ApplicationConfig, controllerComponents: ControllerComponents)
-    extends AbstractController(controllerComponents) {
+class FrontendRouter(
+    frontendController: FrontendController,
+    httpErrorHandler: HttpErrorHandler,
+    actionBuilder: DefaultActionBuilder
+) extends SimpleRouter {
 
-  import api.formats.Json._
+  override def routes: Routes = {
+    case GET(p"/$path*") =>
+      frontendController.assetOrDefault(path)
 
-  def getConfig: Action[AnyContent] =
-    Action { implicit request =>
-      render {
-        case Accepts.Json() =>
-          Ok(Json.toJson(applicationConfig))
-      }
-    }
+    case p =>
+      actionBuilder.async(httpErrorHandler.onClientError(p, 404, "Not found"))
+  }
 }
