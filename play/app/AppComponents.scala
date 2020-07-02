@@ -28,6 +28,7 @@ import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.elkozmon.zoonavigator.core.action.actions._
 import com.softwaremill.macwire._
 import config.ApplicationConfig
+import config.PlayAssetsPath
 import config.PlayHttpContext
 import controllers.AssetsComponents
 import curator.action.CuratorAction
@@ -57,6 +58,17 @@ class AppComponents(context: Context)
 
   LoggerConfigurator(context.environment.classLoader)
     .foreach(_.configure(context.environment))
+
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
+  private lazy val playAssetsPath: PlayAssetsPath =
+    PlayAssetsPath(
+      configuration
+        .getOptional[String]("play.assets.path")
+        .get
+        .stripPrefix("/")
+        .stripSuffix("/")
+        .prepended('/')
+    )
 
   private lazy val httpContext: PlayHttpContext =
     PlayHttpContext(

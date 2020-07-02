@@ -62,7 +62,8 @@ val play = project
       "ch.qos.logback"           % "logback-classic" % "1.2.3",
       "org.apache.zookeeper"     % "zookeeper"       % zookeeperVersion % Provided,
       "com.softwaremill.macwire" %% "macros"         % macwireVersion % Provided,
-      "com.softwaremill.macwire" %% "util"           % macwireVersion
+      "com.softwaremill.macwire" %% "util"           % macwireVersion,
+      "org.jsoup"                % "jsoup"           % "1.13.1"
     ),
     routesImport ++= Seq(
       "api.binders._",

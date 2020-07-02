@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,4 +17,4 @@
 
 package config
 
-final case class PlayHttpContext(context: String) extends AnyVal
+final case class PlayAssetsPath(path: String) extends AnyVal

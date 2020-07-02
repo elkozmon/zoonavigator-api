@@ -17,18 +17,52 @@
 
 package api.controllers
 
+import java.math.BigInteger
+import java.security.MessageDigest
+
+import config.PlayAssetsPath
+import config.PlayHttpContext
 import controllers.Assets
+import org.jsoup.Jsoup
 import play.api.mvc._
+import play.api.Environment
+import play.mvc.Http.MimeTypes
+import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 
-class FrontendController(assets: Assets, controllerComponents: ControllerComponents)
-    extends AbstractController(controllerComponents) {
+import scala.jdk.CollectionConverters._
 
-  def index: Action[AnyContent] = assets.at("index.html")
+class FrontendController(
+    assets: Assets,
+    controllerComponents: ControllerComponents,
+    environment: Environment,
+    playAssetsPath: PlayAssetsPath,
+    playHttpContext: PlayHttpContext
+) extends AbstractController(controllerComponents) {
+
+  val indexAction: Action[AnyContent] = {
+    val indexHtml: String = {
+      val document = Jsoup.parse(environment.getFile(playAssetsPath.path + "/index.html"), "UTF-8")
+      document.getElementsByTag("base").asScala.foreach(_.attr("href", playHttpContext.context.concat("/")).discard())
+      document.outerHtml()
+    }
+
+    val indexEtag: String = {
+      val md5 = MessageDigest.getInstance("MD5")
+      val md5Sum = md5.digest(indexHtml.getBytes)
+      String.format("%032X", new BigInteger(1, md5Sum)).toLowerCase
+    }
+
+    Action {
+      Ok(indexHtml)
+        .as(MimeTypes.HTML)
+        .withHeaders((ETAG, indexEtag))
+    }
+  }
 
   def assetOrDefault(resource: String): Action[AnyContent] =
-    if (resource.contains(".")) {
+    if (resource.contains(".") && resource != "index.html") {
       assets.at(resource)
     } else {
-      index
+      indexAction
     }
 }
