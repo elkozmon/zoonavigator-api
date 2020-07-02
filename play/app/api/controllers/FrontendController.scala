@@ -39,9 +39,17 @@ class FrontendController(
     playHttpContext: PlayHttpContext
 ) extends AbstractController(controllerComponents) {
 
+  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   val indexAction: Action[AnyContent] = {
     val indexHtml: String = {
-      val document = Jsoup.parse(environment.getFile(playAssetsPath.path + "/index.html"), "UTF-8")
+      val path = playAssetsPath.path + "/index.html"
+      val html = environment
+        .resourceAsStream(path)
+        .map(scala.io.Source.fromInputStream(_, "UTF-8"))
+        .map(_.mkString)
+        .get
+
+      val document = Jsoup.parse(html, "UTF-8")
       document.getElementsByTag("base").asScala.foreach(_.attr("href", playHttpContext.context.concat("/")).discard())
       document.outerHtml()
     }
