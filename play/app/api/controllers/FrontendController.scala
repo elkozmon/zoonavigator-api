@@ -20,6 +20,7 @@ package api.controllers
 import java.math.BigInteger
 import java.security.MessageDigest
 
+import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import config.PlayAssetsPath
 import config.PlayHttpContext
 import controllers.Assets
@@ -27,7 +28,6 @@ import org.jsoup.Jsoup
 import play.api.mvc._
 import play.api.Environment
 import play.mvc.Http.MimeTypes
-import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 
 import scala.jdk.CollectionConverters._
 
@@ -50,7 +50,10 @@ class FrontendController(
         .get
 
       val document = Jsoup.parse(html, "UTF-8")
-      document.getElementsByTag("base").asScala.foreach(_.attr("href", playHttpContext.context.concat("/")).discard())
+      document
+        .getElementsByTag("base")
+        .asScala
+        .foreach(_.attr("href", playHttpContext.context.stripSuffix("/").concat("/")).discard())
       document.outerHtml()
     }
 
