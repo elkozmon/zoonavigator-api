@@ -1,0 +1,19 @@
+{
+	"name": "ZooNavigator API",
+	"dockerComposeFile": [
+		"../../.devcontainer/docker-compose.yml"
+	],
+	"workspaceFolder": "/workspace/zoonavigator/zoonavigator-api",
+	"service": "zoonavigator-api",
+	"shutdownAction": "none",
+	"settings": {
+		"terminal.integrated.shell.linux": "/bin/bash",
+		"[scala]": {
+			"editor.tabSize": 2,
+			"editor.insertSpaces": true
+		}
+	},
+	"extensions": [
+		"scalameta.metals",
+	]
+}
