@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,20 +18,20 @@
 package api.formats.json.zookeeper.znode
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import org.joda.time.DateTime
 import org.scalatest.FlatSpec
 import play.api.libs.json._
 
 import scala.language.postfixOps
+import java.time.Instant
 
 class JsonZNodeMetaSpec extends FlatSpec with JsonZNodeMeta {
 
   private val zNodeMeta =
     ZNodeMeta(
       0L,
-      DateTime.now(),
+      Instant.now(),
       0L,
-      DateTime.now(),
+      Instant.now(),
       0,
       ZNodeDataVersion(0L),
       ZNodeAclVersion(0L),

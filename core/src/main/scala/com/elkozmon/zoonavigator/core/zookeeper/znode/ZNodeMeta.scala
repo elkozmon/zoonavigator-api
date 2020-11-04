@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,13 +18,13 @@
 package com.elkozmon.zoonavigator.core.zookeeper.znode
 
 import org.apache.zookeeper.data.Stat
-import org.joda.time.DateTime
+import java.time.Instant
 
 final case class ZNodeMeta(
     creationId: Long,
-    creationTime: DateTime,
+    creationTime: Instant,
     modifiedId: Long,
-    modifiedTime: DateTime,
+    modifiedTime: Instant,
     dataLength: Int,
     dataVersion: ZNodeDataVersion,
     aclVersion: ZNodeAclVersion,
@@ -37,9 +37,9 @@ object ZNodeMeta {
 
   def fromStat(stat: Stat): ZNodeMeta = ZNodeMeta(
     creationId = stat.getCzxid,
-    creationTime = new DateTime(stat.getCtime),
+    creationTime = Instant.ofEpochMilli(stat.getCtime),
     modifiedId = stat.getMzxid,
-    modifiedTime = new DateTime(stat.getMtime),
+    modifiedTime = Instant.ofEpochMilli(stat.getMtime),
     dataLength = stat.getDataLength,
     dataVersion = ZNodeDataVersion(stat.getVersion),
     aclVersion = ZNodeAclVersion(stat.getAversion),

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,17 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.elkozmon.zoonavigator.core.action.actions
+package com.elkozmon.zoonavigator.core.curator.syntax
 
-import com.elkozmon.zoonavigator.core.action.Action
-import com.elkozmon.zoonavigator.core.zookeeper.znode._
-import org.apache.curator.framework.CuratorFramework
+import org.apache.curator.framework.api.CuratorEvent
 
-final case class UpdateZNodeAclListRecursiveAction(
-    path: ZNodePath,
-    acl: ZNodeAcl,
-    expectedAclVersion: ZNodeAclVersion,
-    curatorFramework: CuratorFramework
-) extends Action {
-  override type Out = ZNodeMeta
+trait PathAndBytesableF[F[_]] {
+  def forPathF(path: String, bytes: Array[Byte]): F[CuratorEvent]
 }

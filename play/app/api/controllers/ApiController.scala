@@ -20,6 +20,7 @@ package api.controllers
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
+import curator.action.CuratorAction
 import akka.util.ByteString
 import api.ApiResponse
 import api.exceptions.BadRequestException
@@ -29,33 +30,30 @@ import cats.free.Cofree
 import cats.instances.list._
 import cats.instances.try_._
 import cats.syntax.traverse._
-import com.elkozmon.zoonavigator.core.action.actions._
-import com.elkozmon.zoonavigator.core.action.ActionModule
+import com.elkozmon.zoonavigator.core.action._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import config.ApplicationConfig
-import curator.action.CuratorAction
-import monix.eval.Task
 import play.api.http.HttpErrorHandler
 import play.api.libs.json._
 import play.api.mvc._
 import schedulers.ComputingScheduler
 import utils.Gzip
+import monix.eval.Task
+import _root_.curator.action.CuratorRequest
+import com.elkozmon.zoonavigator.core.curator.CuratorActionInterpreter
+import cats.effect.Resource
 
 class ApiController(
     applicationConfig: ApplicationConfig,
     httpErrorHandler: HttpErrorHandler,
     curatorAction: CuratorAction,
     computingScheduler: ComputingScheduler,
-    actionModule: ActionModule,
     playBodyParsers: PlayBodyParsers,
     controllerComponents: ControllerComponents
 ) extends AbstractController(controllerComponents) {
 
   import computingScheduler.implicitScheduler
-
-  private val actionDispatcher =
-    actionModule.actionDispatcher
 
   private val malformedDataException =
     new Exception("Malformed data")
@@ -70,8 +68,8 @@ class ApiController(
 
   def getNode(path: ZNodePath): Action[Unit] =
     Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
-      val futureApiResponse = actionDispatcher
-        .dispatch(GetZNodeWithChildrenAction(path, curatorRequest.curatorFramework))
+      val futureApiResponse = curatorRequest
+        .apply(GetZNodeWithChildrenAction(path).free)
         .map(ApiResponse.success(_))
         .runToFuture
 
@@ -85,8 +83,8 @@ class ApiController(
 
   def getChildrenNodes(path: ZNodePath): Action[Unit] =
     Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
-      val futureApiResponse = actionDispatcher
-        .dispatch(GetZNodeChildrenAction(path, curatorRequest.curatorFramework))
+      val futureApiResponse = curatorRequest
+        .apply(GetZNodeChildrenAction(path).free)
         .map(ApiResponse.success(_))
         .runToFuture
 
@@ -100,8 +98,8 @@ class ApiController(
 
   def createNode(path: ZNodePath): Action[Unit] =
     Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
-      val futureApiResponse = actionDispatcher
-        .dispatch(CreateZNodeAction(path, curatorRequest.curatorFramework))
+      val futureApiResponse = curatorRequest
+        .apply(CreateZNodeAction(path).free)
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
 
@@ -115,8 +113,8 @@ class ApiController(
 
   def duplicateNode(source: ZNodePath, destination: ZNodePath): Action[Unit] =
     Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
-      val futureApiResponse = actionDispatcher
-        .dispatch(DuplicateZNodeRecursiveAction(source, destination, curatorRequest.curatorFramework))
+      val futureApiResponse = curatorRequest
+        .apply(DuplicateZNodeRecursiveAction(source, destination).free)
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
 
@@ -130,8 +128,8 @@ class ApiController(
 
   def moveNode(source: ZNodePath, destination: ZNodePath): Action[Unit] =
     Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
-      val futureApiResponse = actionDispatcher
-        .dispatch(MoveZNodeRecursiveAction(source, destination, curatorRequest.curatorFramework))
+      val futureApiResponse = curatorRequest
+        .apply(MoveZNodeRecursiveAction(source, destination).free)
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
 
@@ -145,8 +143,8 @@ class ApiController(
 
   def deleteNode(path: ZNodePath, version: ZNodeDataVersion): Action[Unit] =
     Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
-      val futureApiResponse = actionDispatcher
-        .dispatch(DeleteZNodeRecursiveAction(path, version, curatorRequest.curatorFramework))
+      val futureApiResponse = curatorRequest
+        .apply(DeleteZNodeRecursiveAction(path, version).free)
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
 
@@ -163,7 +161,7 @@ class ApiController(
       val futureApiResponse = Task
         .fromTry(names.toList.traverse(path.down))
         .flatMap { t =>
-          actionDispatcher.dispatch(ForceDeleteZNodeRecursiveAction(t, curatorRequest.curatorFramework))
+          curatorRequest.apply(ForceDeleteZNodeRecursiveAction(t).free)
         }
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
@@ -181,14 +179,10 @@ class ApiController(
       val futureApiResponse = parseRequestBodyJson[List[Acl]]
         .flatMap {
           case jsonAclList if recursive.contains(true) =>
-            actionDispatcher
-              .dispatch(
-                UpdateZNodeAclListRecursiveAction(path, ZNodeAcl(jsonAclList), version, curatorRequest.curatorFramework)
-              )
+            curatorRequest(UpdateZNodeAclListRecursiveAction(path, ZNodeAcl(jsonAclList), version).free)
 
           case jsonAclList =>
-            actionDispatcher
-              .dispatch(UpdateZNodeAclListAction(path, ZNodeAcl(jsonAclList), version, curatorRequest.curatorFramework))
+            curatorRequest(UpdateZNodeAclListAction(path, ZNodeAcl(jsonAclList), version).free)
         }
         .map(ApiResponse.success(_))
         .runToFuture
@@ -205,7 +199,7 @@ class ApiController(
     Action(playBodyParsers.json).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = parseRequestBodyJson[ZNodeData]
         .flatMap { t =>
-          actionDispatcher.dispatch(UpdateZNodeDataAction(path, t, version, curatorRequest.curatorFramework))
+          curatorRequest(UpdateZNodeDataAction(path, t, version).free)
         }
         .map(ApiResponse.success(_))
         .runToFuture
@@ -220,8 +214,8 @@ class ApiController(
 
   def getExportNodes(paths: List[ZNodePath]): Action[Unit] =
     Action(playBodyParsers.empty).andThen(curatorAction).async { implicit curatorRequest =>
-      val futureApiResponse = actionDispatcher
-        .dispatch(ExportZNodesAction(paths, curatorRequest.curatorFramework))
+      val futureApiResponse = curatorRequest
+        .apply(ExportZNodesAction(paths).free)
         .map(implicitly[Writes[List[Cofree[List, ZNodeExport]]]].writes)
         .map(Json.toBytes)
         .map(Gzip.compress)
@@ -240,9 +234,9 @@ class ApiController(
 
   def importNodes(path: ZNodePath): Action[ByteString] =
     Action(playBodyParsers.byteString).andThen(curatorAction).async { implicit curatorRequest =>
-      def dispatchImport(exportZNodes: List[Cofree[List, ZNodeExport]]) =
-        actionDispatcher
-          .dispatch(ImportZNodesAction(path, exportZNodes, curatorRequest.curatorFramework))
+      def applyImport(exportZNodes: List[Cofree[List, ZNodeExport]]) =
+        curatorRequest
+          .apply(ImportZNodesAction(path, exportZNodes).free)
           .map(ApiResponse.success(_))
 
       val importNodesT =
@@ -254,7 +248,7 @@ class ApiController(
               .left
               .map(_ => malformedDataException)
               .toTry
-              .traverse(dispatchImport)
+              .traverse(applyImport)
               .flatMap(Task.fromTry)
 
           case Some("application/gzip") | Some("application/x-gzip") =>
@@ -268,7 +262,7 @@ class ApiController(
                   .map(_ => malformedDataException)
                   .toTry
               }
-              .traverse(dispatchImport)
+              .traverse(applyImport)
               .flatMap(Task.fromTry)
 
           case _ =>
@@ -286,6 +280,18 @@ class ApiController(
             .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
+
+  implicit class CuratorRequestOps(curatorRequest: CuratorRequest[_]) {
+
+    def apply[T](actionIO: ActionIO[T]): Task[T] = {
+      val actionInterpreter = new CuratorActionInterpreter[Task](
+        Resource.pure(curatorRequest.curatorFramework),
+        computingScheduler.implicitScheduler
+      )
+
+      actionInterpreter(actionIO)
+    }
+  }
 
   private def parseRequestBodyJson[T](implicit request: Request[JsValue], reads: Reads[T]): Task[T] =
     request.body.validateOpt[T] match {

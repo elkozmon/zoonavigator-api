@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,21 +18,24 @@
 package api.formats.json.zookeeper.znode
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
-import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
+import java.time.format.DateTimeFormatter
+import java.time.ZoneId
 
 trait JsonZNodeMeta {
 
-  private val isoDateTimeFormatter = ISODateTimeFormat.dateTime()
-
   implicit object ZNodeMetaWrites extends Writes[ZNodeMeta] {
+
+    private val isoDateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
+
+    private val utcTimeZone = ZoneId.of("UTC")
 
     override def writes(o: ZNodeMeta): JsValue =
       Json.obj(
         "creationId" -> o.creationId,
-        "creationTime" -> o.creationTime.toString(isoDateTimeFormatter),
+        "creationTime" -> isoDateTimeFormatter.format(o.creationTime.atZone(utcTimeZone)),
         "modifiedId" -> o.modifiedId,
-        "modifiedTime" -> o.modifiedTime.toString(isoDateTimeFormatter),
+        "modifiedTime" -> isoDateTimeFormatter.format(o.modifiedTime.atZone(utcTimeZone)),
         "dataLength" -> o.dataLength,
         "dataVersion" -> o.dataVersion.version,
         "aclVersion" -> o.aclVersion.version,

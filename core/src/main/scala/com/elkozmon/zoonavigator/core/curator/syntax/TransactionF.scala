@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,14 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.elkozmon.zoonavigator.core.action
+package com.elkozmon.zoonavigator.core.curator.syntax
 
-import monix.eval.Task
-import shapeless.HList
-import shapeless.ops.hlist
+import org.apache.curator.framework.api.CuratorEvent
+import org.apache.curator.framework.api.transaction.CuratorOp
 
-class ActionDispatcher[L <: HList](handlers: L) {
-
-  def dispatch[A <: Action](action: A)(implicit selector: hlist.Selector[L, ActionHandler[A]]): Task[A#Out] =
-    selector(handlers).handle(action)
+trait TransactionF[F[_]] {
+  def forOperationsF(ops: Seq[CuratorOp]): F[CuratorEvent]
 }

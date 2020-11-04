@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,12 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.elkozmon.zoonavigator.core
+package com.elkozmon.zoonavigator.core.curator
 
-import monix.eval.Task
-import monix.execution.Callback
-import monix.execution.Cancelable
-import monix.execution.Scheduler
 import org.apache.curator.framework.api.BackgroundCallback
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.framework.api.UnhandledErrorListener
@@ -30,35 +26,31 @@ import org.slf4j.LoggerFactory
 
 import scala.util.Try
 
-package object curator {
+package object syntax {
 
-  private val logger = LoggerFactory.getLogger("curator")
+  object async extends AsyncOps
+  object znode extends ZNodeOps
+  object all extends AsyncOps with ZNodeOps
 
-  private[curator] def tryTaskCreate[T](fn: (Scheduler, Callback[Throwable, T]) => Unit): Task[T] =
-    Task.create[T] { (scheduler, callback) =>
-      Try(fn(scheduler, callback)).toEither.left
-        .foreach(callback.onError)
+  private[curator] val logger = LoggerFactory.getLogger("curator")
 
-      Cancelable.empty
-    }
-
-  private[curator] def newEventCallback(callback: Callback[Throwable, CuratorEvent]): BackgroundCallback =
+  private[curator] def newEventCallback(callback: Either[Throwable, CuratorEvent] => Unit): BackgroundCallback =
     (_, event: CuratorEvent) => {
       logger.debug("{} event completed with result code {}", event.getType, event.getResultCode)
 
       if (event.getResultCode == 0) {
-        callback.onSuccess(event)
+        callback(Right(event))
       } else {
         val code = Code.get(event.getResultCode)
         val path = event.getPath
 
-        callback.onError(KeeperException.create(code, path))
+        callback(Left(KeeperException.create(code, path)))
       }
     }
 
-  private[curator] def newErrorListener(callback: Callback[Throwable, _]): UnhandledErrorListener =
+  private[curator] def newErrorListener[A](callback: Either[Throwable, A] => Unit): UnhandledErrorListener =
     (message: String, e: Throwable) => {
       logger.error(message, e)
-      callback.onError(e)
+      callback(Left(e))
     }
 }

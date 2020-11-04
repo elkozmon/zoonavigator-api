@@ -11,7 +11,7 @@ scalacOptions in ThisBuild ++= Seq(
   "-Wdead-code"
 )
 
-val catsVersion = "2.0.0"
+val catsVersion = "2.2.0"
 val curatorVersion = "4.0.0"
 val macwireVersion = "2.3.3"
 val zookeeperVersion = "3.4.11"
@@ -42,7 +42,6 @@ val core = project
     name := "zoonavigator-core",
     libraryDependencies ++= Seq(
       "org.slf4j"            % "slf4j-api"         % "1.7.25",
-      "joda-time"            % "joda-time"         % "2.9.9",
       "org.apache.curator"   % "curator-framework" % curatorVersion exclude ("org.apache.zookeeper", "zookeeper"),
       "org.apache.curator"   % "curator-test"      % curatorVersion % Test,
       "org.apache.zookeeper" % "zookeeper"         % zookeeperVersion,

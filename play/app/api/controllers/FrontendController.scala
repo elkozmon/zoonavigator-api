@@ -40,7 +40,7 @@ class FrontendController(
 ) extends AbstractController(controllerComponents) {
 
   @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
-  val indexAction: Action[AnyContent] = {
+  def indexAction: Action[AnyContent] = {
     val indexHtml: String = {
       val path = playAssetsPath.path + "/index.html"
       val html = environment

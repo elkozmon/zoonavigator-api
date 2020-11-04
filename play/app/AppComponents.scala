@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,22 +17,22 @@
 
 import java.util.concurrent.TimeUnit
 
+import schedulers._
+import curator.action.CuratorAction
+import curator.provider._
 import api.controllers.FrontendController
 import api.controllers.ApiController
 import api.ApiErrorHandler
 import api.routers.ApiRouter
 import api.routers.ApplicationRouter
 import api.routers.FrontendRouter
-import com.elkozmon.zoonavigator.core.action.ActionHandler
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.action.actions._
+import com.elkozmon.zoonavigator.core.action._
 import com.softwaremill.macwire._
 import config.ApplicationConfig
 import config.PlayAssetsPath
 import config.PlayHttpContext
 import controllers.AssetsComponents
-import curator.action.CuratorAction
-import curator.provider._
 import loggers.AppLogger
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
@@ -45,9 +45,10 @@ import play.api.routing.Router
 import play.core.SourceMapper
 import play.filters.HttpFiltersComponents
 import play.filters.cors.CORSComponents
-import schedulers._
 
 import scala.concurrent.duration.FiniteDuration
+import com.elkozmon.zoonavigator.core.curator.CuratorActionInterpreter
+import monix.eval.Task
 
 class AppComponents(context: Context)
     extends BuiltInComponentsFromContext(context)
@@ -60,7 +61,7 @@ class AppComponents(context: Context)
     .foreach(_.configure(context.environment))
 
   @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
-  private lazy val playAssetsPath: PlayAssetsPath =
+  lazy val playAssetsPath: PlayAssetsPath =
     PlayAssetsPath(
       configuration
         .getOptional[String]("play.assets.path")
@@ -70,7 +71,7 @@ class AppComponents(context: Context)
         .prepended('/')
     )
 
-  private lazy val httpContext: PlayHttpContext =
+  lazy val httpContext: PlayHttpContext =
     PlayHttpContext(
       configuration
         .getOptional[String]("play.http.context")
@@ -80,14 +81,14 @@ class AppComponents(context: Context)
         .prepended('/')
     )
 
-  private lazy val applicationConfig: ApplicationConfig =
+  lazy val applicationConfig: ApplicationConfig =
     configuration.get[ApplicationConfig]("zoonavigator")
 
-  private lazy val curatorAction: CuratorAction = {
+  lazy val curatorAction: CuratorAction = {
     implicit val scheduler: Scheduler = computingScheduler
     wire[CuratorAction]
   }
-
+  
   override lazy val httpErrorHandler: HttpErrorHandler = {
     //noinspection ScalaUnusedSymbol
     def routerProvider: Option[Router] = Option(router)
@@ -177,49 +178,4 @@ class AppComponents(context: Context)
 
   override lazy val computingScheduler: ComputingScheduler =
     DefaultComputingScheduler(Scheduler(executionContext))
-
-  override lazy val getZNodeWithChildrenActionHandler: ActionHandler[GetZNodeWithChildrenAction] =
-    wire[GetZNodeWithChildrenActionHandler]
-
-  override lazy val getZNodeAclActionHandler: ActionHandler[GetZNodeAclAction] =
-    wire[GetZNodeAclActionHandler]
-
-  override lazy val getZNodeChildrenActionHandler: ActionHandler[GetZNodeChildrenAction] =
-    wire[GetZNodeChildrenActionHandler]
-
-  override lazy val getZNodeDataActionHandler: ActionHandler[GetZNodeDataAction] =
-    wire[GetZNodeDataActionHandler]
-
-  override lazy val getZNodeMetaActionHandler: ActionHandler[GetZNodeMetaAction] =
-    wire[GetZNodeMetaActionHandler]
-
-  override lazy val createZNodeActionHandler: ActionHandler[CreateZNodeAction] =
-    wire[CreateZNodeActionHandler]
-
-  override lazy val deleteZNodeRecursiveActionHandler: ActionHandler[DeleteZNodeRecursiveAction] =
-    wire[DeleteZNodeRecursiveActionHandler]
-
-  override lazy val forceDeleteZNodeRecursiveActionHandler: ActionHandler[ForceDeleteZNodeRecursiveAction] =
-    wire[ForceDeleteZNodeRecursiveActionHandler]
-
-  override lazy val duplicateZNodeRecursiveActionHandler: ActionHandler[DuplicateZNodeRecursiveAction] =
-    wire[DuplicateZNodeRecursiveActionHandler]
-
-  override lazy val moveZNodeRecursiveActionHandler: ActionHandler[MoveZNodeRecursiveAction] =
-    wire[MoveZNodeRecursiveActionHandler]
-
-  override lazy val updateZNodeAclListActionHandler: ActionHandler[UpdateZNodeAclListAction] =
-    wire[UpdateZNodeAclListActionHandler]
-
-  override lazy val updateZNodeAclListRecursiveActionHandler: ActionHandler[UpdateZNodeAclListRecursiveAction] =
-    wire[UpdateZNodeAclListRecursiveActionHandler]
-
-  override lazy val updateZNodeDataActionHandler: ActionHandler[UpdateZNodeDataAction] =
-    wire[UpdateZNodeDataActionHandler]
-
-  override lazy val exportZNodesActionHandler: ActionHandler[ExportZNodesAction] =
-    wire[ExportZNodesActionHandler]
-
-  override lazy val importZNodesActionHandler: ActionHandler[ImportZNodesAction] =
-    wire[ImportZNodesActionHandler]
 }

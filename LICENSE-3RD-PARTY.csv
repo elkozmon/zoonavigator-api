@@ -15,7 +15,6 @@ Apache,Apache 2 (http://www.apache.org/licenses/LICENSE-2.0.txt),com.typesafe.ne
 Apache,Apache 2 (http://www.apache.org/licenses/LICENSE-2.0.txt),com.typesafe.netty # netty-reactive-streams-http # 1.0.8,
 Apache,Apache 2 (http://www.apache.org/licenses/LICENSE-2.0.txt),joda-time # joda-time # 2.9.7,
 Apache,Apache 2 (http://www.apache.org/licenses/LICENSE-2.0.txt),org.fluentlenium # fluentlenium-core # 0.10.9,
-Apache,Apache 2 (http://www.apache.org/licenses/LICENSE-2.0.txt),org.joda # joda-convert # 1.8.1,
 Apache,Apache 2 (http://www.apache.org/licenses/LICENSE-2.0.txt),org.typelevel # macro-compat_2.11 # 1.1.1,
 Apache,Apache License (http://www.apache.org/licenses/LICENSE-2.0.txt),org.typelevel # catalysts-macros_2.11 # 0.0.5,
 Apache,Apache License (http://www.apache.org/licenses/LICENSE-2.0.txt),org.typelevel # catalysts-platform_2.11 # 0.0.5,

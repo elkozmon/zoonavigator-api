@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Ľuboš Kozmon <https://www.elkozmon.com>
+ * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -26,7 +26,7 @@ import org.apache.curator.test.TestingServer
 import org.apache.zookeeper.data.Stat
 import org.scalatest.FlatSpec
 
-trait CuratorSpec extends FlatSpec {
+trait CuratorSpec {
 
   import CuratorSpec._
 

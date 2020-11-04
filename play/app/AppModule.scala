@@ -1,6 +1,5 @@
 import api.controllers.FrontendController
 import api.controllers.ApiController
-import com.elkozmon.zoonavigator.core.action.ActionModule
 import curator.provider.CuratorFrameworkProvider
 import loggers.AppLogger
 import play.api.BuiltInComponentsFromContext
@@ -24,10 +23,8 @@ import schedulers.ComputingScheduler
  */
 
 //noinspection ScalaUnusedSymbol
-trait AppModule extends ActionModule {
+trait AppModule {
   self: BuiltInComponentsFromContext =>
-
-  val actionModule: ActionModule = this
 
   val appLogger: AppLogger
 
