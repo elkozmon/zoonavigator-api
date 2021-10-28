@@ -22,6 +22,7 @@ import play.api.http.HttpErrorHandler
 import play.api.mvc.DefaultActionBuilder
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
+import play.api.routing.sird._
 
 class ApplicationRouter(
     apiRouter: ApiRouter,
@@ -37,6 +38,9 @@ class ApplicationRouter(
   private val prefixedFrontendRouter = frontendRouter.withPrefix(httpContext.context)
 
   override def routes: Routes = {
+    case HEAD(p) =>
+      routes(p.withMethod("GET"))
+
     case p if p.uri.equals(apiUrlPrefix) || p.uri.startsWith(apiUrlPrefix.concat("/")) =>
       prefixedApiRouter.routes(p)
 
