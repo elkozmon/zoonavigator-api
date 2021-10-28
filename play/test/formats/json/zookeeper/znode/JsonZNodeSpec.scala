@@ -22,7 +22,7 @@ import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.scalatest.FlatSpec
-import play.api.libs.json.Writes
+import play.api.libs.json._
 
 import scala.language.postfixOps
 import java.time.Instant
@@ -50,25 +50,25 @@ class JsonZNodeSpec extends FlatSpec with JsonZNode {
     )
 
   "Serialized JsonZNode" should "be a JSON object with 'acl' field" in {
-    val j = implicitly[Writes[zNode.type]].writes(zNode)
+    val j = Json.toJson(zNode)
 
     assert(j \ "acl" isDefined)
   }
 
   it should "be a JSON object with 'path' field" in {
-    val j = implicitly[Writes[zNode.type]].writes(zNode)
+    val j = Json.toJson(zNode)
 
     assert(j \ "path" isDefined)
   }
 
   it should "be a JSON object with 'data' field" in {
-    val j = implicitly[Writes[zNode.type]].writes(zNode)
+    val j = Json.toJson(zNode)
 
     assert(j \ "data" isDefined)
   }
 
   it should "be a JSON object with 'meta' field" in {
-    val j = implicitly[Writes[zNode.type]].writes(zNode)
+    val j = Json.toJson(zNode)
 
     assert(j \ "meta" isDefined)
   }

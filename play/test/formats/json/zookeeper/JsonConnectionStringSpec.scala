@@ -25,7 +25,7 @@ class JsonConnectionStringSpec extends FlatSpec with JsonConnectionString {
 
   "Serialized JsonConnectionString" should "be a string" in {
     val j = ConnectionString("localhost:2181")
-    val s = implicitly[Writes[j.type]].writes(j)
+    val s = Json.toJson(j)
 
     assertResult(JsString("localhost:2181"))(s)
   }

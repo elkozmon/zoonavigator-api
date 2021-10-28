@@ -51,7 +51,7 @@ class JsonZNodeWithChildrenSpec extends FlatSpec with JsonZNodeWithChildren {
     )
 
   "Serialized JsonZNodeWithChildren" should "be a JSON object with 'children' field" in {
-    val j = implicitly[Writes[zNodeMetaWith.type]].writes(zNodeMetaWith)
+    val j = Json.toJson(zNodeMetaWith)
 
     assert(j \ "children" isDefined)
   }

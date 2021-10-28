@@ -44,13 +44,13 @@ class JsonZNodeMetaWithSpec extends FlatSpec with JsonZNodeMetaWith {
     )
 
   "Serialized JsonZNodeMetaWith" should "be a JSON object with 'data' field" in {
-    val j = implicitly[Writes[zNodeMetaWith.type]].writes(zNodeMetaWith)
+    val j = Json.toJson(zNodeMetaWith)
 
     assert(j \ "data" isDefined)
   }
 
   it should "be a JSON object with 'meta' field" in {
-    val j = implicitly[Writes[zNodeMetaWith.type]].writes(zNodeMetaWith)
+    val j = Json.toJson(zNodeMetaWith)
 
     assert(j \ "meta" isDefined)
   }

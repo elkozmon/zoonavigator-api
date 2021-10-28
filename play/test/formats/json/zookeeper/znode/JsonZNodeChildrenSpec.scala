@@ -29,7 +29,7 @@ class JsonZNodeChildrenSpec extends FlatSpec with JsonZNodeChildren {
     val zNodeChildren = ZNodeChildren(List.empty[ZNodePath])
 
     assert(
-      implicitly[Writes[zNodeChildren.type]]
+      implicitly[Writes[ZNodeChildren]]
         .writes(zNodeChildren)
         .isInstanceOf[JsArray]
     )

@@ -28,21 +28,21 @@ class JsonApiResponseSpec extends FlatSpec with JsonApiResponse {
 
   "Serialized JsonApiResponse" should "be a JSON object with 'success' boolean field of value JsTrue" in {
     val a = ApiResponse(success = true, Some("foo"), Some(123))
-    val j = implicitly[Writes[a.type]].writes(a)
+    val j = Json.toJson(a)
 
     assertResult(JsTrue)(j \ "success" get)
   }
 
   it should "be a JSON object with 'message' field of value 'foo'" in {
     val a = ApiResponse(success = true, Some("foo"), Some(123))
-    val j = implicitly[Writes[a.type]].writes(a)
+    val j = Json.toJson(a)
 
     assertResult(JsString("foo"))(j \ "message" get)
   }
 
   it should "be a JSON object with 'payload' field of value 123" in {
     val a = ApiResponse(success = true, Some("foo"), Some(123))
-    val j = implicitly[Writes[a.type]].writes(a)
+    val j = Json.toJson(a)
 
     assertResult(JsNumber(123))(j \ "payload" get)
   }

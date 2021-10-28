@@ -30,7 +30,7 @@ class JsonZNodeDataSpec extends FlatSpec with JsonZNodeData {
     val fooBytes = "foo".getBytes
 
     val j = ZNodeData(fooBytes)
-    val s = implicitly[Writes[j.type]].writes(j)
+    val s = implicitly[Writes[ZNodeData]].writes(j)
 
     assertResult(JsString(Base64.getEncoder.encodeToString(fooBytes)))(s)
   }

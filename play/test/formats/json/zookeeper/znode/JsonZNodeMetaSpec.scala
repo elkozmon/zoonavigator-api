@@ -41,61 +41,61 @@ class JsonZNodeMetaSpec extends FlatSpec with JsonZNodeMeta {
     )
 
   "Serialized JsonZNodeMeta" should "be a JSON object with 'creationId' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "creationId" isDefined)
   }
 
   it should "be a JSON object with 'creationTime' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "creationTime" isDefined)
   }
 
   it should "be a JSON object with 'modifiedId' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "modifiedId" isDefined)
   }
 
   it should "be a JSON object with 'modifiedTime' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "modifiedTime" isDefined)
   }
 
   it should "be a JSON object with 'dataLength' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "dataLength" isDefined)
   }
 
   it should "be a JSON object with 'dataVersion' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "dataVersion" isDefined)
   }
 
   it should "be a JSON object with 'aclVersion' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "aclVersion" isDefined)
   }
 
   it should "be a JSON object with 'childrenVersion' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "childrenVersion" isDefined)
   }
 
   it should "be a JSON object with 'childrenNumber' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "childrenNumber" isDefined)
   }
 
   it should "be a JSON object with 'ephemeralOwner' field" in {
-    val j = implicitly[Writes[zNodeMeta.type]].writes(zNodeMeta)
+    val j = Json.toJson(zNodeMeta)
 
     assert(j \ "ephemeralOwner" isDefined)
   }

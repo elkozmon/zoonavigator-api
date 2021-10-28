@@ -33,19 +33,19 @@ class JsonAclSpec extends FlatSpec with JsonAcl {
     """{"id":"anyone","scheme":"world","permissions":[]}"""
 
   "Serialized JsonAcl" should "be a JSON object with 'id' field" in {
-    val j = implicitly[Writes[acl.type]].writes(acl)
+    val j = Json.toJson(acl)
 
     assert(j \ "id" isDefined)
   }
 
   it should "be a JSON object with 'scheme' field" in {
-    val j = implicitly[Writes[acl.type]].writes(acl)
+    val j = Json.toJson(acl)
 
     assert(j \ "scheme" isDefined)
   }
 
   it should "be a JSON object with 'permissions' field" in {
-    val j = implicitly[Writes[acl.type]].writes(acl)
+    val j = Json.toJson(acl)
 
     assert(j \ "permissions" isDefined)
   }

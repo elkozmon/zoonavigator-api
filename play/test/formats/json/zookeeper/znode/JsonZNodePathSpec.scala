@@ -19,14 +19,14 @@ package api.formats.json.zookeeper.znode
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import org.scalatest.FlatSpec
-import play.api.libs.json.{JsString, Writes}
+import play.api.libs.json._
 
 @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
 class JsonZNodePathSpec extends FlatSpec with JsonZNodePath {
 
   "JsonZNodePath" should "be serialized as a string" in {
     val j = ZNodePath.parse("/node0/node1").get
-    val s = implicitly[Writes[j.type]].writes(j)
+    val s = Json.toJson(j)
 
     assertResult(JsString("/node0/node1"))(s)
   }

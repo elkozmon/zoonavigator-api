@@ -28,7 +28,7 @@ class JsonZNodeAclSpec extends FlatSpec with JsonZNodeAcl {
     val zNodeAcl = ZNodeAcl(List.empty)
 
     assert(
-      implicitly[Writes[zNodeAcl.type]]
+      implicitly[Writes[ZNodeAcl]]
         .writes(zNodeAcl)
         .isInstanceOf[JsArray]
     )
