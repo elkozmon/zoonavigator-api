@@ -47,17 +47,17 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
   private val cxnParamsHeaderPrefix = "CxnParams"
 
   private def missingAuthHeaderResult[A](request: Request[A]): Future[Result] =
-    httpErrorHandler.onClientError(request, 401, "Missing Authorization header")
+    httpErrorHandler.onClientError(request, 401, "Missing Zoo-Authorization header")
 
   private def malformedAuthHeaderResult[A](request: Request[A]): Future[Result] =
-    httpErrorHandler.onClientError(request, 401, "Malformed Authorization header")
+    httpErrorHandler.onClientError(request, 401, "Malformed Zoo-Authorization header")
 
   private def invalidCxnNameHeaderResult[A](request: Request[A]): Future[Result] =
     httpErrorHandler.onClientError(request, 401, "Invalid connection name")
 
   override protected def refine[A](request: Request[A]): Future[Either[Result, CuratorRequest[A]]] =
     request.headers
-      .get("Authorization")
+      .get("Zoo-Authorization")
       .toRight(missingAuthHeaderResult(request))
       .map(_.trim)
       .flatMap[Future[Result], Task[Either[Result, CuratorFramework]]] {
