@@ -1,6 +1,6 @@
-scalaVersion in ThisBuild := "2.13.1"
+ThisBuild / scalaVersion := "2.13.6"
 
-scalacOptions in ThisBuild ++= Seq(
+ThisBuild / scalacOptions ++= Seq(
   "-encoding",
   "UTF-8",
   "-deprecation",
@@ -70,9 +70,9 @@ val play = project
       "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion",
       "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion"
     ),
-    wartremoverExcluded ++= routes.in(Compile).value,
-    sources in (Compile, doc) := Seq.empty,
-    publishArtifact in (Compile, packageDoc) := false,
+    wartremoverExcluded ++= (Compile / routes).value,
+    Compile / doc / sources := Seq.empty,
+    Compile / packageDoc / publishArtifact := false,
     scriptClasspath in bashScriptDefines ~= (cp => "zookeeper.jar" +: cp)
   )
   .dependsOn(core)
