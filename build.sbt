@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion := "2.13.6"
+ThisBuild / scalaVersion := "2.13.8"
 
 ThisBuild / scalacOptions ++= Seq(
   "-encoding",
@@ -8,17 +8,16 @@ ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
   "-Xlint:adapted-args,inaccessible",
   "-Wvalue-discard",
+  "-Wunused",
   "-Wdead-code"
 )
 
-val catsVersion = "2.2.0"
-val curatorVersion = "4.0.0"
-val macwireVersion = "2.3.3"
-val zookeeperVersion = "3.4.11"
-val log4jVersion = "2.17.2"
+ThisBuild / semanticdbEnabled := true
+ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
+ThisBuild / scalafixDependencies += Dependencies.scalafixOrganizeImports
 
 val commonSettings = Seq(
-  maintainer := "contact@elkozmon.com",
+  maintainer   := "contact@elkozmon.com",
   organization := "com.elkozmon",
   licenses += ("GNU Affero GPL V3", url("http://www.gnu.org/licenses/agpl-3.0.html")),
   developers := List(
@@ -30,9 +29,9 @@ val commonSettings = Seq(
     )
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-core" % catsVersion,
-    "org.typelevel" %% "cats-free" % catsVersion,
-    "org.scalatest" %% "scalatest" % "3.0.8" % Test
+    Dependencies.catsCore,
+    Dependencies.catsFree,
+    Dependencies.scalaTest
   ),
   wartremoverErrors := Warts.unsafe.filterNot(_.eq(Wart.Any))
 )
@@ -42,14 +41,14 @@ val core = project
   .settings(
     name := "zoonavigator-core",
     libraryDependencies ++= Seq(
-      "org.slf4j"                % "slf4j-api"         % "1.7.25",
-      "org.apache.curator"       % "curator-framework" % curatorVersion exclude ("org.apache.zookeeper", "zookeeper"),
-      "org.apache.curator"       % "curator-test"      % curatorVersion % Test,
-      "org.apache.zookeeper"     % "zookeeper"         % zookeeperVersion exclude ("log4j", "log4j"),
-      "org.apache.logging.log4j" % "log4j-1.2-api"     % log4jVersion,
-      "org.apache.logging.log4j" % "log4j-core"        % log4jVersion,
-      "io.monix"                 %% "monix-eval"       % "3.0.0",
-      "com.chuusai"              %% "shapeless"        % "2.3.3"
+      Dependencies.slf4jApi,
+      Dependencies.curatorFramework,
+      Dependencies.curatorTest,
+      Dependencies.zookeeper,
+      Dependencies.log4jApi,
+      Dependencies.log4jCore,
+      Dependencies.monixEval,
+      Dependencies.shapeless
     )
   )
 
@@ -60,12 +59,13 @@ val play = project
     name := "zoonavigator-play",
     libraryDependencies ++= Seq(
       filters,
-      "commons-io"               % "commons-io"      % "2.6",
-      "ch.qos.logback"           % "logback-classic" % "1.2.3",
-      "org.apache.zookeeper"     % "zookeeper"       % zookeeperVersion % Provided,
-      "com.softwaremill.macwire" %% "macros"         % macwireVersion % Provided,
-      "com.softwaremill.macwire" %% "util"           % macwireVersion,
-      "org.jsoup"                % "jsoup"           % "1.13.1"
+      Dependencies.commonsIo,
+      Dependencies.logbackClassic,
+      Dependencies.zookeeper,
+      Dependencies.macwireUtil,
+      Dependencies.macwireProxy,
+      Dependencies.macwireMacros,
+      Dependencies.jsoup
     ),
     routesImport ++= Seq(
       "api.binders._",
@@ -74,7 +74,7 @@ val play = project
       "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion"
     ),
     wartremoverExcluded ++= (Compile / routes).value,
-    Compile / doc / sources := Seq.empty,
+    Compile / doc / sources                := Seq.empty,
     Compile / packageDoc / publishArtifact := false,
     scriptClasspath in bashScriptDefines ~= (cp => "zookeeper.jar" +: cp)
   )
