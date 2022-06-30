@@ -18,9 +18,10 @@
 package api.formats.json.zookeeper.znode
 
 import api.formats.json.zookeeper.acl.JsonAcl
+import play.api.libs.json._
+
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
-import play.api.libs.json._
 
 trait JsonZNodeAcl extends JsonAcl {
 

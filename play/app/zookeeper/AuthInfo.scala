@@ -20,7 +20,6 @@ package zookeeper
 import java.nio.charset.StandardCharsets
 import java.util
 
-@SuppressWarnings(Array("org.wartremover.warts.IsInstanceOf"))
 final case class AuthInfo(scheme: String, auth: Array[Byte]) {
 
   override def hashCode(): Int =
@@ -30,8 +29,8 @@ final case class AuthInfo(scheme: String, auth: Array[Byte]) {
     obj match {
       case that: AuthInfo =>
         (that canEqual this) &&
-          that.scheme == scheme &&
-          util.Arrays.equals(auth, that.auth)
+        that.scheme == scheme &&
+        util.Arrays.equals(auth, that.auth)
       case _ =>
         false
     }

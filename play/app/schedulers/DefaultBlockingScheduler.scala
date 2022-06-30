@@ -19,4 +19,5 @@ package schedulers
 
 import monix.execution.Scheduler
 
-final case class DefaultBlockingScheduler(override val implicitScheduler: Scheduler) extends BlockingScheduler
+final case class DefaultBlockingScheduler(override val implicitScheduler: Scheduler)
+    extends BlockingScheduler

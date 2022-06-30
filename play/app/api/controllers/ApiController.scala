@@ -17,40 +17,42 @@
 
 package api.controllers
 
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-
-import curator.action.CuratorAction
+import _root_.curator.action.CuratorRequest
 import akka.util.ByteString
 import api.ApiResponse
 import api.exceptions.BadRequestException
 import api.exceptions.HttpException
 import api.formats.Json._
-import cats.free.Cofree
-import cats.instances.list._
-import cats.instances.try_._
-import cats.syntax.traverse._
-import com.elkozmon.zoonavigator.core.action._
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
-import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import config.ApplicationConfig
+import curator.action.CuratorAction
+import monix.eval.Task
 import play.api.http.HttpErrorHandler
 import play.api.libs.json._
 import play.api.mvc._
 import schedulers.ComputingScheduler
 import utils.Gzip
-import monix.eval.Task
-import _root_.curator.action.CuratorRequest
-import com.elkozmon.zoonavigator.core.curator.CuratorActionInterpreter
+
 import cats.effect.Resource
+import cats.free.Cofree
+import cats.instances.list._
+import cats.instances.try_._
+import cats.syntax.traverse._
+
+import com.elkozmon.zoonavigator.core.action._
+import com.elkozmon.zoonavigator.core.curator.CuratorActionInterpreter
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
+
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 
 class ApiController(
-    applicationConfig: ApplicationConfig,
-    httpErrorHandler: HttpErrorHandler,
-    curatorAction: CuratorAction,
-    computingScheduler: ComputingScheduler,
-    playBodyParsers: PlayBodyParsers,
-    controllerComponents: ControllerComponents
+  applicationConfig: ApplicationConfig,
+  httpErrorHandler: HttpErrorHandler,
+  curatorAction: CuratorAction,
+  computingScheduler: ComputingScheduler,
+  playBodyParsers: PlayBodyParsers,
+  controllerComponents: ControllerComponents
 ) extends AbstractController(controllerComponents) {
 
   import computingScheduler.implicitScheduler
@@ -60,9 +62,8 @@ class ApiController(
 
   def getConfig: Action[AnyContent] =
     Action { implicit request =>
-      render {
-        case Accepts.Json() =>
-          Ok(Json.toJson(applicationConfig))
+      render { case Accepts.Json() =>
+        Ok(Json.toJson(applicationConfig))
       }
     }
 
@@ -73,11 +74,10 @@ class ApiController(
         .map(ApiResponse.success(_))
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -88,11 +88,10 @@ class ApiController(
         .map(ApiResponse.success(_))
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -103,11 +102,10 @@ class ApiController(
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -118,11 +116,10 @@ class ApiController(
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -133,11 +130,10 @@ class ApiController(
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -148,11 +144,10 @@ class ApiController(
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -166,20 +161,25 @@ class ApiController(
         .map(_ => ApiResponse.successEmpty)
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
-  def updateAcl(path: ZNodePath, version: ZNodeAclVersion, recursive: Option[Boolean]): Action[JsValue] =
+  def updateAcl(
+    path: ZNodePath,
+    version: ZNodeAclVersion,
+    recursive: Option[Boolean]
+  ): Action[JsValue] =
     Action(playBodyParsers.json).andThen(curatorAction).async { implicit curatorRequest =>
       val futureApiResponse = parseRequestBodyJson[List[Acl]]
         .flatMap {
           case jsonAclList if recursive.contains(true) =>
-            curatorRequest(UpdateZNodeAclListRecursiveAction(path, ZNodeAcl(jsonAclList), version).free)
+            curatorRequest(
+              UpdateZNodeAclListRecursiveAction(path, ZNodeAcl(jsonAclList), version).free
+            )
 
           case jsonAclList =>
             curatorRequest(UpdateZNodeAclListAction(path, ZNodeAcl(jsonAclList), version).free)
@@ -187,11 +187,10 @@ class ApiController(
         .map(ApiResponse.success(_))
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -204,11 +203,10 @@ class ApiController(
         .map(ApiResponse.success(_))
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -224,11 +222,10 @@ class ApiController(
         .map(ApiResponse.success(_))
         .runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -267,17 +264,18 @@ class ApiController(
 
           case _ =>
             Task.raiseError(
-              new BadRequestException(s"Unsupported content type: ${curatorRequest.contentType.getOrElse("?")}")
+              new BadRequestException(
+                s"Unsupported content type: ${curatorRequest.contentType.getOrElse("?")}"
+              )
             )
         }
 
       val futureApiResponse = importNodesT.runToFuture
 
-      render.async {
-        case Accepts.Json() =>
-          futureApiResponse
-            .map(apiResponse => Ok(Json.toJson(apiResponse)))
-            .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
+      render.async { case Accepts.Json() =>
+        futureApiResponse
+          .map(apiResponse => Ok(Json.toJson(apiResponse)))
+          .recoverWith(HttpException.resultHandler(curatorRequest, httpErrorHandler))
       }
     }
 
@@ -293,7 +291,10 @@ class ApiController(
     }
   }
 
-  private def parseRequestBodyJson[T](implicit request: Request[JsValue], reads: Reads[T]): Task[T] =
+  private def parseRequestBodyJson[T](implicit
+    request: Request[JsValue],
+    reads: Reads[T]
+  ): Task[T] =
     request.body.validateOpt[T] match {
       case JsSuccess(Some(value), _) =>
         Task.now(value)

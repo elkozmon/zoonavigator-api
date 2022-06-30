@@ -17,8 +17,9 @@
 
 package api.formats.json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import play.api.libs.json._
+
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 
 trait JsonZNodePath {
 

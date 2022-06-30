@@ -17,10 +17,12 @@
 
 package api.formats.json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
 import play.api.libs.json._
-import java.time.format.DateTimeFormatter
+
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
+
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 trait JsonZNodeMeta {
 
@@ -32,16 +34,16 @@ trait JsonZNodeMeta {
 
     override def writes(o: ZNodeMeta): JsValue =
       Json.obj(
-        "creationId" -> o.creationId,
-        "creationTime" -> isoDateTimeFormatter.format(o.creationTime.atZone(utcTimeZone)),
-        "modifiedId" -> o.modifiedId,
-        "modifiedTime" -> isoDateTimeFormatter.format(o.modifiedTime.atZone(utcTimeZone)),
-        "dataLength" -> o.dataLength,
-        "dataVersion" -> o.dataVersion.version,
-        "aclVersion" -> o.aclVersion.version,
+        "creationId"      -> o.creationId,
+        "creationTime"    -> isoDateTimeFormatter.format(o.creationTime.atZone(utcTimeZone)),
+        "modifiedId"      -> o.modifiedId,
+        "modifiedTime"    -> isoDateTimeFormatter.format(o.modifiedTime.atZone(utcTimeZone)),
+        "dataLength"      -> o.dataLength,
+        "dataVersion"     -> o.dataVersion.version,
+        "aclVersion"      -> o.aclVersion.version,
         "childrenVersion" -> o.childrenVersion.version,
-        "childrenNumber" -> o.childrenNumber,
-        "ephemeralOwner" -> o.ephemeralOwner
+        "childrenNumber"  -> o.childrenNumber,
+        "ephemeralOwner"  -> o.ephemeralOwner
       )
   }
 

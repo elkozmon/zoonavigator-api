@@ -1,62 +1,61 @@
 /*
  * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.elkozmon.zoonavigator.core.curator
 
-import cats.free.Free
-import cats.~>
+import cats.Applicative
+import cats.Parallel
 import cats.arrow.FunctionK
-import cats.Monad
-import cats.effect.Resource
 import cats.effect.Async
-import cats.effect.Sync
+import cats.effect.Resource
+import cats.free.Cofree
+import cats.syntax.applicativeError._
+import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.reducible._
-import cats.syntax.flatMap._
 import cats.syntax.traverse._
-import cats.syntax.applicativeError._
-import scala.concurrent.Future
-import org.apache.curator.framework.CuratorFramework
+import cats.~>
+
 import com.elkozmon.zoonavigator.core.action._
 import com.elkozmon.zoonavigator.core.curator.syntax.all._
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
-import org.apache.curator.framework.api.CuratorEvent
-import scala.concurrent.ExecutionContext
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
-import org.apache.curator.framework.api.transaction.CuratorOp
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
-import scala.jdk.CollectionConverters._
-import cats.free.Cofree
 import com.elkozmon.zoonavigator.core.utils.ZooKeeperUtils
-import cats.Parallel
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
-import org.apache.curator.utils.ZKPaths
-import cats.Applicative
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
-import org.apache.zookeeper.KeeperException
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNode
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+
+import org.apache.curator.framework.CuratorFramework
+import org.apache.curator.framework.api.CuratorEvent
+import org.apache.curator.framework.api.transaction.CuratorOp
+import org.apache.curator.utils.ZKPaths
+import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.KeeperException.Code
 
+import scala.concurrent.ExecutionContext
+import scala.jdk.CollectionConverters._
+
 class CuratorActionInterpreter[F[_]: Async: Parallel](
-    curatorResource: Resource[F, CuratorFramework],
-    executionContext: ExecutionContext
+  curatorResource: Resource[F, CuratorFramework],
+  executionContext: ExecutionContext
 ) extends ActionInterpreter[F] {
 
   implicit val ec: ExecutionContext = executionContext
@@ -131,7 +130,11 @@ class CuratorActionInterpreter[F[_]: Async: Parallel](
           }
       }
 
-      def setZNodeAcl(path: ZNodePath, acl: ZNodeAcl, aclVersionOpt: Option[ZNodeAclVersion]): F[ZNodeMeta] =
+      def setZNodeAcl(
+        path: ZNodePath,
+        acl: ZNodeAcl,
+        aclVersionOpt: Option[ZNodeAclVersion]
+      ): F[ZNodeMeta] =
         aclVersionOpt
           .map(ver => curator.setACL().withVersion(ver.version.toInt))
           .getOrElse(curator.setACL())

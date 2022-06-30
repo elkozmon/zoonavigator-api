@@ -17,11 +17,11 @@
 
 package api.formats.json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import org.scalatest.FlatSpec
 import play.api.libs.json._
 
-@SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+
 class JsonZNodePathSpec extends FlatSpec with JsonZNodePath {
 
   "JsonZNodePath" should "be serialized as a string" in {

@@ -17,40 +17,42 @@
 
 package com.elkozmon.zoonavigator.core.curator.syntax
 
+import cats.Applicative
 import cats.Eval
+import cats.Parallel
+import cats.effect.Async
 import cats.free.Cofree
 import cats.instances.list._
 import cats.instances.try_._
+import cats.syntax.flatMap._
+import cats.syntax.functor._
+import cats.syntax.parallel._
 import cats.syntax.traverse._
+
+import com.elkozmon.zoonavigator.core.curator.syntax.async._
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
 import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import com.elkozmon.zoonavigator.core.zookeeper.znode._
+
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.utils.ZKPaths
 
-import scala.jdk.CollectionConverters._
-import scala.util.Try
-import cats.effect.Async
-import cats.syntax.traverse._
-import cats.syntax.parallel._
-import cats.syntax.functor._
-import cats.syntax.flatMap._
-import cats.Applicative
-import cats.Parallel
-import cats.Monad
 import scala.concurrent.ExecutionContext
+import scala.jdk.CollectionConverters._
 import scala.language.implicitConversions
-import com.elkozmon.zoonavigator.core.curator.syntax.async._
+import scala.util.Try
 
 trait ZNodeOps {
 
-  implicit def toZNodeF[F[_]: Async: Parallel](c: CuratorFramework)(implicit ec: ExecutionContext): ZNodeF[F] =
+  implicit def toZNodeF[F[_]: Async: Parallel](
+    c: CuratorFramework
+  )(implicit ec: ExecutionContext): ZNodeF[F] =
     new ZNodeF[F] {
 
       override def walkTreeF[T](
-          fn: ZNodePath => F[T]
+        fn: ZNodePath => F[T]
       )(node: ZNodePath): F[Cofree[List, T]] = {
         val tF = fn(node)
         val childrenF = for {
@@ -62,7 +64,7 @@ trait ZNodeOps {
       }
 
       override def getZNodeF(path: ZNodePath): F[ZNode] = {
-        val aclF = getAclF(path)
+        val aclF  = getAclF(path)
         val dataF = getDataF(path)
 
         Applicative[F].map2(aclF, dataF) { (acl, data) =>
@@ -71,7 +73,7 @@ trait ZNodeOps {
       }
 
       override def getZNodeWithChildrenF(path: ZNodePath): F[ZNodeWithChildren] = {
-        val zNodeF = getZNodeF(path)
+        val zNodeF         = getZNodeF(path)
         val zNodeChildrenF = getChildrenF(path).map(_.data)
 
         Applicative[F].map2(zNodeF, zNodeChildrenF) { (node, children) =>
@@ -83,7 +85,10 @@ trait ZNodeOps {
         c.getData
           .forPathF(path.path)
           .map { event =>
-            ZNodeMetaWith(ZNodeData(Option(event.getData).getOrElse(Array.empty)), ZNodeMeta.fromStat(event.getStat))
+            ZNodeMetaWith(
+              ZNodeData(Option(event.getData).getOrElse(Array.empty)),
+              ZNodeMeta.fromStat(event.getStat)
+            )
           }
 
       override def getAclF(path: ZNodePath): F[ZNodeMetaWith[ZNodeAcl]] =
@@ -93,7 +98,10 @@ trait ZNodeOps {
             val acl = ZNodeAcl(
               event.getACLList.asScala.toList
                 .map { acl =>
-                  Acl(AclId(acl.getId.getScheme, acl.getId.getId), Permission.fromZooKeeperMask(acl.getPerms))
+                  Acl(
+                    AclId(acl.getId.getScheme, acl.getId.getId),
+                    Permission.fromZooKeeperMask(acl.getPerms)
+                  )
                 }
             )
 
@@ -117,7 +125,7 @@ trait ZNodeOps {
         c.getChildren
           .forPathF(path.path)
           .flatMap { event =>
-            val meta = ZNodeMeta.fromStat(event.getStat)
+            val meta      = ZNodeMeta.fromStat(event.getStat)
             val childrenF = Async[F].fromTry(getChildrenFromEvent(event))
 
             childrenF.map(ZNodeMetaWith(_, meta))

@@ -17,10 +17,11 @@
 
 package api.formats.json.zookeeper.znode
 
-import java.util.Base64
+import play.api.libs.json._
 
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
-import play.api.libs.json._
+
+import java.util.Base64
 
 trait JsonZNodeData {
 

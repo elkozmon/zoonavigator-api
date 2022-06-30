@@ -17,17 +17,22 @@
 
 package curator.provider
 
-import java.util.concurrent._
-
-import cats.syntax.traverse._
-import cats.instances.option._
-import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import com.google.common.cache._
 import config.ApplicationConfig
 import loggers.AppLogger
 import monix.eval.Task
 import monix.execution.Cancelable
 import monix.execution.Scheduler
+import zookeeper.AuthInfo
+import zookeeper.ConnectionId
+import zookeeper.ConnectionParams
+import zookeeper.ConnectionString
+
+import cats.instances.option._
+import cats.syntax.traverse._
+
+import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+
 import org.apache.curator.framework
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.CuratorFrameworkFactory
@@ -35,22 +40,19 @@ import org.apache.curator.framework.api.UnhandledErrorListener
 import org.apache.curator.framework.state.ConnectionState
 import org.apache.curator.framework.state.ConnectionStateListener
 import org.apache.curator.retry.ExponentialBackoffRetry
-import zookeeper.AuthInfo
-import zookeeper.ConnectionId
-import zookeeper.ConnectionParams
-import zookeeper.ConnectionString
 
+import java.util.concurrent._
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 import scala.language.postfixOps
 import scala.util.Try
 
 class CacheCuratorFrameworkProvider(
-    appLogger: AppLogger,
-    appConfig: ApplicationConfig,
-    curatorCacheMaxAge: CuratorCacheMaxAge,
-    curatorConnectTimeout: CuratorConnectTimeout,
-    implicit val scheduler: Scheduler
+  appLogger: AppLogger,
+  appConfig: ApplicationConfig,
+  curatorCacheMaxAge: CuratorCacheMaxAge,
+  curatorConnectTimeout: CuratorConnectTimeout,
+  implicit val scheduler: Scheduler
 ) extends CuratorFrameworkProvider
     with RemovalListener[CuratorKey, Task[CuratorFramework]] {
 
@@ -76,8 +78,10 @@ class CacheCuratorFrameworkProvider(
     .scheduleWithFixedDelay(1 second, 1 second)(curatorFrameworkCache.cleanUp())
     .discard()
 
-  override def onRemoval(notification: RemovalNotification[CuratorKey, Task[CuratorFramework]]): Unit = {
-    val curatorKey = notification.getKey
+  override def onRemoval(
+    notification: RemovalNotification[CuratorKey, Task[CuratorFramework]]
+  ): Unit = {
+    val curatorKey   = notification.getKey
     val removalCause = notification.getCause
 
     appLogger.debug(
@@ -94,15 +98,18 @@ class CacheCuratorFrameworkProvider(
     presetConnectionParamMap.get(connectionId).map(getCuratorInstance).sequence
 
   override def getCuratorInstance(
-      connectionString: ConnectionString,
-      authInfoList: List[AuthInfo]
+    connectionString: ConnectionString,
+    authInfoList: List[AuthInfo]
   ): Task[CuratorFramework] =
     curatorFrameworkCacheMap
-      .getOrElseUpdate(CuratorKey(connectionString, authInfoList), newCuratorInstance(connectionString, authInfoList))
+      .getOrElseUpdate(
+        CuratorKey(connectionString, authInfoList),
+        newCuratorInstance(connectionString, authInfoList)
+      )
 
   private def newCuratorInstance(
-      connectionString: ConnectionString,
-      authInfoList: List[AuthInfo]
+    connectionString: ConnectionString,
+    authInfoList: List[AuthInfo]
   ): Task[CuratorFramework] =
     Task
       .create[CuratorFramework] { (scheduler, callback) =>
@@ -146,20 +153,21 @@ class CacheCuratorFrameworkProvider(
           // Listen for successful connection
           val connectionListener =
             new ConnectionStateListener {
-              override def stateChanged(client: CuratorFramework, newState: ConnectionState): Unit = newState match {
-                case ConnectionState.CONNECTED =>
-                  callback.onSuccess(client)
-                  client.getConnectionStateListenable.removeListener(this)
-                  connectionTimeoutJob.cancel()
+              override def stateChanged(client: CuratorFramework, newState: ConnectionState): Unit =
+                newState match {
+                  case ConnectionState.CONNECTED =>
+                    callback.onSuccess(client)
+                    client.getConnectionStateListenable.removeListener(this)
+                    connectionTimeoutJob.cancel()
 
-                case ConnectionState.LOST =>
-                  appLogger.debug("Connection lost")
+                  case ConnectionState.LOST =>
+                    appLogger.debug("Connection lost")
 
-                case ConnectionState.SUSPENDED =>
-                  appLogger.debug("Connection suspended")
+                  case ConnectionState.SUSPENDED =>
+                    appLogger.debug("Connection suspended")
 
-                case _ =>
-              }
+                  case _ =>
+                }
             }
 
           curatorFramework.getConnectionStateListenable

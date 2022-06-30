@@ -17,16 +17,17 @@
 
 package api.formats.json.zookeeper.acl
 
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
-import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
+import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
+
 trait JsonAcl extends JsonPermission {
 
-  private final val IdKey = "id"
-  private final val SchemeKey = "scheme"
+  private final val IdKey          = "id"
+  private final val SchemeKey      = "scheme"
   private final val PermissionsKey = "permissions"
 
   implicit object AclFormat extends Format[Acl] {
@@ -46,7 +47,11 @@ trait JsonAcl extends JsonPermission {
       val jsonPermissions = o.permissions.toList
 
       Json
-        .obj(IdKey -> o.aclId.id.mkString, SchemeKey -> o.aclId.scheme, PermissionsKey -> Json.toJson(jsonPermissions))
+        .obj(
+          IdKey          -> o.aclId.id.mkString,
+          SchemeKey      -> o.aclId.scheme,
+          PermissionsKey -> Json.toJson(jsonPermissions)
+        )
     }
   }
 

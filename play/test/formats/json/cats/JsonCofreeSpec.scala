@@ -17,10 +17,11 @@
 
 package api.formats.json.cats
 
-import cats.free.Cofree
-import cats.Eval
 import org.scalatest.FlatSpec
 import play.api.libs.json._
+
+import cats.Eval
+import cats.free.Cofree
 
 class JsonCofreeSpec extends FlatSpec with JsonCofree {
 
@@ -28,7 +29,10 @@ class JsonCofreeSpec extends FlatSpec with JsonCofree {
     val c = Cofree(
       1,
       Eval.now(
-        List(Cofree(2, Eval.now(List.empty[Cofree[List, Int]])), Cofree(3, Eval.now(List.empty[Cofree[List, Int]])))
+        List(
+          Cofree(2, Eval.now(List.empty[Cofree[List, Int]])),
+          Cofree(3, Eval.now(List.empty[Cofree[List, Int]]))
+        )
       )
     )
     val s = implicitly[Writes[Cofree[List, Int]]].writes(c)
@@ -42,7 +46,10 @@ class JsonCofreeSpec extends FlatSpec with JsonCofree {
     val e = Cofree(
       1,
       Eval.now(
-        List(Cofree(2, Eval.now(List.empty[Cofree[List, Int]])), Cofree(3, Eval.now(List.empty[Cofree[List, Int]])))
+        List(
+          Cofree(2, Eval.now(List.empty[Cofree[List, Int]])),
+          Cofree(3, Eval.now(List.empty[Cofree[List, Int]]))
+        )
       )
     )
 
@@ -52,7 +59,10 @@ class JsonCofreeSpec extends FlatSpec with JsonCofree {
   it should "deserialize list of integer trees" in {
     val s = """[{"h":1,"t":[]}, {"h":2,"t":[]}]"""
     val c = implicitly[Reads[List[Cofree[List, Int]]]].reads(Json.parse(s))
-    val e = List(Cofree(1, Eval.now(List.empty[Cofree[List, Int]])), Cofree(2, Eval.now(List.empty[Cofree[List, Int]])))
+    val e = List(
+      Cofree(1, Eval.now(List.empty[Cofree[List, Int]])),
+      Cofree(2, Eval.now(List.empty[Cofree[List, Int]]))
+    )
 
     assertResult(expected = e)(c.get)
   }

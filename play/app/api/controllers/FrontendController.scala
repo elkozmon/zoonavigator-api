@@ -17,29 +17,28 @@
 
 package api.controllers
 
-import java.math.BigInteger
-import java.security.MessageDigest
-
-import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 import config.PlayAssetsPath
 import config.PlayHttpContext
 import controllers.Assets
 import org.jsoup.Jsoup
-import play.api.mvc._
 import play.api.Environment
+import play.api.mvc._
 import play.mvc.Http.MimeTypes
 
+import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+
+import java.math.BigInteger
+import java.security.MessageDigest
 import scala.jdk.CollectionConverters._
 
 class FrontendController(
-    assets: Assets,
-    controllerComponents: ControllerComponents,
-    environment: Environment,
-    playAssetsPath: PlayAssetsPath,
-    playHttpContext: PlayHttpContext
+  assets: Assets,
+  controllerComponents: ControllerComponents,
+  environment: Environment,
+  playAssetsPath: PlayAssetsPath,
+  playHttpContext: PlayHttpContext
 ) extends AbstractController(controllerComponents) {
 
-  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   def indexAction: Action[AnyContent] = {
     val indexHtml: String = {
       val path = playAssetsPath.path + "/index.html"
@@ -58,7 +57,7 @@ class FrontendController(
     }
 
     val indexEtag: String = {
-      val md5 = MessageDigest.getInstance("MD5")
+      val md5    = MessageDigest.getInstance("MD5")
       val md5Sum = md5.digest(indexHtml.getBytes)
       String.format("%032X", new BigInteger(1, md5Sum)).toLowerCase
     }

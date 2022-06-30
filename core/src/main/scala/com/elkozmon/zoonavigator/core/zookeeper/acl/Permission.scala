@@ -18,6 +18,7 @@
 package com.elkozmon.zoonavigator.core.zookeeper.acl
 
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+
 import org.apache.zookeeper.ZooDefs.Perms
 
 import scala.collection.mutable

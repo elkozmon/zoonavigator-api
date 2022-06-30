@@ -17,34 +17,38 @@
 
 package api.formats.json.cats
 
-import cats.free.Cofree
-import cats.Eval
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+import cats.Eval
+import cats.free.Cofree
+
 import scala.collection.Factory
-import scala.language.higherKinds
 
 trait JsonCofree extends DefaultReads with DefaultWrites {
 
-  implicit def cofreeEvalSWrites[S[M] <: Iterable[M], A](implicit writesA: Writes[A]): Writes[Eval[S[Cofree[S, A]]]] =
+  implicit def cofreeEvalSWrites[S[M] <: Iterable[M], A](implicit
+    writesA: Writes[A]
+  ): Writes[Eval[S[Cofree[S, A]]]] =
     s => traversableWrites[Cofree[S, A]].writes(s.value)
 
-  implicit def cofreeWrites[S[M] <: Iterable[M], A](implicit writesA: Writes[A]): Writes[Cofree[S, A]] =
+  implicit def cofreeWrites[S[M] <: Iterable[M], A](implicit
+    writesA: Writes[A]
+  ): Writes[Cofree[S, A]] =
     (
       (JsPath \ "h").write[A] and
         (JsPath \ "t").lazyWrite[Eval[S[Cofree[S, A]]]](cofreeEvalSWrites[S, A])
     )(unlift(Cofree.unapply[S, A]))
 
-  implicit def cofreeEvalSReads[S[_], A](
-      implicit readsA: Reads[A],
-      f: Factory[Cofree[S, A], S[Cofree[S, A]]]
+  implicit def cofreeEvalSReads[S[_], A](implicit
+    readsA: Reads[A],
+    f: Factory[Cofree[S, A], S[Cofree[S, A]]]
   ): Reads[Eval[S[Cofree[S, A]]]] =
     traversableReads[S, Cofree[S, A]].map(Eval.now)
 
-  implicit def cofreeReads[S[_], A](
-      implicit readsA: Reads[A],
-      f: Factory[Cofree[S, A], S[Cofree[S, A]]]
+  implicit def cofreeReads[S[_], A](implicit
+    readsA: Reads[A],
+    f: Factory[Cofree[S, A], S[Cofree[S, A]]]
   ): Reads[Cofree[S, A]] =
     (
       (JsPath \ "h").read[A] and

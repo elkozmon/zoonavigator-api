@@ -18,18 +18,21 @@
 package api.routers
 
 import api.controllers.ApiController
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import play.api.http.HttpErrorHandler
-import play.api.mvc.Action
 import play.api.mvc.DefaultActionBuilder
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.routing.sird._
 
-class ApiRouter(apiController: ApiController, httpErrorHandler: HttpErrorHandler, actionBuilder: DefaultActionBuilder)
-    extends SimpleRouter {
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
+
+class ApiRouter(
+  apiController: ApiController,
+  httpErrorHandler: HttpErrorHandler,
+  actionBuilder: DefaultActionBuilder
+) extends SimpleRouter {
 
   override def routes: Routes = {
     case GET(p"/config") =>
@@ -62,7 +65,9 @@ class ApiRouter(apiController: ApiController, httpErrorHandler: HttpErrorHandler
     case DELETE(p"/znode/children" ? q"path=$path" & q_s"names=$names") =>
       apiController.deleteChildrenNodes(ZNodePath(path), names)
 
-    case PUT(p"/znode/acl" ? q"path=$path" & q"version=${long(version)}" & q_o"recursive=${bool(recursive)}") =>
+    case PUT(
+          p"/znode/acl" ? q"path=$path" & q"version=${long(version)}" & q_o"recursive=${bool(recursive)}"
+        ) =>
       apiController.updateAcl(ZNodePath(path), ZNodeAclVersion(version), recursive)
 
     case PUT(p"/znode/data" ? q"path=$path" & q"version=${long(version)}") =>

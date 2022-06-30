@@ -17,17 +17,18 @@
 
 package utils
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
-import java.util.zip.{GZIPInputStream, GZIPOutputStream}
-
 import org.apache.commons.io.IOUtils
 
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import scala.util.Try
 
 object Gzip {
 
   def compress(input: Array[Byte]): Array[Byte] = {
-    val bos = new ByteArrayOutputStream(input.length)
+    val bos  = new ByteArrayOutputStream(input.length)
     val gzip = new GZIPOutputStream(bos)
     gzip.write(input)
     gzip.close()

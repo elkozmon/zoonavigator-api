@@ -25,7 +25,9 @@ import play.api.libs.json._
 
 trait JsonApiResponse {
 
-  implicit def asJsonApiResponse[T](implicit wrt: Writes[ApiResponse[T]]): Writeable[ApiResponse[T]] =
+  implicit def asJsonApiResponse[T](implicit
+    wrt: Writes[ApiResponse[T]]
+  ): Writeable[ApiResponse[T]] =
     new Writeable[ApiResponse[T]](
       o => ByteString(Json.toBytes(Json.toJson(o))),
       Some(MediaTypes.`application/json`.value)
@@ -35,5 +37,10 @@ trait JsonApiResponse {
     o => Json.obj("success" -> o.success, "message" -> o.message)
 
   implicit def asWritesT[T](implicit wrt: Writes[T]): OWrites[ApiResponse[T]] =
-    o => Json.obj("success" -> o.success, "message" -> o.message, "payload" -> o.payload.map(wrt.writes))
+    o =>
+      Json.obj(
+        "success" -> o.success,
+        "message" -> o.message,
+        "payload" -> o.payload.map(wrt.writes)
+      )
 }

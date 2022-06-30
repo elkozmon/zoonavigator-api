@@ -15,24 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.concurrent.TimeUnit
-
-import schedulers._
-import curator.action.CuratorAction
-import curator.provider._
-import api.controllers.FrontendController
-import api.controllers.ApiController
 import api.ApiErrorHandler
+import api.controllers.ApiController
+import api.controllers.FrontendController
 import api.routers.ApiRouter
 import api.routers.ApplicationRouter
 import api.routers.FrontendRouter
-import com.elkozmon.zoonavigator.core.utils.CommonUtils._
-import com.elkozmon.zoonavigator.core.action._
 import com.softwaremill.macwire._
 import config.ApplicationConfig
 import config.PlayAssetsPath
 import config.PlayHttpContext
 import controllers.AssetsComponents
+import curator.action.CuratorAction
+import curator.provider._
 import loggers.AppLogger
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
@@ -45,10 +40,12 @@ import play.api.routing.Router
 import play.core.SourceMapper
 import play.filters.HttpFiltersComponents
 import play.filters.cors.CORSComponents
+import schedulers._
 
+import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
-import com.elkozmon.zoonavigator.core.curator.CuratorActionInterpreter
-import monix.eval.Task
 
 class AppComponents(context: Context)
     extends BuiltInComponentsFromContext(context)
@@ -60,7 +57,6 @@ class AppComponents(context: Context)
   LoggerConfigurator(context.environment.classLoader)
     .foreach(_.configure(context.environment))
 
-  @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   lazy val playAssetsPath: PlayAssetsPath =
     PlayAssetsPath(
       configuration
@@ -88,12 +84,12 @@ class AppComponents(context: Context)
     implicit val scheduler: Scheduler = computingScheduler
     wire[CuratorAction]
   }
-  
+
   override lazy val httpErrorHandler: HttpErrorHandler = {
-    //noinspection ScalaUnusedSymbol
+    // noinspection ScalaUnusedSymbol
     def routerProvider: Option[Router] = Option(router)
 
-    //noinspection ScalaUnusedSymbol
+    // noinspection ScalaUnusedSymbol
     def sourceMapper: Option[SourceMapper] = devContext.map(_.sourceMapper)
 
     wire[ApiErrorHandler]
@@ -129,10 +125,10 @@ class AppComponents(context: Context)
   }
 
   override lazy val router: Router = {
-    //noinspection ScalaUnusedSymbol
+    // noinspection ScalaUnusedSymbol
     val apiRouter = wire[ApiRouter]
 
-    //noinspection ScalaUnusedSymbol
+    // noinspection ScalaUnusedSymbol
     val frontendRouter = wire[FrontendRouter]
 
     wire[ApplicationRouter]

@@ -17,26 +17,23 @@
 
 package config
 
-import java.nio.charset.StandardCharsets
-
 import com.typesafe.config.Config
-import com.typesafe.config.ConfigList
 import com.typesafe.config.ConfigObject
 import play.api.ConfigLoader
 import zookeeper.AuthInfo
 import zookeeper.ConnectionString
 
+import java.nio.charset.StandardCharsets
 import scala.concurrent.duration.FiniteDuration
 import scala.jdk.CollectionConverters._
 import scala.jdk.DurationConverters._
 
 final case class ApplicationConfig(
-    requestTimeout: FiniteDuration,
-    autoConnect: Option[String],
-    connections: List[ApplicationConfig.Connection]
+  requestTimeout: FiniteDuration,
+  autoConnect: Option[String],
+  connections: List[ApplicationConfig.Connection]
 )
 
-@SuppressWarnings(Array("org.wartremover.warts.Throw"))
 object ApplicationConfig {
 
   implicit val configLoader: ConfigLoader[ApplicationConfig] =
@@ -59,7 +56,8 @@ object ApplicationConfig {
             val id = o.getKey
             val c = o.getValue match {
               case o: ConfigObject => o.toConfig
-              case _               => throw new RuntimeException("Invalid Config object at 'zoonavigator.connections'")
+              case _ =>
+                throw new RuntimeException("Invalid Config object at 'zoonavigator.connections'")
             }
 
             val authList = c.getObjectList("auth").asScala.toList.map { o =>
@@ -79,9 +77,9 @@ object ApplicationConfig {
     }
 
   final case class Connection(
-      id: String,
-      name: Option[String],
-      connectionString: ConnectionString,
-      authInfoList: List[AuthInfo]
+    id: String,
+    name: Option[String],
+    connectionString: ConnectionString,
+    authInfoList: List[AuthInfo]
   )
 }

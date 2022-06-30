@@ -20,29 +20,32 @@ package api
 import play.api._
 import play.api.http.DefaultHttpErrorHandler
 import play.api.libs.json.Json
-import play.api.mvc._
 import play.api.mvc.Results.BadRequest
 import play.api.mvc.Results.Forbidden
 import play.api.mvc.Results.InternalServerError
 import play.api.mvc.Results.NotFound
 import play.api.mvc.Results.Status
+import play.api.mvc._
 import play.api.routing.Router
 import play.core.SourceMapper
 
 import scala.concurrent._
 
 class ApiErrorHandler(
-    env: Environment,
-    config: Configuration,
-    sourceMapper: Option[SourceMapper],
-    router: => Option[Router]
+  env: Environment,
+  config: Configuration,
+  sourceMapper: Option[SourceMapper],
+  router: => Option[Router]
 ) extends DefaultHttpErrorHandler(env, config, sourceMapper, router)
     with Rendering
     with AcceptExtractors {
 
   import api.formats.Json._
 
-  override def onProdServerError(request: RequestHeader, exception: UsefulException): Future[Result] = {
+  override def onProdServerError(
+    request: RequestHeader,
+    exception: UsefulException
+  ): Future[Result] = {
     val response =
       ApiResponse[Unit](
         success = false,
@@ -50,9 +53,8 @@ class ApiErrorHandler(
         payload = None
       )
 
-    render.async {
-      case Accepts.Json() =>
-        Future.successful(InternalServerError(Json.toJson(response)))
+    render.async { case Accepts.Json() =>
+      Future.successful(InternalServerError(Json.toJson(response)))
     }(request)
   }
 
@@ -60,9 +62,8 @@ class ApiErrorHandler(
     val response =
       ApiResponse[Unit](success = false, message = Some(message), payload = None)
 
-    render.async {
-      case Accepts.Json() =>
-        Future.successful(BadRequest(Json.toJson(response)))
+    render.async { case Accepts.Json() =>
+      Future.successful(BadRequest(Json.toJson(response)))
     }(request)
   }
 
@@ -70,9 +71,8 @@ class ApiErrorHandler(
     val response =
       ApiResponse[Unit](success = false, message = Some(message), payload = None)
 
-    render.async {
-      case Accepts.Json() =>
-        Future.successful(Forbidden(Json.toJson(response)))
+    render.async { case Accepts.Json() =>
+      Future.successful(Forbidden(Json.toJson(response)))
     }(request)
   }
 
@@ -80,23 +80,21 @@ class ApiErrorHandler(
     val response =
       ApiResponse[Unit](success = false, message = Some(message), payload = None)
 
-    render.async {
-      case Accepts.Json() =>
-        Future.successful(NotFound(Json.toJson(response)))
+    render.async { case Accepts.Json() =>
+      Future.successful(NotFound(Json.toJson(response)))
     }(request)
   }
 
   override protected def onOtherClientError(
-      request: RequestHeader,
-      statusCode: Int,
-      message: String
+    request: RequestHeader,
+    statusCode: Int,
+    message: String
   ): Future[Result] = {
     val response =
       ApiResponse[Unit](success = false, message = Some(message), payload = None)
 
-    render.async {
-      case Accepts.Json() =>
-        Future.successful(Status(statusCode)(Json.toJson(response)))
+    render.async { case Accepts.Json() =>
+      Future.successful(Status(statusCode)(Json.toJson(response)))
     }(request)
   }
 
@@ -104,9 +102,8 @@ class ApiErrorHandler(
     val response =
       ApiResponse[Unit](success = false, message = Some(exception.getMessage), payload = None)
 
-    render.async {
-      case Accepts.Json() =>
-        Future.successful(Status(500)(Json.toJson(response)))
+    render.async { case Accepts.Json() =>
+      Future.successful(Status(500)(Json.toJson(response)))
     }(request)
   }
 }

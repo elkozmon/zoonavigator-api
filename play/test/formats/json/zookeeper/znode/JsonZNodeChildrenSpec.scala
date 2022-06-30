@@ -17,11 +17,12 @@
 
 package api.formats.json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeChildren
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import org.scalatest.FlatSpec
 import play.api.libs.json.JsArray
 import play.api.libs.json.Writes
+
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeChildren
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 
 class JsonZNodeChildrenSpec extends FlatSpec with JsonZNodeChildren {
 

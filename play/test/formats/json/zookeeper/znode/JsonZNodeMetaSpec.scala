@@ -17,12 +17,13 @@
 
 package api.formats.json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.scalatest.FlatSpec
 import play.api.libs.json._
 
-import scala.language.postfixOps
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
+
 import java.time.Instant
+import scala.language.postfixOps
 
 class JsonZNodeMetaSpec extends FlatSpec with JsonZNodeMeta {
 

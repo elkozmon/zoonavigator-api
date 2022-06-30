@@ -17,15 +17,17 @@
 
 package api.formats.json.zookeeper.znode
 
-import com.elkozmon.zoonavigator.core.zookeeper.acl.{Acl, AclId, Permission}
-import com.elkozmon.zoonavigator.core.zookeeper.znode._
 import org.scalatest.FlatSpec
 import play.api.libs.json._
 
-import scala.language.postfixOps
-import java.time.Instant
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
+import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
+import com.elkozmon.zoonavigator.core.zookeeper.znode._
 
-@SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
+import java.time.Instant
+import scala.language.postfixOps
+
 class JsonZNodeWithChildrenSpec extends FlatSpec with JsonZNodeWithChildren {
 
   private val zNodeMetaWith =

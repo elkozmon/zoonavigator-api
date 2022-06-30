@@ -25,16 +25,16 @@ import play.api.routing.SimpleRouter
 import play.api.routing.sird._
 
 class ApplicationRouter(
-    apiRouter: ApiRouter,
-    frontendRouter: FrontendRouter,
-    httpContext: PlayHttpContext,
-    httpErrorHandler: HttpErrorHandler,
-    actionBuilder: DefaultActionBuilder
+  apiRouter: ApiRouter,
+  frontendRouter: FrontendRouter,
+  httpContext: PlayHttpContext,
+  httpErrorHandler: HttpErrorHandler,
+  actionBuilder: DefaultActionBuilder
 ) extends SimpleRouter {
 
   private val apiUrlPrefix = httpContext.context.stripSuffix("/").concat("/api")
 
-  private val prefixedApiRouter = apiRouter.withPrefix(apiUrlPrefix)
+  private val prefixedApiRouter      = apiRouter.withPrefix(apiUrlPrefix)
   private val prefixedFrontendRouter = frontendRouter.withPrefix(httpContext.context)
 
   override def routes: Routes = {

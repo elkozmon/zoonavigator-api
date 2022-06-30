@@ -1,5 +1,5 @@
-import api.controllers.FrontendController
 import api.controllers.ApiController
+import api.controllers.FrontendController
 import curator.provider.CuratorFrameworkProvider
 import loggers.AppLogger
 import play.api.BuiltInComponentsFromContext

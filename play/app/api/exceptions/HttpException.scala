@@ -17,9 +17,10 @@
 
 package api.exceptions
 
-import org.apache.zookeeper.KeeperException.NoAuthException
 import play.api.http.HttpErrorHandler
 import play.api.mvc._
+
+import org.apache.zookeeper.KeeperException.NoAuthException
 
 import scala.concurrent.Future
 
@@ -28,8 +29,8 @@ class HttpException(val statusCode: Int, message: String) extends Exception(mess
 object HttpException {
 
   def resultHandler(
-      request: RequestHeader,
-      httpErrorHandler: HttpErrorHandler
+    request: RequestHeader,
+    httpErrorHandler: HttpErrorHandler
   ): PartialFunction[Throwable, Future[Result]] = {
     case e: NoAuthException =>
       httpErrorHandler.onClientError(request, 403, e.getMessage)

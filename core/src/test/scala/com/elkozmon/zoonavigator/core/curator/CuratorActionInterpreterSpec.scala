@@ -17,42 +17,36 @@
 
 package com.elkozmon.zoonavigator.core.curator
 
+import monix.eval.Task
+import monix.execution.Scheduler
+import org.scalatest.FreeSpec
+
+import cats.Eval
+import cats.effect.Resource
+import cats.free.Cofree
+
+import com.elkozmon.zoonavigator.core.action._
 import com.elkozmon.zoonavigator.core.curator.CuratorSpec
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
+import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
 import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission._
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
-import monix.execution.Scheduler
+
+import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.data.ACL
 import org.apache.zookeeper.data.Id
-import org.scalatest.FlatSpec
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
-import com.elkozmon.zoonavigator.core.action._
-import monix.eval.Task
-import cats.effect.Resource
-import org.apache.curator.framework.CuratorFramework
-import org.scalatest.FreeSpec
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Acl
-import com.elkozmon.zoonavigator.core.zookeeper.acl.AclId
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
-import cats.free.Cofree
-import cats.Eval
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission._
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
 import scala.util.Try
 
-@SuppressWarnings(
-  Array(
-    "org.wartremover.warts.Null",
-    "org.wartremover.warts.TryPartial",
-    "org.wartremover.warts.NonUnitStatements",
-    "org.wartremover.warts.TraversableOps"
-  )
-)
 class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
 
   import Scheduler.Implicits.global
@@ -92,7 +86,10 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
     }
 
     "should copy ACLs" in withCurator { implicit curatorFramework =>
-      val acl = new ACL(Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)), new Id("world", "anyone"))
+      val acl = new ACL(
+        Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)),
+        new Id("world", "anyone")
+      )
 
       curatorFramework
         .create()
@@ -100,7 +97,8 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
         .forPath("/foo", "foo".getBytes)
         .discard()
 
-      val action = DuplicateZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-copy").get)
+      val action =
+        DuplicateZNodeRecursiveAction(ZNodePath.parse("/foo").get, ZNodePath.parse("/foo-copy").get)
 
       Await.result(interpreter.apply(action.free).runToFuture, Duration.Inf)
 
@@ -144,8 +142,14 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
 
       assertResult {
         List(
-          Cofree(getDefaultExportNode("/foo", "foo"), Eval.now(List.empty[Cofree[List, ZNodeExport]])),
-          Cofree(getDefaultExportNode("/bar", "bar"), Eval.now(List.empty[Cofree[List, ZNodeExport]]))
+          Cofree(
+            getDefaultExportNode("/foo", "foo"),
+            Eval.now(List.empty[Cofree[List, ZNodeExport]])
+          ),
+          Cofree(
+            getDefaultExportNode("/bar", "bar"),
+            Eval.now(List.empty[Cofree[List, ZNodeExport]])
+          )
         )
       }(exported.map(_.forceAll))
     }
@@ -176,7 +180,12 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
           Cofree(
             getDefaultExportNode("/foo", "foo"),
             Eval.now(
-              List(Cofree(getDefaultExportNode("/foo/bar", "bar"), Eval.now(List.empty[Cofree[List, ZNodeExport]])))
+              List(
+                Cofree(
+                  getDefaultExportNode("/foo/bar", "bar"),
+                  Eval.now(List.empty[Cofree[List, ZNodeExport]])
+                )
+              )
             )
           )
         )
@@ -208,7 +217,9 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
           .discard()
 
         val action =
-          ExportZNodesAction(Seq(ZNodePath.parse("/export/foo").get, ZNodePath.parse("/export/baz").get))
+          ExportZNodesAction(
+            Seq(ZNodePath.parse("/export/foo").get, ZNodePath.parse("/export/baz").get)
+          )
 
         val exported =
           Await.result(interpreter.apply(action.free).runToFuture, Duration.Inf)
@@ -218,10 +229,18 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
             Cofree(
               getDefaultExportNode("/foo", "foo"),
               Eval.now(
-                List(Cofree(getDefaultExportNode("/foo/bar", "bar"), Eval.now(List.empty[Cofree[List, ZNodeExport]])))
+                List(
+                  Cofree(
+                    getDefaultExportNode("/foo/bar", "bar"),
+                    Eval.now(List.empty[Cofree[List, ZNodeExport]])
+                  )
+                )
               )
             ),
-            Cofree(getDefaultExportNode("/baz", "baz"), Eval.now(List.empty[Cofree[List, ZNodeExport]]))
+            Cofree(
+              getDefaultExportNode("/baz", "baz"),
+              Eval.now(List.empty[Cofree[List, ZNodeExport]])
+            )
           )
         }(exported.map(_.forceAll))
     }
@@ -302,9 +321,11 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
         .discard()
 
       val action =
-        ForceDeleteZNodeRecursiveAction(Seq("/foo", "/bar", "/nonexistent").map(ZNodePath.parse _ andThen (_.get)))
+        ForceDeleteZNodeRecursiveAction(
+          Seq("/foo", "/bar", "/nonexistent").map(ZNodePath.parse _ andThen (_.get))
+        )
 
-      val tryResult = 
+      val tryResult =
         Try(Await.result(interpreter.apply(action.free).runToFuture, Duration.Inf))
 
       assert(tryResult.isFailure)
@@ -315,18 +336,19 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
   }
 
   "GetZNodeDataActionHandler" - {
-    "should return empty byte array for node with null data" in withCurator { implicit curatorFramework =>
-      curatorFramework
-        .create()
-        .forPath("/null-node", null)
-        .discard()
+    "should return empty byte array for node with null data" in withCurator {
+      implicit curatorFramework =>
+        curatorFramework
+          .create()
+          .forPath("/null-node", null)
+          .discard()
 
-      val action = GetZNodeDataAction(ZNodePath.parse("/null-node").get)
+        val action = GetZNodeDataAction(ZNodePath.parse("/null-node").get)
 
-      val metadata =
-        Await.result(interpreter.apply(action.free).runToFuture, Duration.Inf)
+        val metadata =
+          Await.result(interpreter.apply(action.free).runToFuture, Duration.Inf)
 
-      assert(metadata.data.bytes.isEmpty)
+        assert(metadata.data.bytes.isEmpty)
     }
   }
 
@@ -343,8 +365,14 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
 
       val exported =
         List(
-          Cofree(getExportNode("/foo", "foo", fooAclDefault), Eval.now(List.empty[Cofree[List, ZNodeExport]])),
-          Cofree(getExportNode("/bar", "bar", barAclDefault), Eval.now(List.empty[Cofree[List, ZNodeExport]]))
+          Cofree(
+            getExportNode("/foo", "foo", fooAclDefault),
+            Eval.now(List.empty[Cofree[List, ZNodeExport]])
+          ),
+          Cofree(
+            getExportNode("/bar", "bar", barAclDefault),
+            Eval.now(List.empty[Cofree[List, ZNodeExport]])
+          )
         )
 
       val action =
@@ -383,7 +411,10 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
             getExportNode("/foo", "foo", fooAclDefault),
             Eval.now(
               List(
-                Cofree(getExportNode("/foo/bar", "bar", barAclDefault), Eval.now(List.empty[Cofree[List, ZNodeExport]]))
+                Cofree(
+                  getExportNode("/foo/bar", "bar", barAclDefault),
+                  Eval.now(List.empty[Cofree[List, ZNodeExport]])
+                )
               )
             )
           )
@@ -427,11 +458,17 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
             getExportNode("/foo", "foo", fooAclDefault),
             Eval.now(
               List(
-                Cofree(getExportNode("/foo/bar", "bar", barAclDefault), Eval.now(List.empty[Cofree[List, ZNodeExport]]))
+                Cofree(
+                  getExportNode("/foo/bar", "bar", barAclDefault),
+                  Eval.now(List.empty[Cofree[List, ZNodeExport]])
+                )
               )
             )
           ),
-          Cofree(getExportNode("/baz", "baz", bazAclDefault), Eval.now(List.empty[Cofree[List, ZNodeExport]]))
+          Cofree(
+            getExportNode("/baz", "baz", bazAclDefault),
+            Eval.now(List.empty[Cofree[List, ZNodeExport]])
+          )
         )
 
       // create "import" container node
@@ -471,21 +508,27 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
       assertResult(bazAclDefault)(bazAcl)
     }
 
-    "should import node creating its non-existent target parent" in withCurator { implicit curatorFramework =>
-      val fooAclDefault =
-        List(Acl(AclId("world", "anyone"), Set(Read, Create)))
+    "should import node creating its non-existent target parent" in withCurator {
+      implicit curatorFramework =>
+        val fooAclDefault =
+          List(Acl(AclId("world", "anyone"), Set(Read, Create)))
 
-      val exported =
-        List(Cofree(getExportNode("/foo", "foo", fooAclDefault), Eval.now(List.empty[Cofree[List, ZNodeExport]])))
+        val exported =
+          List(
+            Cofree(
+              getExportNode("/foo", "foo", fooAclDefault),
+              Eval.now(List.empty[Cofree[List, ZNodeExport]])
+            )
+          )
 
-      val action =
-        ImportZNodesAction(ZNodePath.parse("/non-existent-parent").get, exported)
+        val action =
+          ImportZNodesAction(ZNodePath.parse("/non-existent-parent").get, exported)
 
-      Await.result(interpreter.apply(action.free).runToFuture, Duration.Inf)
+        Await.result(interpreter.apply(action.free).runToFuture, Duration.Inf)
 
-      val fooData = new String(curatorFramework.getData.forPath("/non-existent-parent/foo"))
+        val fooData = new String(curatorFramework.getData.forPath("/non-existent-parent/foo"))
 
-      assertResult("foo")(fooData)
+        assertResult("foo")(fooData)
     }
   }
 
@@ -550,7 +593,10 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
     }
 
     "should copy ACLs" in withCurator { implicit curatorFramework =>
-      val acl = new ACL(Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)), new Id("world", "anyone"))
+      val acl = new ACL(
+        Permission.toZooKeeperMask(Set(Permission.Admin, Permission.Read)),
+        new Id("world", "anyone")
+      )
 
       curatorFramework
         .create()

@@ -17,12 +17,13 @@
 
 package api.formats.json.zookeeper.znode
 
-import java.util.Base64
-
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
 import org.scalatest.FlatSpec
 import play.api.libs.json.JsString
 import play.api.libs.json.Writes
+
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
+
+import java.util.Base64
 
 class JsonZNodeDataSpec extends FlatSpec with JsonZNodeData {
 

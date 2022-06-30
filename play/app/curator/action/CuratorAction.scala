@@ -17,27 +17,31 @@
 
 package curator.action
 
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-
-import cats.instances.either._
-import cats.instances.future._
-import cats.syntax.bitraverse._
 import curator.provider.CuratorFrameworkProvider
 import monix.eval.Task
 import monix.execution.Scheduler
-import org.apache.curator.framework.CuratorFramework
 import play.api.http.HttpErrorHandler
-import play.api.libs.json.Json
 import play.api.libs.json.JsString
+import play.api.libs.json.Json
 import play.api.mvc._
 import zookeeper.ConnectionId
 import zookeeper.ConnectionParams
 
+import cats.instances.either._
+import cats.instances.future._
+import cats.syntax.bitraverse._
+
+import org.apache.curator.framework.CuratorFramework
+
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 import scala.concurrent.Future
 
-class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider: CuratorFrameworkProvider)(
-    implicit val executionContext: Scheduler
+class CuratorAction(
+  httpErrorHandler: HttpErrorHandler,
+  curatorFrameworkProvider: CuratorFrameworkProvider
+)(implicit
+  val executionContext: Scheduler
 ) extends ActionRefiner[Request, CuratorRequest] {
 
   import api.formats.Json._
@@ -62,7 +66,7 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
       .map(_.trim)
       .flatMap[Future[Result], Task[Either[Result, CuratorFramework]]] {
         case x if x.startsWith(cxnPresetHeaderPrefix) =>
-          val b64 = x.stripPrefix(cxnPresetHeaderPrefix).trim
+          val b64  = x.stripPrefix(cxnPresetHeaderPrefix).trim
           val json = JsString(new String(Base64.getDecoder.decode(b64), StandardCharsets.UTF_8))
           json
             .asOpt[ConnectionId]
@@ -75,7 +79,7 @@ class CuratorAction(httpErrorHandler: HttpErrorHandler, curatorFrameworkProvider
             )
 
         case x if x.startsWith(cxnParamsHeaderPrefix) =>
-          val b64 = x.stripPrefix(cxnParamsHeaderPrefix).trim
+          val b64  = x.stripPrefix(cxnParamsHeaderPrefix).trim
           val json = Json.parse(Base64.getDecoder.decode(b64))
           json
             .asOpt[ConnectionParams]

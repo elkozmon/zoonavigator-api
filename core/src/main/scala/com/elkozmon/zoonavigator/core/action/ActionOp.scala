@@ -17,18 +17,19 @@
 
 package com.elkozmon.zoonavigator.core.action
 
-import cats.free.Free
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion
 import cats.free.Cofree
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMetaWith
+import cats.free.Free
+
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAcl
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeChildren
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeData
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeExport
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMeta
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeMetaWith
+import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeWithChildren
-import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion
 
 // Algebra of operations of this program
 sealed trait ActionOp[A] {

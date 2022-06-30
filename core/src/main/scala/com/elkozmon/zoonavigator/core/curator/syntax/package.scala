@@ -17,24 +17,25 @@
 
 package com.elkozmon.zoonavigator.core.curator
 
+import org.slf4j.LoggerFactory
+
 import org.apache.curator.framework.api.BackgroundCallback
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.framework.api.UnhandledErrorListener
 import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.KeeperException.Code
-import org.slf4j.LoggerFactory
-
-import scala.util.Try
 
 package object syntax {
 
   object async extends AsyncOps
   object znode extends ZNodeOps
-  object all extends AsyncOps with ZNodeOps
+  object all   extends AsyncOps with ZNodeOps
 
   private[curator] val logger = LoggerFactory.getLogger("curator")
 
-  private[curator] def newEventCallback(callback: Either[Throwable, CuratorEvent] => Unit): BackgroundCallback =
+  private[curator] def newEventCallback(
+    callback: Either[Throwable, CuratorEvent] => Unit
+  ): BackgroundCallback =
     (_, event: CuratorEvent) => {
       logger.debug("{} event completed with result code {}", event.getType, event.getResultCode)
 
@@ -48,7 +49,9 @@ package object syntax {
       }
     }
 
-  private[curator] def newErrorListener[A](callback: Either[Throwable, A] => Unit): UnhandledErrorListener =
+  private[curator] def newErrorListener[A](
+    callback: Either[Throwable, A] => Unit
+  ): UnhandledErrorListener =
     (message: String, e: Throwable) => {
       logger.error(message, e)
       callback(Left(e))

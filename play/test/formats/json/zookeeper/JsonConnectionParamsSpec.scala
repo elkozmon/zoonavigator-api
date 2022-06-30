@@ -24,7 +24,8 @@ import zookeeper.ConnectionParams
 class JsonConnectionParamsSpec extends FlatSpec with JsonConnectionParams {
 
   "JsonConnectionParams" should "deserialize simple connection param" in {
-    val s = """{"connectionString":"localhost:2181","authInfo":[{"scheme":"world","id":"anyone"}]}"""
+    val s =
+      """{"connectionString":"localhost:2181","authInfo":[{"scheme":"world","id":"anyone"}]}"""
     val j = implicitly[Reads[ConnectionParams]].reads(Json.parse(s))
 
     assert(j.isSuccess)

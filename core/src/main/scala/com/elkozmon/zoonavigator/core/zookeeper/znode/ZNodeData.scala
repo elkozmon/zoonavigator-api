@@ -33,7 +33,6 @@ final case class ZNodeData(bytes: Array[Byte]) {
         false
     }
 
-  @SuppressWarnings(Array("org.wartremover.warts.IsInstanceOf"))
   override def canEqual(that: Any): Boolean =
     that.isInstanceOf[ZNodeData]
 

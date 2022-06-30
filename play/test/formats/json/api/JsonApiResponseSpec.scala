@@ -23,7 +23,6 @@ import play.api.libs.json._
 
 import scala.language.postfixOps
 
-@SuppressWarnings(Array("org.wartremover.warts.JsLookupResultPartial"))
 class JsonApiResponseSpec extends FlatSpec with JsonApiResponse {
 
   "Serialized JsonApiResponse" should "be a JSON object with 'success' boolean field of value JsTrue" in {

@@ -17,16 +17,17 @@
 
 package api.formats.json.zookeeper.acl
 
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import play.api.libs.json._
+
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 
 trait JsonPermission {
 
   private final val Create = "create"
-  private final val Read = "read"
-  private final val Write = "write"
+  private final val Read   = "read"
+  private final val Write  = "write"
   private final val Delete = "delete"
-  private final val Admin = "admin"
+  private final val Admin  = "admin"
 
   implicit object PermissionFormat extends Format[Permission] {
 

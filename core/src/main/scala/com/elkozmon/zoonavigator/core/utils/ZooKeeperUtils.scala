@@ -19,17 +19,16 @@ package com.elkozmon.zoonavigator.core.utils
 
 import cats.Functor
 import cats.free.Cofree
+
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePath
 import com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodePathLens
 
-import scala.language.higherKinds
 import scala.util.Try
 
 object ZooKeeperUtils {
 
-  @SuppressWarnings(Array("org.wartremover.warts.TryPartial"))
-  def rewriteZNodePaths[S[_]: Functor, T](path: ZNodePath, tree: Cofree[S, T])(
-      implicit lens: ZNodePathLens[T]
+  def rewriteZNodePaths[S[_]: Functor, T](path: ZNodePath, tree: Cofree[S, T])(implicit
+    lens: ZNodePathLens[T]
   ): Try[Cofree[S, T]] =
     Try {
       tree.transform(

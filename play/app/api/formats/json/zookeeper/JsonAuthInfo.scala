@@ -17,11 +17,12 @@
 
 package api.formats.json.zookeeper
 
-import java.nio.charset.StandardCharsets
-
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.json.JsPath
+import play.api.libs.json.Reads
 import zookeeper.AuthInfo
+
+import java.nio.charset.StandardCharsets
 
 trait JsonAuthInfo {
 

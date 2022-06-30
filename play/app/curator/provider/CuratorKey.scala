@@ -17,12 +17,12 @@
 
 package curator.provider
 
+import zookeeper.AuthInfo
+import zookeeper.ConnectionString
+
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.SecureRandom
-
-import zookeeper.AuthInfo
-import zookeeper.ConnectionString
 
 final case class CuratorKey(connectionString: ConnectionString, authInfoHash: String)
 
@@ -32,7 +32,7 @@ object CuratorKey {
 
   private val randomSalt: Array[Byte] = {
     val secureRandom = new SecureRandom()
-    val bytes = Array.fill[Byte](20)(0)
+    val bytes        = Array.fill[Byte](20)(0)
 
     secureRandom.nextBytes(bytes)
     bytes

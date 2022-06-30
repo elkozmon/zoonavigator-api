@@ -17,14 +17,13 @@
 
 package com.elkozmon.zoonavigator.core.curator
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.RetryOneTime
 import org.apache.curator.test.TestingServer
 import org.apache.zookeeper.data.Stat
-import org.scalatest.FlatSpec
+
+import java.util.concurrent.atomic.AtomicInteger
 
 trait CuratorSpec {
 

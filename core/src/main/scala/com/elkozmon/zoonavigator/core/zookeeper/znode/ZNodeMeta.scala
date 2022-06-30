@@ -18,19 +18,20 @@
 package com.elkozmon.zoonavigator.core.zookeeper.znode
 
 import org.apache.zookeeper.data.Stat
+
 import java.time.Instant
 
 final case class ZNodeMeta(
-    creationId: Long,
-    creationTime: Instant,
-    modifiedId: Long,
-    modifiedTime: Instant,
-    dataLength: Int,
-    dataVersion: ZNodeDataVersion,
-    aclVersion: ZNodeAclVersion,
-    childrenVersion: ZNodeChildrenVersion,
-    childrenNumber: Int,
-    ephemeralOwner: Long
+  creationId: Long,
+  creationTime: Instant,
+  modifiedId: Long,
+  modifiedTime: Instant,
+  dataLength: Int,
+  dataVersion: ZNodeDataVersion,
+  aclVersion: ZNodeAclVersion,
+  childrenVersion: ZNodeChildrenVersion,
+  childrenNumber: Int,
+  ephemeralOwner: Long
 )
 
 object ZNodeMeta {

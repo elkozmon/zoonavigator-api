@@ -25,9 +25,9 @@ import play.api.routing.SimpleRouter
 import play.api.routing.sird._
 
 class FrontendRouter(
-    frontendController: FrontendController,
-    httpErrorHandler: HttpErrorHandler,
-    actionBuilder: DefaultActionBuilder
+  frontendController: FrontendController,
+  httpErrorHandler: HttpErrorHandler,
+  actionBuilder: DefaultActionBuilder
 ) extends SimpleRouter {
 
   override def routes: Routes = {

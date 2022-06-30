@@ -17,9 +17,10 @@
 
 package api.formats.json.zookeeper.acl
 
-import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 import org.scalatest.FlatSpec
 import play.api.libs.json._
+
+import com.elkozmon.zoonavigator.core.zookeeper.acl.Permission
 
 class JsonPermissionSpec extends FlatSpec with JsonPermission {
 
