@@ -17,7 +17,6 @@ ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 ThisBuild / scalafixDependencies += Dependencies.scalafixOrganizeImports
 
 val commonSettings = Seq(
-  maintainer   := "contact@elkozmon.com",
   organization := "com.elkozmon",
   licenses += ("GNU Affero GPL V3", url("http://www.gnu.org/licenses/agpl-3.0.html")),
   developers := List(
