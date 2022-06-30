@@ -32,8 +32,7 @@ val commonSettings = Seq(
     Dependencies.catsCore,
     Dependencies.catsFree,
     Dependencies.scalaTest
-  ),
-  wartremoverErrors := Warts.unsafe.filterNot(_.eq(Wart.Any))
+  )
 )
 
 val core = project
@@ -73,7 +72,6 @@ val play = project
       "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeAclVersion",
       "com.elkozmon.zoonavigator.core.zookeeper.znode.ZNodeDataVersion"
     ),
-    wartremoverExcluded ++= (Compile / routes).value,
     Compile / doc / sources                := Seq.empty,
     Compile / packageDoc / publishArtifact := false,
     scriptClasspath in bashScriptDefines ~= (cp => "zookeeper.jar" +: cp)
