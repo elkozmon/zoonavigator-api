@@ -40,8 +40,6 @@ import scala.concurrent.Future
 class CuratorAction(
   httpErrorHandler: HttpErrorHandler,
   curatorFrameworkProvider: CuratorFrameworkProvider
-)(implicit
-  val executionContext: Scheduler
 ) extends ActionRefiner[Request, CuratorRequest] {
 
   import api.formats.Json._
@@ -59,6 +57,8 @@ class CuratorAction(
   private def invalidCxnNameHeaderResult[A](request: Request[A]): Future[Result] =
     httpErrorHandler.onClientError(request, 401, "Invalid connection name")
 
+  override protected implicit def executionContext: Scheduler = Scheduler.global
+
   override protected def refine[A](request: Request[A]): Future[Either[Result, CuratorRequest[A]]] =
     request.headers
       .get("Zoo-Authorization")
@@ -68,19 +68,22 @@ class CuratorAction(
         case x if x.startsWith(cxnPresetHeaderPrefix) =>
           val b64  = x.stripPrefix(cxnPresetHeaderPrefix).trim
           val json = JsString(new String(Base64.getDecoder.decode(b64), StandardCharsets.UTF_8))
+
           json
             .asOpt[ConnectionId]
             .toRight(malformedAuthHeaderResult(request))
             .map(
               curatorFrameworkProvider
                 .getCuratorInstance(_)
-                .map(_.toRight(invalidCxnNameHeaderResult(request)).leftSequence)
-                .flatMap(Task.fromFuture)
+                .flatMap(
+                  _.toRight(Task.fromFuture(invalidCxnNameHeaderResult(request))).leftSequence
+                )
             )
 
         case x if x.startsWith(cxnParamsHeaderPrefix) =>
           val b64  = x.stripPrefix(cxnParamsHeaderPrefix).trim
           val json = Json.parse(Base64.getDecoder.decode(b64))
+
           json
             .asOpt[ConnectionParams]
             .toRight(malformedAuthHeaderResult(request))

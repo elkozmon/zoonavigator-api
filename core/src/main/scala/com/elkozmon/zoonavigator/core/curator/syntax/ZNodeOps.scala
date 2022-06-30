@@ -39,7 +39,6 @@ import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.utils.ZKPaths
 
-import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters._
 import scala.language.implicitConversions
 import scala.util.Try
@@ -48,7 +47,7 @@ trait ZNodeOps {
 
   implicit def toZNodeF[F[_]: Async: Parallel](
     c: CuratorFramework
-  )(implicit ec: ExecutionContext): ZNodeF[F] =
+  ): ZNodeF[F] =
     new ZNodeF[F] {
 
       override def walkTreeF[T](

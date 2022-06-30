@@ -1,10 +1,3 @@
-import api.controllers.ApiController
-import api.controllers.FrontendController
-import curator.provider.CuratorFrameworkProvider
-import loggers.AppLogger
-import play.api.BuiltInComponentsFromContext
-import schedulers.BlockingScheduler
-import schedulers.ComputingScheduler
 /*
  * Copyright (C) 2020  Ľuboš Kozmon <https://www.elkozmon.com>
  *
@@ -22,6 +15,12 @@ import schedulers.ComputingScheduler
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import api.controllers.ApiController
+import api.controllers.FrontendController
+import curator.provider.CuratorFrameworkProvider
+import loggers.AppLogger
+import play.api.BuiltInComponentsFromContext
+
 //noinspection ScalaUnusedSymbol
 trait AppModule {
   self: BuiltInComponentsFromContext =>
@@ -33,8 +32,4 @@ trait AppModule {
   val frontendController: FrontendController
 
   val apiController: ApiController
-
-  val blockingScheduler: BlockingScheduler
-
-  val computingScheduler: ComputingScheduler
 }

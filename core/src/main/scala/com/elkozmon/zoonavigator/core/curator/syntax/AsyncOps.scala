@@ -27,17 +27,16 @@ import org.apache.curator.framework.api.Backgroundable
 import org.apache.curator.framework.api.CuratorEvent
 import org.apache.curator.framework.api.ErrorListenerMultiTransactionMain
 
-import scala.concurrent.ExecutionContext
 import scala.language.implicitConversions
 
 trait AsyncOps {
 
   implicit def toPathableF[F[_]: Async](
     bp: BackgroundPathable[_]
-  )(implicit ec: ExecutionContext): PathableF[F] =
+  ): PathableF[F] =
     path =>
       Async[F].async[CuratorEvent] { callback =>
-        bp.inBackground(newEventCallback(callback), ec)
+        bp.inBackground(newEventCallback(callback))
           .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path)
           .discard()
@@ -45,10 +44,10 @@ trait AsyncOps {
 
   implicit def toPathableF[F[_]: Async](
     bp: BackgroundPathAndBytesable[_]
-  )(implicit ec: ExecutionContext): PathableF[F] =
+  ): PathableF[F] =
     path =>
       Async[F].async[CuratorEvent] { callback =>
-        bp.inBackground(newEventCallback(callback), ec)
+        bp.inBackground(newEventCallback(callback))
           .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path)
           .discard()
@@ -56,10 +55,10 @@ trait AsyncOps {
 
   implicit def toPathAndBytesableF[F[_]: Async](
     bp: BackgroundPathAndBytesable[_]
-  )(implicit ec: ExecutionContext): PathAndBytesableF[F] =
+  ): PathAndBytesableF[F] =
     (path, bytes) =>
       Async[F].async[CuratorEvent] { callback =>
-        bp.inBackground(newEventCallback(callback), ec)
+        bp.inBackground(newEventCallback(callback))
           .withUnhandledErrorListener(newErrorListener(callback))
           .forPath(path, bytes)
           .discard()
@@ -67,10 +66,10 @@ trait AsyncOps {
 
   implicit def toTransactionF[F[_]: Async](
     bp: Backgroundable[ErrorListenerMultiTransactionMain]
-  )(implicit ec: ExecutionContext): TransactionF[F] =
+  ): TransactionF[F] =
     ops =>
       Async[F].async[CuratorEvent] { callback =>
-        bp.inBackground(newEventCallback(callback), ec)
+        bp.inBackground(newEventCallback(callback))
           .withUnhandledErrorListener(newErrorListener(callback))
           .forOperations(ops: _*)
           .discard()

@@ -52,7 +52,7 @@ class CuratorActionInterpreterSpec extends FreeSpec with CuratorSpec {
   import Scheduler.Implicits.global
 
   def interpreter(implicit curator: CuratorFramework): CuratorActionInterpreter[Task] =
-    new CuratorActionInterpreter[Task](Resource.pure(curator), Scheduler.global)
+    new CuratorActionInterpreter[Task](Resource.pure(curator))
 
   "DuplicateZNodeRecursiveAction" - {
     "should copy child nodes data" in withCurator { implicit curatorFramework =>

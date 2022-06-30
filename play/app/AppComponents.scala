@@ -40,7 +40,6 @@ import play.api.routing.Router
 import play.core.SourceMapper
 import play.filters.HttpFiltersComponents
 import play.filters.cors.CORSComponents
-import schedulers._
 
 import com.elkozmon.zoonavigator.core.utils.CommonUtils._
 
@@ -81,7 +80,6 @@ class AppComponents(context: Context)
     configuration.get[ApplicationConfig]("zoonavigator")
 
   lazy val curatorAction: CuratorAction = {
-    implicit val scheduler: Scheduler = computingScheduler
     wire[CuratorAction]
   }
 
@@ -168,10 +166,4 @@ class AppComponents(context: Context)
 
   override lazy val apiController: ApiController =
     wire[ApiController]
-
-  override lazy val blockingScheduler: BlockingScheduler =
-    DefaultBlockingScheduler(Scheduler.io("zoonavigator-io"))
-
-  override lazy val computingScheduler: ComputingScheduler =
-    DefaultComputingScheduler(Scheduler(executionContext))
 }

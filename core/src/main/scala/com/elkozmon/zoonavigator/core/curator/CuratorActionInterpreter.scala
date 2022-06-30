@@ -50,15 +50,11 @@ import org.apache.curator.utils.ZKPaths
 import org.apache.zookeeper.KeeperException
 import org.apache.zookeeper.KeeperException.Code
 
-import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters._
 
 class CuratorActionInterpreter[F[_]: Async: Parallel](
-  curatorResource: Resource[F, CuratorFramework],
-  executionContext: ExecutionContext
+  curatorResource: Resource[F, CuratorFramework]
 ) extends ActionInterpreter[F] {
-
-  implicit val ec: ExecutionContext = executionContext
 
   def apply[A](action: ActionIO[A]): F[A] =
     curatorResource.use(c => action.foldMap(actionFolder(c)))

@@ -29,7 +29,6 @@ import monix.eval.Task
 import play.api.http.HttpErrorHandler
 import play.api.libs.json._
 import play.api.mvc._
-import schedulers.ComputingScheduler
 import utils.Gzip
 
 import cats.effect.Resource
@@ -50,12 +49,11 @@ class ApiController(
   applicationConfig: ApplicationConfig,
   httpErrorHandler: HttpErrorHandler,
   curatorAction: CuratorAction,
-  computingScheduler: ComputingScheduler,
   playBodyParsers: PlayBodyParsers,
   controllerComponents: ControllerComponents
 ) extends AbstractController(controllerComponents) {
 
-  import computingScheduler.implicitScheduler
+  import monix.execution.Scheduler.Implicits.global
 
   private val malformedDataException =
     new Exception("Malformed data")
@@ -283,8 +281,7 @@ class ApiController(
 
     def apply[T](actionIO: ActionIO[T]): Task[T] = {
       val actionInterpreter = new CuratorActionInterpreter[Task](
-        Resource.pure(curatorRequest.curatorFramework),
-        computingScheduler.implicitScheduler
+        Resource.pure(curatorRequest.curatorFramework)
       )
 
       actionInterpreter(actionIO)
