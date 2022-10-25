@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
   private[Dependencies] object V {
     val cats      = "2.2.0"
-    val curator   = "4.0.0"
+    val curator   = "5.3.0"
     val macwire   = "2.3.3"
     val zookeeper = "3.4.11"
     val log4j     = "2.17.2"
