@@ -1,24 +1,9 @@
-ARG SBT_VERSION=1.1.5
-ARG SBT_GPG_KEY=99E82A75642AC823
-
-FROM openjdk:8u151-jdk-alpine3.7
-
-ARG SBT_VERSION
-ARG SBT_GPG_KEY
-
-# Install sbt
-RUN apk --no-cache add aria2 gnupg ca-certificates bash \
-  && aria2c -x4 "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" \
-  && aria2c -x4 "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz.asc" \
-  && gpg --keyserver keyserver.ubuntu.com --recv-keys ${SBT_GPG_KEY} \
-  && gpg --verify sbt-${SBT_VERSION}.tgz.asc sbt-${SBT_VERSION}.tgz \
-  && tar xvfz sbt-${SBT_VERSION}.tgz -C /usr/local \
-  && ln -s /usr/local/sbt/bin/sbt /usr/bin/sbt
+FROM sbtscala/scala-sbt:eclipse-temurin-jammy-17.0.5_8_1.9.3_2.12.18 as sbt
 
 # Copy source files
 WORKDIR /src
 COPY . .
 
-CMD ["sbt", "test"]
+CMD ["sbt", "-mem", "2048", "test"]
 
 LABEL maintainer="Lubos Kozmon <contact@elkozmon.com>"
