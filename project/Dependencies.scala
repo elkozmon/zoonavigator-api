@@ -3,7 +3,8 @@ import sbt._
 object Dependencies {
   private[Dependencies] object V {
     val cats      = "2.2.0"
-    val curator   = "5.3.0"
+    val curator   = "4.2.0"
+    val curatorTest = "2.12.0"
     val macwire   = "2.3.3"
     val zookeeper = "3.4.11"
     val log4j     = "2.17.2"
@@ -24,7 +25,8 @@ object Dependencies {
   val macwireProxy  = "com.softwaremill.macwire" %% "proxy"  % V.macwire
   val macwireMacros = "com.softwaremill.macwire" %% "macros" % V.macwire % Provided
 
-  val curatorTest = "org.apache.curator" % "curator-test" % V.curator % Test
+  val curatorTest =
+    "org.apache.curator" % "curator-test" % V.curatorTest % Test exclude ("org.apache.zookeeper", "zookeeper")
   val curatorFramework =
     "org.apache.curator" % "curator-framework" % V.curator exclude ("org.apache.zookeeper", "zookeeper")
 
