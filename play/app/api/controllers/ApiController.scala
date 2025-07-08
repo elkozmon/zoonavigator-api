@@ -30,6 +30,7 @@ import play.api.http.HttpErrorHandler
 import play.api.libs.json._
 import play.api.mvc._
 import utils.Gzip
+import org.apache.curator.framework.CuratorFramework
 
 import cats.effect.Resource
 import cats.free.Cofree
@@ -281,7 +282,7 @@ class ApiController(
 
     def apply[T](actionIO: ActionIO[T]): Task[T] = {
       val actionInterpreter = new CuratorActionInterpreter[Task](
-        Resource.pure(curatorRequest.curatorFramework)
+        Resource.pure[Task, CuratorFramework](curatorRequest.curatorFramework)
       )
 
       actionInterpreter(actionIO)

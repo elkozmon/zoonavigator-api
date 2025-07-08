@@ -2,19 +2,19 @@ import sbt._
 
 object Dependencies {
   private[Dependencies] object V {
-    val cats      = "2.2.0"
-    val curator   = "4.2.0"
-    val curatorTest = "2.12.0"
-    val macwire   = "2.3.3"
-    val zookeeper = "3.4.11"
-    val log4j     = "2.17.2"
-    val slf4j     = "1.7.25"
-    val shapeless = "2.3.3"
-    val monix     = "3.0.0"
-    val commonsIo = "2.6"
-    val logback   = "1.2.3"
-    val jsoup     = "1.13.1"
-    val scalaTest = "3.0.8"
+    val cats      = "2.10.0"
+    val curator   = "5.8.0"
+    val curatorTest = "5.8.0"
+    val macwire   = "2.5.9"
+    val zookeeper = "3.9.1"
+    val log4j     = "2.22.1"
+    val slf4j     = "2.0.9"
+    val shapeless = "2.3.10"
+    val monix     = "3.4.1"
+    val commonsIo = "2.15.1"
+    val logback   = "1.4.14"
+    val jsoup     = "1.17.2"
+    val scalaTest = "3.2.17"
     val scalafixOrganizeImports = "0.6.0"
   }
 
