@@ -1,4 +1,4 @@
-name: Build
+name: CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -18,9 +18,9 @@ jobs:
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: 'sbt'
+        distribution: temurin
+        java-version: 17
+        cache: sbt
     - name: Set sbt
       uses: sbt/setup-sbt@v1
     - name: Run tests
