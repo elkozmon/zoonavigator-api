@@ -21,6 +21,8 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: 'sbt'
+    - name: Set sbt
+      uses: sbt/setup-sbt@v1
     - name: Run tests
       run: sbt test
     - name: Upload dependency graph
